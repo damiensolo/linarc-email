@@ -1,0 +1,16 @@
+/*
+ * The same global stylesheet production apps get from the design system: tokens.css, Lato font faces, Tailwind
+ * layers, .ds-scroll-* primitives, base type. `@` is the library's `src` (vite.config.mjs), so this follows
+ * LINARC_DS_PATH.
+ */
+@import '@/styles/global.css';
+
+/*
+ * Sandbox override (D-03). global.css hardcodes `body { color: #06152b }`, which breaks dark mode; re-bind body to
+ * semantic tokens so both themes render correctly. The hex above is quoted from the library, not used here.
+ */
+body {
+  margin: 0;
+  color: var(--text-default);
+  background-color: var(--surface-page);
+}

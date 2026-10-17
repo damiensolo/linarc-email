@@ -1,0 +1,30 @@
+{
+  "name": "linarc-email",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Linarc platform prototypes (linarc-email), built from the linarc-prototype-base template.",
+  "license": "UNLICENSED",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "check": "node scripts/check-conventions.mjs",
+    "verify": "node scripts/check-conventions.mjs && vite build",
+    "shot": "node scripts/screenshot.mjs",
+    "deploy:preview": "vite build && vercel deploy",
+    "deploy": "vite build && vercel deploy --prod"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue2": "^2.3.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.35",
+    "puppeteer-core": "^25.12.0",
+    "sass": "^1.105.1",
+    "tailwindcss": "^3.4.3",
+    "vite": "^8.3.2",
+    "vue": "2.7.16"
+  },
+  "dependencies": {
+    "classnames": "^2.5.1"
+  }
+}

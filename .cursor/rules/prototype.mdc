@@ -1,0 +1,21 @@
+---
+description: Linarc prototypes — Vue 2.7 + Linarc design system, built from Figma or a spec
+alwaysApply: true
+---
+
+This repo's rules live in a few files. Read them before writing code; don't duplicate them here.
+
+- @CLAUDE.md: always-on rules, the design-system change policy, the Figma-variable → Tailwind class table, commands and known limits.
+- @.claude/skills/figma-to-prototype/SKILL.md: the step-by-step workflow for any request that includes a Figma URL (read the design, map components and gaps, fix the design system, build, verify, record).
+- @.claude/skills/spec-to-prototype/SKILL.md: the workflow for a screen built from a written spec (`docs/<module>/`), ending with an editable reference pushed to Figma.
+- @../linarc-design-components/PRPs/prototype-changes/README.md: how to change the library, and the change log.
+- @docs/5-ui-patterns.md, @docs/4-decisions.md, @docs/components/README.md: the decided UI patterns, the standing decisions, the candidate-component backlog.
+
+Key points if you read nothing else:
+- Vue 2.7 Options API, plain JS. No Composition API or `<script setup>`. No TypeScript.
+- Use `@/componentsV2/*`, then `@/components/*`. No hand-built lookalikes. If the library is wrong or missing something, fix it, fork it or add it, and flag and log every change. A component missing on both sides is a **candidate**: proposal doc in `docs/components/`, code in `src/candidates/<Name>/`, then Figma, then the library.
+- Status labels and tones come from `src/modules/app/status.js`, never string literals; text plus colour, never colour alone.
+- Token classes only (`bg-surface-*`, `text-text-*`, `p-space-N`, `rounded-radius-N`). No hex, raw or arbitrary values. `yarn check` enforces it.
+- Responsive from 390px to 1440px+. Screens never blank: `router.go()` between screens, `LoadRegion` for data.
+- Verify with `yarn verify` and `yarn shot <slug>` (1440, 1024, 390; light and dark) before reporting done.
+- Record every prototype and finding in `docs/` (skill step 6; see `docs/README.md`).

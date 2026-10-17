@@ -1,0 +1,5 @@
+# Upload only the locally built site. Vercel can't build this repo: it compiles the sibling
+# ../linarc-design-components from source (private GitLab, often with uncommitted changes).
+/*
+!/dist
+!/vercel.json

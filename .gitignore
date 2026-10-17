@@ -1,0 +1,39 @@
+# Dependencies and build output
+node_modules/
+dist/
+
+# Local env / secrets (LINARC_DS_PATH goes in .env; never a registry token, F-001)
+.env
+.env.*
+!.env.example
+*.local
+
+# Vercel project link (created by `vercel link`)
+.vercel/
+
+# Claude Code per-user settings (shared skills in .claude/skills are committed)
+.claude/settings.local.json
+
+# Screenshots belong in the scratchpad, not the repo (docs/case-study/assets/ is the exception)
+.screenshots/
+*.png
+!docs/**/*.png
+!public/**/*.png
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Documentation
+# /docs/case-study/
+# /docs/prd/

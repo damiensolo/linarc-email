@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn check)",
+      "Bash(yarn verify)",
+      "Bash(yarn build)",
+      "Bash(yarn shot:*)"
+    ]
+  }
+}
