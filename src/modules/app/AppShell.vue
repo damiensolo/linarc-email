@@ -265,8 +265,12 @@ export default {
     onBookmark({ id, bookmarked }) {
       setBookmark(id, bookmarked);
     },
+    /** A top-nav tool opens its first built screen (Communication → Email from Drawings), as its mega-menu row does.
+        A tool with no built screen, or the one already open, only shows its rail. */
     onTool({ id }) {
-      if (RAILS[id]) this.selectedTool = id;
+      const item = (RAILS[id] || []).find((i) => i.screen && isBuilt(i.screen));
+      if (item && item.screen !== this.screen) go(item.screen);
+      else if (RAILS[id]) this.selectedTool = id;
     },
     onNav({ id }) {
       const item = this.rail.find((i) => i.id === id);
