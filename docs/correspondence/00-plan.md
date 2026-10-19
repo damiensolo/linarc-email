@@ -89,7 +89,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 | # | Question | Blocks | Owner | Status |
 |---|---|---|---|---|
 | Q-01 | Cross-tool or standalone? | — | Product | Resolved → D-35 |
-| Q-02 | Recipient not yet a guest: how is one added from the compose panel? | compose | Design + user | **Resolved 2026-10-16:** an InputV2 *Add by email* row under the recipients select opens the inline guest form (name, company, role); creates a guest user; no library change. P-041 stands. → D-36 |
+| Q-02 | Recipient not yet a guest: how is one added from the compose panel? | compose | Design + user | **Resolved 2026-10-16** (row renamed *Add a guest user* and To widened to the whole directory on 2026-10-19, D-46): an InputV2 *Add by email* row under the recipients select opens the inline guest form (name, company, role); creates a guest user; no library change. P-041 stands. → D-36 |
 | Q-03 | Promote: panel or modal? | — | — | Resolved → D-34; modal variant deferred (D-37) |
 | Q-04 | Which candidates? | — | — | Resolved → D-38 |
 | Q-05 | Where do PMs read mail: here, or Outlook with Linarc as the record? | empty-state copy, notifications | Product | **Resolved 2026-10-16: hybrid** (§1, D-42). The interview tests the boundary, not the model |

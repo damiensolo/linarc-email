@@ -3,8 +3,8 @@
        for people without an account and for files over the mail limit. External-user pattern (5-ui-patterns.md §1):
        the Linarc top nav in its reduced Company configuration (logomark, no module switcher, tools or project
        context), no side rail, no shell; the reply in a fixed bottom panel. Mobile first (390), one centred column.
-       Shows: who sent it and the project, the message, the pinned markup (DrawingPinPreview), the files (any size,
-       streamed), Response due, "Open in Linarc" for a recipient with an account. Never notes, cost or other
+       Shows: who sent it and the project, the message, the pinned markup (DrawingPinPreview), the files (tiles that
+       open in the FileViewer; any size, streamed; opening one is recorded on the sender's Delivery tab), Response due, "Open in Linarc" for a recipient with an account. Never notes, cost or other
        recipients' delivery (D-39). States: valid · expired (Send me a new link) · revoked · replied. The token is the
        hash (?p=correspondence-portal#tk-marcus-a302); the sandbox record picker lists the links. -->
   <div class="flex h-full flex-col bg-surface-page">
@@ -93,16 +93,7 @@
                 <!-- Files of any size, streamed from the link (bet 3) -->
                 <section v-if="files.length" class="flex flex-col gap-space-8">
                   <h2 class="m-0 font-heading text-fontsize-16 font-bold leading-lineheight-24 text-text-default">Files</h2>
-                  <ul class="m-0 flex list-none flex-col p-0">
-                    <li v-for="f in files" :key="f.id" class="flex flex-wrap items-center justify-between gap-space-8 border-b border-border-subtle py-space-8 text-fontsize-14 leading-lineheight-20">
-                      <span class="flex min-w-0 items-center gap-space-8">
-                        <Paperclip :size="16" :stroke-width="1.75" class="shrink-0 text-icon-inactive" aria-hidden="true" />
-                        <span class="truncate text-text-default">{{ f.name }}</span>
-                        <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ f.sizeMb }} MB</span>
-                      </span>
-                      <Button :label="f.byLink ? 'Stream' : 'Download'" color-scheme="secondary" variant="outline" size="small" @onClick="openFile(f)" />
-                    </li>
-                  </ul>
+                  <FileTiles :files="files" @open="openFiles" @download="download" />
                   <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">No account needed. Opening a file is recorded for the sender.</span>
                 </section>
 
@@ -133,6 +124,8 @@
         </div>
       </template>
     </AppLayout>
+
+    <FileViewer :open="viewer.open" :files="viewer.files" :index.sync="viewer.index" @close="closeFiles" @download="download" @view="recordOpened" />
   </div>
 </template>
 
@@ -142,18 +135,22 @@ import AppLayout from '@/componentsV2/AppLayout/AppLayout.vue';
 import Button from '@/components/Button/Button.vue';
 import Chip from '@/components/Chip/Chip.vue';
 import TextareaField from '@/componentsV2/FormV2/fields/TextareaField.vue';
-import { LinarcLogoDark, Paperclip } from '@development/linarc-icons';
+import { LinarcLogoDark } from '@development/linarc-icons';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import LoadStatus from '~/candidates/LoadStatus/LoadStatus.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 import InlineNotice from '~/candidates/InlineNotice/InlineNotice.vue';
 import DrawingPinPreview from '~/candidates/DrawingPinPreview/DrawingPinPreview.vue';
+import FileViewer from '~/candidates/FileViewer/FileViewer.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import { currentRoute, go } from '~/modules/app/router';
 import { accountWithSettings, overflowWithSettings, onAccountClick } from '~/modules/sandbox';
-import { PROJECT, LINKS, TODAY, dayOf, getLink, getThread, getRecord, getPerson, getFile, replyFromLink, inboundSandbox } from '~/modules/correspondence/data';
+import { PROJECT, LINKS, TODAY, dayOf, getLink, getThread, getRecord, getPerson, getFile, replyFromLink, recordFileOpened, inboundSandbox } from '~/modules/correspondence/data';
+import { fileView } from '~/modules/correspondence/view';
+import { fileViewing, saveFile } from '~/modules/correspondence/fileViewing';
 import SheetSvg from '~/modules/correspondence/components/SheetSvg.vue';
+import FileTiles from '~/modules/correspondence/components/FileTiles.vue';
 
 export default {
   name: 'CorrespondencePortal',
@@ -163,7 +160,8 @@ export default {
     records: () => LINKS.map((l) => ({ value: l.token, label: `${l.recipient.name} · ${l.threadId}${l.token === 'tk-expired' ? ' (expired)' : ''}` })),
     inbound: inboundSandbox,
   },
-  components: { TopNavBar, AppLayout, Button, Chip, TextareaField, LinarcLogoDark, Paperclip, LoadRegion, LoadStatus, Skeleton, InlineNotice, DrawingPinPreview, SheetSvg },
+  components: { TopNavBar, AppLayout, Button, Chip, TextareaField, LinarcLogoDark, FileTiles, LoadRegion, LoadStatus, Skeleton, InlineNotice, DrawingPinPreview, FileViewer, SheetSvg },
+  mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
     return {
@@ -176,6 +174,7 @@ export default {
       repliedAt: null,
       renewed: false,
       viewing: false,
+      opened: {}, // fileId → true once its opening is recorded for the sender (once per visit)
       load: createLoad({ label: 'message' }),
       write: createLoad({ label: 'reply', action: { busy: 'Sending', done: 'Sent', error: "Couldn't send." } }),
     };
@@ -199,7 +198,7 @@ export default {
       return this.drawing && this.link.pinId ? this.drawing.pins.find((p) => p.id === this.link.pinId) || null : null;
     },
     files() {
-      return this.link ? this.link.fileIds.map(getFile).filter(Boolean) : [];
+      return this.link ? this.link.fileIds.map(getFile).filter(Boolean).map(fileView) : [];
     },
     dueTone() {
       if (!this.link || !this.link.responseDueAt) return 'text-text-subtle';
@@ -249,8 +248,16 @@ export default {
     renew() {
       this.renewed = true; // the product emails a fresh link to the same address (D-43); nothing else happens here
     },
-    openFile() {
-      // The product streams the file; the prototype only records the intent for the sender's Delivery tab (not written).
+    /** Opening a file is recorded for the sender (the page says so): once per file per visit, on the Delivery tab. */
+    recordOpened(file, action = 'open') {
+      const key = `${file.id}:${action}`;
+      if (this.opened[key] || !this.link) return;
+      this.$set(this.opened, key, true);
+      recordFileOpened(this.link.threadId, { file, recipient: this.link.recipient, action });
+    },
+    download(file) {
+      saveFile(file);
+      this.recordOpened(file, 'download');
     },
     openInLinarc() {
       if (this.thread) go('thread', this.thread.id);

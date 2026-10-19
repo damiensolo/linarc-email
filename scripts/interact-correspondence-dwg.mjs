@@ -53,14 +53,14 @@ try {
   check(!(await has('Attach a PDF of')), 'no record PDF option for a drawing');
   await page.screenshot({ path: `${out}/dwg-compose.png` });
   // recipients: suggested first (Kenji, Dave, Elena)
-  await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose guest users'); i.focus(); i.click(); });
+  await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose recipients'); i.focus(); i.click(); });
   await sleep(400);
   const firstOption = await page.evaluate(() => { const o = [...document.querySelectorAll('[role="option"], li')].find((e) => e.offsetParent && /Kenji|Dave|Elena/.test(e.textContent)); return o ? o.textContent.trim().slice(0, 40) : ''; });
   check(/Kenji/.test(firstOption), `suggested recipients first: ${firstOption}`);
   await click('Kenji Takahashi, AIA · Studio West Architecture', 'li, [role="option"], span, div');
   await page.keyboard.press('Escape');
   await sleep(300);
-  check(await has('Add by email'), 'Esc closed the dropdown only');
+  check(await has('Add a guest user'), 'Esc closed the dropdown only');
   await page.evaluate(() => { const ed = document.querySelector('.ProseMirror, [contenteditable="true"]'); ed.focus(); });
   await page.keyboard.type('Kenji, can the cove profile shift 4" north at B-4?');
   await sleep(1500);

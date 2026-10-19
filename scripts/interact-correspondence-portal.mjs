@@ -38,7 +38,14 @@ try {
   check(await has('Alex Morgan') && await has('sent this to Marcus Vance'), 'sender and recipient named');
   check(await has('Response requested by'), 'response due shown');
   check(await has('A-302 · Rev 3') && await has('Grid B-4 · Corridor 3E'), 'pinned markup preview');
-  check(await has('Site_Walk_Corridor3E_Grid_B4.mp4') && (await buttons()).includes('Stream'), 'large file offered as a stream');
+  check(await has('Site_Walk_Corridor3E_Grid_B4.mp4') && await has('By secure link'), 'large file offered by secure link');
+  // Files open in the viewer (D-45); the first open is recorded for the sender (D-43)
+  await page.click('[aria-label="Open Site_Walk_Corridor3E_Grid_B4.mp4"]');
+  await sleep(800);
+  check(await page.evaluate(() => !!document.querySelector('[role="dialog"] video')), 'large file plays in the viewer');
+  await page.keyboard.press('Escape');
+  await sleep(400);
+  check(!(await page.$('[role="dialog"]')), 'viewer closes on Esc');
   check(!(await has('Internal team note')) && !(await has('$4,200')), 'nothing internal on the page');
   check(!(await buttons()).includes('Open in Linarc'), 'no Open in Linarc for a recipient without an account');
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);

@@ -9,7 +9,7 @@
 - **Persona and decision:** a recipient without an account, or anyone opening a large file or the markup from the mail: understand the ask on a phone, see the revision and files, reply (`screens.md` §1; spec §10, D-39, D-43). Test task 2.
 - **Nav:** none. External-user pattern (`5-ui-patterns.md` §1): the Linarc top nav in its reduced Company configuration (logomark, no module switcher, tools or project context), no side rail, no shell; the reply's Send in a fixed bottom panel.
 - **Data:** `getLink(token)` (state computed from `sentAt` + 30 days and the session's revocations), the thread it belongs to, `replyFromLink` (threads the reply as inbound mail, marks the link replied).
-- **Patterns:** mobile first, one centred `max-w-3xl` column; link state first as an InlineNotice (expired, withdrawn) or a plain status line (replied); the pinned markup through **DrawingPinPreview** with a toggle to the full sheet; files with Download / Stream (any size); nothing internal (D-39).
+- **Patterns:** mobile first, one centred `max-w-3xl` column; link state first as an InlineNotice (expired, withdrawn) or a plain status line (replied); the pinned markup through **DrawingPinPreview** with a toggle to the full sheet; files as `AttachmentThumbnail` tiles (P-048) that open in the **FileViewer** candidate (D-45), any size; nothing internal (D-39).
 
 ## Metrics
 | Measure | Value |
@@ -24,7 +24,7 @@
 ## Gaps and how they were handled
 | Gap | Handling | Log ID |
 |---|---|---|
-| None in the library. The page's file actions (Download / Stream) are intents only: the product streams the file and records the open for the sender's Delivery tab | Noted in the component comment | — |
+| None in the library. The page's file actions were intents only | 2026-10-18: files open in FileViewer and download for real; the first open and the first download of each file per visit add a *File downloaded* row ("Streamed / Opened / Downloaded … from the secure link") to the sender's Delivery tab (`recordFileOpened`) | P-048, D-45 |
 
 ## Verification
 - `yarn verify` passes (conventions + build).

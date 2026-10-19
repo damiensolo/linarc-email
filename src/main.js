@@ -6,7 +6,11 @@ import moment from 'moment';
 import './style.css';
 // The demo session patches the shared mock data before any screen reads it (src/modules/session.js).
 import '~/modules/session';
+import { hydrateFiles } from '~/modules/fileStore';
 import App from './App.vue';
+
+// Files attached in the demo come back from IndexedDB as object URLs (src/modules/fileStore.js).
+hydrateFiles();
 
 Vue.config.productionTip = false;
 

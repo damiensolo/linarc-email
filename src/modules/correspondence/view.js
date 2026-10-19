@@ -2,6 +2,7 @@
 // no module data (src/candidates/README.md), so names, labels and tones are resolved here, once, for every screen.
 import { DELIVERY, AUDIT_EVENT, DRAWING_REVISION, RFI_STATUS } from '~/modules/app/status';
 import { getPerson, getFile, getRecord, recordLabel } from './data';
+import { fileUrl } from '~/modules/fileStore';
 
 const initials = (name) =>
   (name || '')
@@ -16,6 +17,24 @@ const personView = (id) => {
   const p = getPerson(id);
   return p ? { id: p.id, name: p.name, company: p.company, initials: initials(p.name), guest: p.guest } : { id, name: 'Unknown sender', company: '', initials: '?', guest: true };
 };
+
+/**
+ * What AttachmentThumbnail and FileViewer take for a file: its URL (a sample in public/files/, or the stored copy of a
+ * file attached in the demo), the preview for the tile, and the meta line ("3.4 MB · by secure link").
+ */
+export function fileView(f) {
+  const url = f.url || fileUrl(f.id);
+  return {
+    id: f.id,
+    name: f.name,
+    sizeMb: f.sizeMb,
+    byLink: !!f.byLink,
+    url,
+    thumbnailUrl: f.thumbnailUrl || (f.previewable ? url : ''),
+    posterUrl: f.posterUrl || '',
+    meta: `${f.sizeMb} MB${f.byLink ? ' · by secure link' : ''}`,
+  };
+}
 
 const DELIVERY_RANK = ['bounced', 'sending', 'delivered', 'link_viewed', 'downloaded'];
 
@@ -37,7 +56,7 @@ export function threadEntries(thread) {
       body: e.body,
       toText: e.direction === 'outbound' ? to.join(', ') : e.toAddress || '',
       // Static messages reference the file table by id; messages composed in the demo carry their files inline.
-      attachments: e.attachments || (e.attachmentIds || []).map(getFile).filter(Boolean),
+      attachments: (e.attachments || (e.attachmentIds || []).map(getFile).filter(Boolean)).map(fileView),
       delivery: weakest ? { key: weakest, label: DELIVERY[weakest].label, tone: DELIVERY[weakest].tone } : null,
       bounce: e.bounce ? { ...e.bounce, resolved: resolved.includes(e.id) } : null,
       resendOf: e.resendOf || null,

@@ -1,0 +1,84 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Title (Apex W24 beam penetration sketch - Grid B-4) /Producer (Linarc prototype) >>
+endobj
+6 0 obj
+<< /Length 2859 >>
+stream
+1.5 w 0 G [] 0 d 18 18 1188 756 re S
+1 w 0 G [] 0 d 864 18 342 110 re S
+0.5 w 0 G [] 0 d 864 92 m 1206 92 l S
+0.5 w 0 G [] 0 d 864 56 m 1206 56 l S
+0.5 w 0 G [] 0 d 1084 18 m 1084 56 l S
+BT 0 g /F2 11 Tf 874 106 Td (APEX MECHANICAL SYSTEMS) Tj ET
+BT 0 g /F1 9 Tf 874 74 Td (W24x68 web penetration - Grid B-4, Level 3) Tj ET
+BT 0.35 g /F1 8 Tf 874 38 Td (Drawn D. Okafor - Oct 14) Tj ET
+BT 0.35 g /F1 7 Tf 874 26 Td (Riverside Medical Center - North Tower \(RMC-04\)) Tj ET
+BT 0 g /F2 14 Tf 1094 36 Td (SK-M-014) Tj ET
+BT 0 g /F2 12 Tf 48 740 Td (ELEVATION - BEAM W24x68 AT GRID B-4 \(LOOKING NORTH\)) Tj ET
+BT 0.35 g /F1 8 Tf 48 724 Td (Scale: 1" = 1'-0" \(for coordination only - not for fabrication\)) Tj ET
+0.85 g 120 586 640 14 re f 1 w 0 G [] 0 d 120 586 640 14 re S
+0.85 g 120 360 640 14 re f 1 w 0 G [] 0 d 120 360 640 14 re S
+1 w 0 G [] 0 d 120 586 m 120 374 l S
+1 w 0 G [] 0 d 760 586 m 760 374 l S
+0.5 w 0.4 G [4 3] 0 d 90 480 m 790 480 l S
+BT 0.4 g /F1 8 Tf 794 477 Td (N.A.) Tj ET
+2 w 0 G [] 0 d 490 480 m 490 507.62 467.62 530 440 530 c 412.38 530 390 507.62 390 480 c 390 452.38 412.38 430 440 430 c 467.62 430 490 452.38 490 480 c S
+1 w 0.3 G [] 0 d 506 480 m 506 516.45 476.45 546 440 546 c 403.55 546 374 516.45 374 480 c 374 443.55 403.55 414 440 414 c 476.45 414 506 443.55 506 480 c S
+BT 0 g /F2 9 Tf 414 477 Td (10" DIA) Tj ET
+0.75 w 0.5 G [] 0 d 180 436 520 88 re S
+BT 0.45 g /F1 8 Tf 190 530 Td (18" SUPPLY TRUNK - TRANSITION TO 10" ROUND THROUGH WEB) Tj ET
+0.5 w 0 G [] 0 d 80 360 m 80 600 l S
+0.5 w 0 G [] 0 d 75 360 m 85 360 l S
+0.5 w 0 G [] 0 d 75 600 m 85 600 l S
+BT 0 g /F1 8 Tf 88 477 Td (24" \(W24x68\)) Tj ET
+0.5 w 0 G [] 0 d 120 320 m 440 320 l S
+0.5 w 0 G [] 0 d 120 315 m 120 325 l S
+0.5 w 0 G [] 0 d 440 315 m 440 325 l S
+BT 0 g /F1 8 Tf 232 326 Td (4'-2" FROM COL. FACE) Tj ET
+0.5 w 0 G [] 0 d 374 630 m 506 630 l S
+0.5 w 0 G [] 0 d 374 625 m 374 635 l S
+0.5 w 0 G [] 0 d 506 625 m 506 635 l S
+BT 0 g /F1 8 Tf 408.8 636 Td (13" RING O.D.) Tj ET
+BT 0 g /F2 10 Tf 48 280 Td (NOTES) Tj ET
+BT 0 g /F1 9 Tf 48 262 Td (1. Opening centred on the beam neutral axis; min. clear distance to flanges 7".) Tj ET
+BT 0 g /F1 9 Tf 48 247 Td (2. 3/8" x 1-1/2" reinforcing ring plate, both faces, 1/4" fillet all round \(by others\).) Tj ET
+BT 0 g /F1 9 Tf 48 232 Td (3. Duct transitions 18"x14" rect to 10" round 2'-0" each side of beam; static pressure checked, see calc M-14.) Tj ET
+BT 0 g /F1 9 Tf 48 217 Td (4. Penetration subject to approval by Thornton Structural Engineers \(EOR\). Do not cut until approved.) Tj ET
+BT 0 g /F1 9 Tf 48 202 Td (5. Acoustic cove framing in Corridor 3E holds at +9'-6" AFF per A-302 Rev 3.) Tj ET
+1 w 0.6 G [] 0 d 900 640 270 90 re S
+BT 0.5 g /F2 14 Tf 912 712 Td (FOR REVIEW) Tj ET
+BT 0.5 g /F1 9 Tf 912 694 Td (Issued to Vanguard for RFI) Tj ET
+BT 0.5 g /F1 9 Tf 912 680 Td (with EOR - Oct 14) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 1224 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+xref
+0 8
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000212 00000 n 
+0000000314 00000 n 
+0000000417 00000 n 
+0000003328 00000 n 
+trailer
+<< /Size 8 /Root 1 0 R /Info 5 0 R >>
+startxref
+3465
+%%EOF

@@ -1,7 +1,7 @@
 <template>
   <!-- Compose (docs/correspondence/spec.md §5): today's Compose with parity (From, To = guest users, CC, Subject prefilled,
        rich text, attachments, Attach record PDF) in a SlideOverPanel over the host screen (D-34), plus what the MVP adds:
-       the linked record with its revision pin, Add by email with inline guest creation (D-36, Q-02), Response due, and
+       the linked record with its revision pin, Add a guest user by email, inline (D-36, D-46, Q-02), Response due, and
        large files by secure link. Nothing opens over the panel. Send disables while sending (5-ui-patterns.md §6). -->
   <SlideOverPanel :open="open" title="Compose" :badge="record ? recordLabel(record.id) : ''" size="md" @close="$emit('close')">
     <div class="flex flex-col gap-space-24 font-label">
@@ -24,24 +24,30 @@
         <span class="text-fontsize-14 leading-lineheight-20 text-text-subtle">{{ sender ? `${sender.name} · ${sender.email}` : '' }}</span>
       </div>
 
-      <!-- 3. To (today, upgraded): guests, suggested first; Add by email creates a guest inline -->
+      <!-- 3. To (today, upgraded): anyone already in the project directory (team and guest users), suggested first.
+           Someone new is added as a guest user by email, inline (D-36); they then join To. -->
       <div class="flex flex-col gap-space-8">
-        <SelectV2 v-model="to" label="To" placeholder="Choose guest users" :options="recipientOptions" :multiple="true" :max-visible-tags="2" :visible-item-count="8" />
+        <SelectV2 v-model="to" label="To" placeholder="Choose recipients" :options="recipientOptions" :multiple="true" :max-visible-tags="2" :visible-item-count="8" />
         <div class="flex flex-col gap-space-8 pl-space-12">
-          <div class="flex flex-wrap items-end gap-space-8">
-            <InputV2 v-model="addEmail" label="Add by email" type="email" placeholder="name@company.com" class="w-full sm:w-1/2" :state="addError ? 'error' : 'default'" :error-message="addError" @keydown.enter.native.prevent="startAdd" />
-            <Button label="Add" color-scheme="secondary" variant="outline" size="medium" :is-disabled="!addEmail.trim()" @onClick="startAdd" />
+          <div class="flex flex-col gap-space-2">
+            <label :for="guestEmailId" class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Add a guest user</label>
+            <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">Not in the directory yet? Add them by email.</span>
+          </div>
+          <!-- Input and button share the 40px row and align at the top, so an error line under the input moves nothing. -->
+          <div class="flex items-start gap-space-8">
+            <InputV2 :id="guestEmailId" v-model="addEmail" type="email" placeholder="name@company.com" class="min-w-0 flex-1 sm:w-1/2 sm:flex-none" :state="addError ? 'error' : 'default'" :helper-text="addError" @keydown.enter.native.prevent="startAdd" />
+            <Button label="Add guest" color-scheme="secondary" variant="outline" size="large" :is-disabled="!addEmail.trim()" @onClick="startAdd" />
           </div>
           <!-- Inline guest form: name and company guessed from the address, role chosen; creates the guest user. -->
           <div v-if="adding" class="flex flex-col gap-space-12 border-l border-border-subtle pl-space-12">
-            <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ adding.email }} isn't a guest on this project yet. Add them and they can be emailed from any record.</span>
+            <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ adding.email }} isn't in the project directory yet. Add them as a guest user and they can be emailed from any record.</span>
             <div class="grid grid-cols-1 gap-space-12 sm:grid-cols-2">
               <InputV2 v-model="adding.name" label="Full name" placeholder="Full name" />
               <InputV2 v-model="adding.company" label="Company" placeholder="Company" />
               <SelectV2 v-model="adding.role" label="Role" :options="GUEST_ROLES" :allow-search="false" />
             </div>
             <div class="flex flex-wrap gap-space-8">
-              <Button label="Add recipient" color-scheme="primary" variant="solid" size="small" :is-disabled="!adding.name.trim()" @onClick="confirmAdd" />
+              <Button label="Add guest user" color-scheme="primary" variant="solid" size="small" :is-disabled="!adding.name.trim()" @onClick="confirmAdd" />
               <Button label="Cancel" color-scheme="secondary" variant="minimal" size="small" @onClick="adding = null" />
             </div>
           </div>
@@ -59,14 +65,9 @@
       <!-- 7. Attachments (today, upgraded): over the mail limit goes by secure link instead of being refused -->
       <div class="flex flex-col gap-space-8">
         <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Attachments</span>
-        <DropArea size="small" label="Drop files here" link-text="browse" @on-upload="addFiles" />
-        <ul v-if="attachments.length" class="m-0 flex list-none flex-col gap-space-4 p-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">
-          <li v-for="a in attachments" :key="a.id" class="flex flex-wrap items-center gap-space-8">
-            <span class="text-text-default">{{ a.name }}</span>
-            <span>{{ a.sizeMb }} MB{{ a.byLink ? ' · Delivered by secure link' : '' }}</span>
-            <Button label="Remove" variant="text" color-scheme="secondary" size="small" @onClick="removeFile(a.id)" />
-          </li>
-        </ul>
+        <DropArea size="small" label="Drop files here" link-text="browse" :multiple="true" media-types-text="Any file type" :browse-button-icon="null" @on-upload="addFiles" />
+        <!-- Picked files as tiles: preview, remove. They don't open here: nothing opens over the panel (D-34). -->
+        <FileTiles v-if="files.length" :files="files" label="Files to send" :openable="false" :downloadable="false" removable @remove="removeFile($event.id)" />
         <Checkbox v-if="record && record.type !== 'drawing'" :value="attachPdf" :label="`Attach a PDF of ${record.code}`" size="small" @input="attachPdf = $event" />
         <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">Files over {{ MAIL_SIZE_LIMIT_MB }} MB are delivered by secure link; recipients don't need an account to open them.</span>
       </div>
@@ -89,16 +90,18 @@ import DropArea from '@/componentsV2/DropArea/DropArea.vue';
 import FormV2 from '@/componentsV2/FormV2/FormV2.vue';
 import SlideOverPanel from '~/candidates/SlideOverPanel/SlideOverPanel.vue';
 import { PROJECT, MAIL_SIZE_LIMIT_MB } from '../data/project';
-import { getPerson, getGuests, findPersonByEmail, guessFromEmail, isValidEmail } from '../data/people';
+import { getPerson, getPeople, findPersonByEmail, guessFromEmail, isValidEmail } from '../data/people';
 import { getRecord, recordLabel } from '../data/records';
-import { addGuest, createThread, defaultResponseDue } from '../data/actions';
+import { addGuest, createThread, defaultResponseDue, newAttachment } from '../data/actions';
+import { fileView } from '../view';
+import FileTiles from './FileTiles.vue';
 
-const GUEST_ROLES = ['External consultant', 'Subcontractor', 'Architect or engineer', 'Owner representative', 'Inspector'].map((r) => ({ value: r, label: r }));
 let seq = 0;
+const GUEST_ROLES = ['External consultant', 'Subcontractor', 'Architect or engineer', 'Owner representative', 'Inspector'].map((r) => ({ value: r, label: r }));
 
 export default {
   name: 'ComposePanel',
-  components: { Button, Chip, Checkbox, InputV2, SelectV2, DropArea, FormV2, SlideOverPanel },
+  components: { Button, Chip, Checkbox, InputV2, SelectV2, DropArea, FormV2, SlideOverPanel, FileTiles },
   props: {
     open: { type: Boolean, default: false },
     /** The viewer (sender): a role from data/project.js ROLES */
@@ -110,21 +113,25 @@ export default {
     busy: { type: Boolean, default: false },
   },
   data() {
-    return { GUEST_ROLES, MAIL_SIZE_LIMIT_MB, to: [], cc: '', addEmail: '', addError: '', adding: null, values: {}, attachments: [], attachPdf: false };
+    seq += 1;
+    return { guestEmailId: `compose-guest-email-${seq}`, GUEST_ROLES, MAIL_SIZE_LIMIT_MB, to: [], cc: '', addEmail: '', addError: '', adding: null, values: {}, attachments: [], attachPdf: false };
   },
   computed: {
     record() {
       return this.recordId ? getRecord(this.recordId) : null;
     },
+    files() {
+      return this.attachments.map(fileView);
+    },
     sender() {
       return getPerson(this.role.personId);
     },
-    /** Suggested recipients first (the record's reviewers or distribution list), then every guest. */
+    /** Everyone in the project directory but the sender: suggested first (the record's reviewers or distribution list), then the rest. */
     recipientOptions() {
       const suggested = this.record ? this.record.suggestedRecipientIds || (this.record.assignedToId ? [this.record.assignedToId] : []) : [];
-      const guests = getGuests();
-      const ordered = [...suggested.map((id) => guests.find((g) => g.id === id)).filter(Boolean), ...guests.filter((g) => !suggested.includes(g.id))];
-      return ordered.map((g) => ({ value: g.id, label: `${g.name} · ${g.company}` }));
+      const people = getPeople().filter((p) => p.id !== this.role.personId);
+      const ordered = [...suggested.map((id) => people.find((p) => p.id === id)).filter(Boolean), ...people.filter((p) => !suggested.includes(p.id))];
+      return ordered.map((p) => ({ value: p.id, label: `${p.name} · ${p.company}` }));
     },
     schema() {
       return {
@@ -135,7 +142,11 @@ export default {
             fields: [
               { id: 'subject', type: 'text', label: 'Subject', colSpan: 'full', rules: [{ type: 'required', message: 'Give the message a subject' }] },
               { id: 'dueOn', type: 'date', label: 'Response due', props: { width: 'short' } },
-              { id: 'body', type: 'rich-text', label: 'Message', colSpan: 'full' },
+              {
+                id: 'body', type: 'rich-text', label: 'Message', colSpan: 'full',
+                // Figma Rich Text Editor's tools (P-049); files go in the Attachments section below, not the editor
+                props: { toolbar: { headingSelection: true, addEmoji: true, showUrlLink: true, table: true, todoList: true, undoRedo: false } },
+              },
             ],
           },
         ],
@@ -173,7 +184,7 @@ export default {
         body: '',
       };
     },
-    /** Add by email: a known address joins To at once; an unknown one opens the inline guest form (D-36). */
+    /** Add a guest user: a known address joins To at once; an unknown one opens the inline guest form (D-36). */
     startAdd() {
       const email = this.addEmail.trim().toLowerCase();
       if (!isValidEmail(email)) {
@@ -196,11 +207,7 @@ export default {
       this.addEmail = '';
     },
     addFiles({ files } = {}) {
-      [...(files || [])].forEach((f) => {
-        seq += 1;
-        const sizeMb = Math.round((f.size / 1048576) * 10) / 10;
-        this.attachments.push({ id: `att-new-${seq}`, name: f.name, sizeMb, byLink: sizeMb > MAIL_SIZE_LIMIT_MB });
-      });
+      [...(files || [])].forEach((f) => this.attachments.push(newAttachment(f)));
     },
     removeFile(id) {
       this.attachments = this.attachments.filter((a) => a.id !== id);

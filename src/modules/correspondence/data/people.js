@@ -30,7 +30,7 @@ export function findPersonByEmail(email) {
   return getPeople().find((p) => p.email.toLowerCase() === e) || null;
 }
 
-/** Guest users only (the compose To field lists these; spec §5). */
+/** Guest users only (e.g. assignees outside the company). The compose To field lists everyone (spec §5). */
 export const getGuests = () => getPeople().filter((p) => p.guest);
 
 /** Pre-fill for the inline guest form from an address (spec §5): "m.vance@acoustix.com" → Marcus Vance / Acoustix. */

@@ -35,7 +35,7 @@ Sizes sm / md / lg; open / closing; with and without footer; body loading (the c
 `surface/container`, `surface/overlay`, `border/subtle` (header and footer hairlines), `space-20` (body padding), `space-16` (header and footer gap), `space-64` (header and footer height, matching the comfortable title bar), `radius-0`. Motion: 160ms translate and opacity, none under `prefers-reduced-motion` (no motion tokens exist; needs-token, patterns §5).
 
 ## Behaviour
-Below 640px the panel takes the full width and the footer stays fixed. Focus moves to the title on open and returns to the trigger on close; Esc closes; `role="dialog"`, `aria-modal`, `aria-labelledby` the title. The page behind does not scroll while open. One panel at a time; a second request replaces the first (no stacking, D-36).
+Below 640px the panel takes the full width and the footer stays fixed. Focus moves to the title on open and returns to the trigger on close; Esc closes; `role="dialog"`, `aria-modal`, `aria-labelledby` the title. The page behind does not scroll while open. One panel at a time; a second request replaces the first (no stacking, D-36). Layer `z-index: 40`: above the page, below dialogs that fields inside the panel open (the rich text editor's emoji, link and table pickers, legacy Modal z-50), below ModalV2, dropdowns, tooltips and the FileViewer (F-017).
 
 ## Content
 The title names the task (*Message stakeholder*, *Promote to record*); the primary button is label-only and names the outcome (*Send message*, *Create RFI*).

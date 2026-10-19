@@ -93,3 +93,59 @@ Why it mattered: the design review happens on this page; wrong rails, blank tabs
 How it was caught: one screenshot per frame after composition; the binding audit.
 What changed: the Email page and `_ ☉ Candidates` page; `prototype.figma` on the five screens; records and backlog links. Template follow-up: correct the Tab Navigation Bar key in `spec-to-prototype` §6 (958c3272602e134ab7bea91a97e9526629cc20a1), add "hide optional layers by key pattern" and "classify instances before mutating them", and note the Button fallback. Library follow-ups for design: Project module rails and tools for Communication › Email, Drawings and RFIs; a Company (logomark) top nav at the sm size.
 Case study: Y — clone the reference, retarget by property, and audit bindings; the library's gaps become the design review's agenda.
+
+## F-011 · 2026-10-18 · `yarn shot` assumed Windows; `yarn` itself wasn't on the Mac
+Tags: tooling
+What happened: on a fresh Mac checkout, `yarn` was not installed and `corepack enable` failed (no write access to `/usr/local/bin`); Yarn 1 ran through `corepack yarn@1.22.22 …`. `scripts/screenshot.mjs` defaulted to the Windows Edge path, so every capture would have failed to launch without `EDGE_PATH`.
+Why it mattered: `yarn verify` and `yarn shot` are the done-checks in CLAUDE.md; a setup that can't run them can't verify a screen.
+How it was caught: setting the repo up to run, then the first screenshot on macOS.
+What changed: `scripts/screenshot.mjs` picks the first installed browser (Edge on Windows; Edge, then Chrome, on macOS). Setup note for the playbook: `sudo corepack enable` once, or `corepack yarn@1.22.22 <script>`. Template follow-up: same change in `linarc-prototype-base`.
+Case study: N
+
+## F-012 · 2026-10-18 · `yarn check` runs Yarn's built-in, not the conventions linter
+Tags: tooling
+What happened: under Yarn 1, `yarn check` is a built-in command (dependency integrity) and wins over the `check` script, so it printed "picomatch is wrong version… Found 6 errors" instead of linting. `yarn verify` was unaffected (it calls the script file directly).
+Why it mattered: CLAUDE.md lists `yarn check` as the linter; anyone running it gets unrelated dependency errors and no convention check.
+How it was caught: running the linter after the attachments change.
+What changed: use `yarn run check` (or `node scripts/check-conventions.mjs`); CLAUDE.md updated. Template follow-up: rename the script (e.g. `lint:conventions`) in `linarc-prototype-base`.
+Case study: N
+
+## F-013 · 2026-10-18 · Keys added to the root of `Vue.observable()` are not reactive in Vue 2
+Tags: tooling
+What happened: the file store kept `id → object URL` in `Vue.observable({})` and added keys with `Vue.set`. After a reload the stored files were read back, but tiles never showed their previews: Vue 2 only notifies for keys added to an object reached through a reactive property, and a computed that read a missing key at the root had no dependency to wake.
+Why it mattered: a reply's photo looked lost after any reload.
+How it was caught: the attach → send → reload flow test (`after reload tiles []`).
+What changed: `src/modules/fileStore.js` nests the map (`Vue.observable({ urls: {} })`) and exposes `fileUrl(id)`. Rule of thumb for session-like modules: never `Vue.set` on an observable's root.
+Case study: N
+
+## F-014 · 2026-10-18 · Files attached to a reply vanished once sent; an iframe reports "loaded" for a 404
+Tags: tooling | design-system
+What happened: (1) The thread and RFI composers passed `attachmentIds` of files picked in the demo to `sendMessage`, but only the static file table resolves ids, so the sent reply showed no files at all. New threads already carried their files inline. (2) In the FileViewer, a PDF that 404s still fired the iframe's `load`, so the stage showed the browser's error page instead of the viewer's error state.
+Why it mattered: (1) the demo silently dropped what the user attached; (2) a broken link would look like a blank viewer with no way forward.
+How it was caught: (1) reading `sendMessage` while wiring real attachments; (2) the states test with the request intercepted to 404.
+What changed: (1) `sendMessage` takes `attachments` and stores them inline (`attachmentIds` still works for static files); (2) FileViewer fetches a PDF before showing it and keeps the error state when the iframe's late `load` arrives. Both in D-45's change.
+Case study: N
+
+## F-015 · 2026-10-19 · The rich text editor wasn't the live app's or Figma's; two traps redrawing it
+Tags: design-system | figma
+What happened: the compose panel's Message field (FormV2 `rich-text` → the library's legacy `TextEditorV2`) showed filled navy icons, undo / redo and a bare select, unlike both the live app and Figma's Text Editor. The library checkout here (3.0.71, `feature/figma-code-connect`) has no newer editor; the live app's version is unknown for now. Redrawing the toolbar to Figma with library Buttons (P-049) hit two traps: (1) real `<button>`s take focus on mouse-down, so keys typed right after a click went to the button and a space toggled Bold again, losing text; (2) `bg-surface-input-default` / `border-border-input-default` are not classes (the config maps `DEFAULT`, so `bg-surface-input`), which left the select white in dark mode.
+Why it mattered: reviewers compare the prototype with the live app; an editor that drops what you typed after pressing Bold would fail any test session.
+How it was caught: comparing the user's live-app screenshot with Figma and the code; a typing test that clicked Bold mid-sentence; the dark capture.
+What changed: P-049 (toolbar and surface to Figma, mouse-down prevented on tools, `todoList` honoured, strikethrough; FormV2 `props.toolbar`); the compose panel asks for Figma's tool set. Follow-up: bring in the live app's editor when its library version is known, then recheck parity. Rule of thumb: for a `DEFAULT` token, the class has no `-default` suffix; check `tailwind.config.js`, not the CSS variable name.
+Case study: N
+
+## F-016 · 2026-10-19 · InputV2 never shows an `errorMessage` set by the page
+Tags: design-system
+What happened: the compose panel's *Add by email* passed `state="error"` and `error-message` for an invalid address, but InputV2 only shows `errorMessage` when its own Vuelidate rules fail (`isInvalid` = `$v.$error` for the default variant), so the message never appeared, and `state="error"` colours the helper line only, not the border. Found while realigning the row (the Add button was Button medium 32px next to InputV2 large 40px, aligned to the bottom of the label stack).
+Why it mattered: an invalid address silently did nothing.
+How it was caught: the error-state screenshot after the alignment fix.
+What changed: the panel passes the message as `helper-text` with `state="error"` (shown in the error colour); the row is heading + explanation above a label-less InputV2 (`id` tied to the heading's `<label>`) and Button large, aligned at the top. Library follow-up: InputV2 should show `errorMessage` and an error border whenever `state="error"`, as Figma's Input Field State=Error does.
+Case study: N
+
+## F-017 · 2026-10-19 · The editor's emoji, link and table pickers opened behind the compose panel
+Tags: design-system
+What happened: TextEditorV2 opens its emoji picker, link dialog and table dialog with the legacy `Modal`, mounted on `<body>` at `z-50`. The SlideOverPanel candidate sat at `z-index: 60`, so inside the compose panel the pickers opened behind it (only their left edge showed, under the backdrop). Visible once P-049 put the emoji and table tools in the compose panel's toolbar.
+Why it mattered: the tools looked broken; a picker behind a backdrop can't be used or closed.
+How it was caught: the user's screenshot.
+What changed: SlideOverPanel moves to `z-index: 40` (above the page, whose highest layer is AppLayout's header at z-10; below the legacy Modal, ModalV2 at 9999, dropdowns and tooltips at 2000+, and the FileViewer at 70). Proposal doc's Behaviour line records the layer. Checked: emoji picker and Create Table on top and usable from the drawing's compose panel. Library follow-up: the overlay layers have no scale (z-50, 2000, 9999, 10000 and 10003 in different components); a z-index token scale would stop this recurring.
+Case study: N

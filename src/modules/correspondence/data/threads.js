@@ -4,16 +4,22 @@
 import { session } from '~/modules/session';
 import { TODAY, relDate, dayOf } from './project';
 
-// Attachment: { id, name, sizeMb, byLink } — over MAIL_SIZE_LIMIT_MB goes by secure link (spec §5). `sha256` feeds the
-// Delivery row's expand (Q-09), never the row itself.
+// Attachment: { id, name, sizeMb, byLink, url, thumbnailUrl?, posterUrl? } — over MAIL_SIZE_LIMIT_MB goes by secure link
+// (spec §5). `url` is the file in public/files/ (scripts/make-sample-files.mjs writes the PDFs); files attached in the
+// demo carry no url and are read from the file store (src/modules/fileStore.js). `sha256` feeds the Delivery row's
+// expand (Q-09), never the row itself.
+const sample = (name) => `${import.meta.env.BASE_URL}files/${encodeURIComponent(name)}`;
 const FILES = {
-  'att-a302-snap': { id: 'att-a302-snap', name: 'A-302_Rev3_Grid_B4_Markup.png', sizeMb: 1.8, byLink: false, sha256: '8f4b2e91c0d7a3f5e2189b6a4c7d8e1f0a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d' },
-  'att-site-video': { id: 'att-site-video', name: 'Site_Walk_Corridor3E_Grid_B4.mp4', sizeMb: 45.2, byLink: true, sha256: '3a1f9c8e7d6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a09' },
-  'att-beam-sketch': { id: 'att-beam-sketch', name: 'Apex_W24_Beam_Penetration_Sketch_B4.pdf', sizeMb: 3.4, byLink: false, sha256: 'e7c9d1a2b3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0' },
-  'att-sub088-psu': { id: 'att-sub088-psu', name: 'SUB-088_24V_Power_Supply_Rev1.pdf', sizeMb: 2.1, byLink: false, sha256: '5d2c4b6a8f0e1d3c5b7a9f1e3d5c7b9a1f3e5d7c9b1a3f5e7d9c1b3a5f7e9d1c' },
-  'att-ray-photo': { id: 'att-ray-photo', name: 'IMG_4471_Level2_Door_Frame.jpg', sizeMb: 4.6, byLink: false, sha256: '1b3d5f7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f9b1d3a5c7e9f1b3d5a7c9e1f3b' },
+  'att-a302-snap': { id: 'att-a302-snap', name: 'A-302_Rev3_Grid_B4_Markup.png', sizeMb: 1.8, byLink: false, url: sample('A-302_Rev3_Grid_B4_Markup.png'), thumbnailUrl: sample('A-302_Rev3_Grid_B4_Markup.png'), sha256: '8f4b2e91c0d7a3f5e2189b6a4c7d8e1f0a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d' },
+  'att-site-video': { id: 'att-site-video', name: 'Site_Walk_Corridor3E_Grid_B4.mp4', sizeMb: 45.2, byLink: true, url: sample('Site_Walk_Corridor3E_Grid_B4.mp4'), thumbnailUrl: sample('Site_Walk_Corridor3E_Grid_B4.poster.jpg'), posterUrl: sample('Site_Walk_Corridor3E_Grid_B4.poster.jpg'), sha256: '3a1f9c8e7d6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a09' },
+  'att-beam-sketch': { id: 'att-beam-sketch', name: 'Apex_W24_Beam_Penetration_Sketch_B4.pdf', sizeMb: 3.4, byLink: false, url: sample('Apex_W24_Beam_Penetration_Sketch_B4.pdf'), sha256: 'e7c9d1a2b3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0' },
+  'att-sub088-psu': { id: 'att-sub088-psu', name: 'SUB-088_24V_Power_Supply_Rev1.pdf', sizeMb: 2.1, byLink: false, url: sample('SUB-088_24V_Power_Supply_Rev1.pdf'), sha256: '5d2c4b6a8f0e1d3c5b7a9f1e3d5c7b9a1f3e5d7c9b1a3f5e7d9c1b3a5f7e9d1c' },
+  'att-ray-photo': { id: 'att-ray-photo', name: 'IMG_4471_Level2_Door_Frame.jpg', sizeMb: 4.6, byLink: false, url: sample('IMG_4471_Level2_Door_Frame.jpg'), thumbnailUrl: sample('IMG_4471_Level2_Door_Frame.jpg'), sha256: '1b3d5f7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f9b1d3a5c7e9f1b3d5a7c9e1f3b' },
 };
 export const getFile = (id) => FILES[id] || null;
+
+/** A sample file's URL in public/files/ (also used by the sandbox's inbound samples). */
+export const sampleFileUrl = sample;
 
 export const THREADS = Object.freeze([
   {

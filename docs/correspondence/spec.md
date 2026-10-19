@@ -44,11 +44,11 @@ Triggers: *Email about this markup* on a drawing pin; *Compose* on the Email scr
 Fields, in order. Items marked **today** exist in the current Compose and keep their behaviour.
 1. **Linked record** (new): pre-filled with the host record and its **immutable revision pin** (`Drawing A-302 · Rev 3`); empty when composing from the Email screen. From a pin, the cropped markup preview with sheet, grid and revision sits under it (DrawingPinPreview candidate; Q-13 confirmed nothing exists to reuse); a newer revision is noted (*Superseded by Rev 2*) without changing the pin.
 2. **From** (today): the sender, read-only.
-3. **To** (today, upgraded): guest users, suggested first from the record's distribution list, then the project's guests, shown as person · company · role. **Add by email** (Q-02, settled): an InputV2 row under the select; a pasted address that matches no guest expands the inline guest form (Full name from the address, Company from the domain, Role select) with *Add recipient*; this creates the guest user and adds them to To. Nothing opens over the panel (D-36).
+3. **To** (today, upgraded; changed 2026-10-19, D-46): anyone already in the project directory (team members and existing guest users) except the sender, suggested first from the record's distribution list, shown as person · company. **Add a guest user** (Q-02, settled): under the select, the heading and one line, *Not in the directory yet? Add them by email.*, over an email InputV2 and *Add guest* on one 40px row (an invalid address says *Enter a valid email address* under the input); a known address joins To at once, an unknown one expands the inline guest form (Full name from the address, Company from the domain, Role select) with *Add guest user*, which creates the guest user and adds them to To. Nothing opens over the panel (D-36).
 4. **CC** (today): typed addresses.
 5. **Subject** (today): prefilled `[RMC-04] A-302 Rev 3 — …`, editable. **Response due** (new): short date input, default §7.
 6. **Message** (today): rich text.
-7. **Attachments** (today, upgraded): from device or project files; *Attach record PDF* checkbox when composing from a record. A file over 20 MB, or a pinned drawing, shows the muted note *Delivered by secure link* instead of being refused.
+7. **Attachments** (today, upgraded): from device or project files; *Attach record PDF* checkbox when composing from a record. Picked files show as tiles (preview or file type) with remove; a file over 20 MB, or a pinned drawing, is captioned *By secure link* instead of being refused (D-45). The drop area's button has no icon.
 
 Footer: *Cancel* left, *Send* right (today's label); the button disables while sending. Success closes the panel and shows the new thread (or the tab) with the message and per-recipient delivery. Failure keeps the panel open with an InlineNotice and *Retry*. Closed records can't send (today's rule): the trigger is disabled with a tooltip.
 
@@ -115,9 +115,9 @@ Button *Create RFI*. The number is assigned on creation and shown in the confirm
 | `correspondence-context-dwg` | — | sheet placeholder | — | superseded note on the preview |
 | `correspondence-context-rfi` | Email tab: *No email on this RFI yet* | tab skeleton | Retry in the tab | closed record: Compose disabled |
 | `correspondence-portal` | — | file streaming | send failed + Retry | expired; revoked; *Reply sent* |
-| Compose / Promote panels | — | button disabled | InlineNotice + Retry, panel stays | guest added; *Delivered by secure link* |
+| Compose / Promote panels | — | button disabled | InlineNotice + Retry, panel stays | guest added; *By secure link* |
 
-Copy: *Compose* · *Send* · *Create RFI* · *RFI-143 created · Open RFI* · *Post note* · *Internal team note (hidden from external recipients)* · *Add by email* · *Add recipient* · *Delivered by secure link* · *Update contact and resend* · *Link to record* · *Forward mail here* (copies the project address) · mail footer *Reply to this email to respond in the thread, or open it in Linarc* · *Open in Linarc* · *This link has expired. Send me a new link* · AI tooltip and evidence line as §9. Fictional names only; the demo user is Alex Morgan.
+Copy: *Compose* · *Send* · *Create RFI* · *RFI-143 created · Open RFI* · *Post note* · *Internal team note (hidden from external recipients)* · *Choose recipients* · *Add a guest user* · *Not in the directory yet? Add them by email.* · *Add guest* · *Add guest user* · *By secure link* · *Update contact and resend* · *Link to record* · *Forward mail here* (copies the project address) · mail footer *Reply to this email to respond in the thread, or open it in Linarc* · *Open in Linarc* · *This link has expired. Send me a new link* · AI tooltip and evidence line as §9. Fictional names only; the demo user is Alex Morgan.
 
 ## 12. Follow-ups (not in the MVP)
 

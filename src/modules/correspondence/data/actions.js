@@ -12,11 +12,14 @@ import {
   markLinkReplied,
   setSetting,
 } from '~/modules/session';
-import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, roleById, replyAddress } from './project';
+import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, MAIL_SIZE_LIMIT_MB, roleById, replyAddress } from './project';
 import { findPersonByEmail, getPeople, getPerson, guessFromEmail } from './people';
 import { getRecord, recordLabel } from './records';
-import { getThread, getThreads, nextThreadId } from './threads';
+import { getThread, getThreads, nextThreadId, sampleFileUrl } from './threads';
 import { go } from '~/modules/app/router';
+import { storeFile } from '~/modules/fileStore';
+import { recordPdf, pdfBlob } from '~/modules/mock/pdf';
+import { RFI_STATUS } from '~/modules/app/status';
 
 const uid = (prefix) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
 const nowIso = () => TODAY; // the demo clock stands still; everything created "now" is at TODAY
@@ -37,7 +40,7 @@ export function defaultResponseDue() {
   return relDate(days);
 }
 
-/** Add by email (spec §5, D-36): creates a guest user from an address; returns the existing person if known. */
+/** Add a guest user (spec §5, D-36, D-46): creates a guest user from an address; returns the existing person if known. */
 export function addGuest({ email, name, company, role }) {
   const existing = findPersonByEmail(email);
   if (existing) return existing;
@@ -56,14 +59,45 @@ export function addGuest({ email, name, company, role }) {
 }
 
 /**
+ * A file someone picked to attach (Compose, the thread composer): its description for the session, its bytes in the
+ * file store so it can be previewed, opened and downloaded. Over the mail limit it goes by secure link (spec §5).
+ */
+export function newAttachment(file) {
+  const id = uid('att');
+  const sizeMb = Math.max(0.1, Math.round((file.size / 1048576) * 10) / 10); // the tiles show tenths of a MB
+  storeFile(id, file);
+  return { id, name: file.name, sizeMb, byLink: sizeMb > MAIL_SIZE_LIMIT_MB, stored: true, previewable: /^image\//.test(file.type) };
+}
+
+/** Today's "Attach a PDF of the record", generated as a real PDF (kept in the file store under `id`). */
+function recordPdfAttachment(id, record) {
+  const fields = [
+    ['Title', record.title],
+    ['Spec section', record.spec],
+    ['Status', record.type === 'rfi' && RFI_STATUS[record.status] ? RFI_STATUS[record.status].label : record.revision || ''],
+    ['Ball in court', record.ballInCourt || ''],
+    ['Due', record.dueOn ? record.dueOn.slice(0, 10) : ''],
+    ['Cost impact', record.costImpact || (record.amount ? `$${record.amount.toLocaleString('en-US')}` : '')],
+    ['Schedule impact', record.scheduleImpact || ''],
+    ['Question', record.question || ''],
+  ].filter(([, v]) => v);
+  const pdf = recordPdf({ project: `${PROJECT.name} (${PROJECT.code})`, code: record.code, title: record.title, fields });
+  const blob = pdfBlob(pdf);
+  storeFile(id, blob);
+  return { id, name: `${record.code}.pdf`, sizeMb: Math.max(0.1, Math.round((blob.size / 1048576) * 10) / 10), byLink: false, generated: true, stored: true };
+}
+
+/**
  * Send a message (compose or reply). `recipients` = [{ personId, kind: 'to' | 'cc' }]. Outbound mail from an internal
  * sender puts the thread in Waiting; an inbound one (guest role replying) puts it in Needs action.
  */
-export function sendMessage(threadId, { senderId, body, recipients = [], attachmentIds = [], responseDueAt }) {
+export function sendMessage(threadId, { senderId, body, recipients = [], attachments = [], attachmentIds = [], responseDueAt }) {
   const sender = getPerson(senderId);
   const outbound = sender && !sender.guest;
   const entry = {
-    id: uid('msg'), type: 'message', direction: outbound ? 'outbound' : 'inbound', senderId, sentAt: nowIso(), body, attachmentIds,
+    id: uid('msg'), type: 'message', direction: outbound ? 'outbound' : 'inbound', senderId, sentAt: nowIso(), body,
+    // Files picked in the demo travel inline (they are not in the static file table); static ones by id.
+    ...(attachments.length ? { attachments } : { attachmentIds }),
     recipients: outbound ? recipients.map((r) => ({ ...r, delivery: 'delivered' })) : [],
   };
   appendThreadEntry(threadId, entry);
@@ -89,7 +123,7 @@ export function createThread({ senderId, toIds = [], cc = '', subject, body, att
   const first = toIds.length ? getPerson(toIds[0]) : null;
   const record = linkedRecordIds.length ? getRecord(linkedRecordIds[0]) : null;
   const files = [...attachments];
-  if (attachRecordPdf && record) files.push({ id: `${id}-record-pdf`, name: `${record.code}.pdf`, sizeMb: 0.4, byLink: false, generated: true });
+  if (attachRecordPdf && record) files.push(recordPdfAttachment(uid('att'), record));
   const ccList = cc.split(/[,;\s]+/).filter(Boolean);
   const thread = {
     id,
@@ -196,8 +230,8 @@ export function replyFromLink(link, { body }) {
 
 // Sample files a simulated mail can carry (inline, like files composed in the demo).
 const SAMPLE_FILES = {
-  photo: { name: 'IMG_5120_Site_Photo.jpg', sizeMb: 3.2 },
-  pdf: { name: 'Shop_Drawing_Markup.pdf', sizeMb: 2.4 },
+  photo: { name: 'IMG_5120_Site_Photo.jpg', sizeMb: 3.2, url: sampleFileUrl('IMG_5120_Site_Photo.jpg'), thumbnailUrl: sampleFileUrl('IMG_5120_Site_Photo.jpg') },
+  pdf: { name: 'Shop_Drawing_Markup.pdf', sizeMb: 2.4, url: sampleFileUrl('Shop_Drawing_Markup.pdf') },
 };
 
 /**
@@ -282,6 +316,18 @@ export function inboundSandbox() {
       return { message: `Received on ${id}${mail.to === 'project' ? ' (Unmatched)' : ''}.`, openLabel: 'Open', open: () => go('thread', id) };
     },
   };
+}
+
+/**
+ * A recipient opened or downloaded a file from the secure link page: the sender sees it on the thread's Delivery tab
+ * (the page says "Opening a file is recorded for the sender").
+ */
+export function recordFileOpened(threadId, { file, recipient, action = 'open' }) {
+  const verb = file.byLink && action === 'open' ? 'Streamed' : action === 'download' ? 'Downloaded' : 'Opened';
+  appendThreadAudit(threadId, {
+    id: uid('aud'), at: nowIso(), event: 'ATTACHMENT_DOWNLOADED', actorId: null, actorName: recipient.name, actorEmail: recipient.email,
+    detail: `${verb} ${file.name} from the secure link`, fileId: file.id,
+  });
 }
 
 export const revokeLink = (token, { actorId, threadId }) => {

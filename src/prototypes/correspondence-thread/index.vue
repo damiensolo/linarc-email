@@ -41,7 +41,7 @@
 
           <AiSummary v-if="summary" :groups="summary.groups" :evidence="summary.evidence" :status="summaryStatus" @retry="summaryStatus = 'ready'" @trace="trace" @feedback="feedback" />
 
-          <ThreadStream ref="stream" :entries="entries" :highlight-id="highlightId" @open-attachment="openAttachment" @navigate="openRecord">
+          <ThreadStream ref="stream" :entries="entries" :highlight-id="highlightId" @open-attachment="openFiles" @download-attachment="downloadFile" @navigate="openRecord">
             <template #message-actions="{ entry }">
               <Button
                 v-if="role.internal && entry.direction === 'inbound' && thread.promotion === 'unpromoted'"
@@ -57,7 +57,7 @@
             </template>
           </ThreadStream>
 
-          <Composer ref="composer" :allow-note="role.internal" :busy="write.status === 'loading'" @send="send" />
+          <Composer ref="composer" :allow-note="role.internal" :busy="write.status === 'loading'" @send="send" @open-attachment="openFiles" />
 
           <!-- Below 1024px the right panel's content moves inline at the end (§1). -->
           <section v-if="!isWide" class="flex flex-col gap-space-12">
@@ -83,6 +83,7 @@
         @create="createRfi"
       />
       <FixContactModal :open="!!fixing" :recipient-name="fixingName" :bounce="fixing && fixing.bounce" :busy="write.status === 'loading'" @close="fixing = null" @confirm="resend" />
+      <FileViewer :open="viewer.open" :files="viewer.files" :index.sync="viewer.index" @close="closeFiles" @download="downloadFile" />
     </template>
 
     <template #right-panel>
@@ -110,6 +111,7 @@ import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 import AiSummary from '~/candidates/AiSummary/AiSummary.vue';
 import ThreadStream from '~/candidates/ThreadStream/ThreadStream.vue';
+import FileViewer from '~/candidates/FileViewer/FileViewer.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
@@ -121,6 +123,7 @@ import {
 } from '~/modules/correspondence/data';
 import { threadEntries, summaryView, linkedItems, deliveryRows } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
+import { fileViewing } from '~/modules/correspondence/fileViewing';
 import PromotePanel from '~/modules/correspondence/components/PromotePanel.vue';
 import FixContactModal from '~/modules/correspondence/components/FixContactModal.vue';
 
@@ -195,7 +198,8 @@ export default {
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
   },
-  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
+  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
+  mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
     return {
@@ -280,7 +284,7 @@ export default {
     send({ mode, body, attachments }) {
       const senderId = this.role.personId;
       this.writeThen(
-        () => (mode === 'note' ? postNote(this.id, { senderId, body }) : sendMessage(this.id, { senderId, body, attachmentIds: attachments.map((a) => a.id) })),
+        () => (mode === 'note' ? postNote(this.id, { senderId, body }) : sendMessage(this.id, { senderId, body, attachments })),
         () => {
           if (this.$refs.composer) this.$refs.composer.reset();
           this.notice = { text: mode === 'note' ? 'Note posted for your team.' : 'Sent. Replies land in this thread.' };
@@ -324,9 +328,6 @@ export default {
     },
     feedback() {
       this.notice = { text: 'Thanks. The summary was flagged for review.' };
-    },
-    openAttachment() {
-      this.notice = { text: 'Files open in the viewer in the product; not in this prototype.' };
     },
     openRecord(recordId) {
       const r = getRecord(recordId);

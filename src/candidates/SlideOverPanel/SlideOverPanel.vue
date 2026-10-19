@@ -122,11 +122,14 @@ export default {
 </script>
 
 <style scoped>
-/* Widths are the sizes decided in D-34; no width token exists for panels (needs-token, see the proposal). */
+/* Widths are the sizes decided in D-34; no width token exists for panels (needs-token, see the proposal).
+   Layer 40: above the page (AppLayout's header is z-10) and below the dialogs a field inside the panel opens, such as
+   the rich text editor's emoji, link and table pickers (legacy Modal, z-50, mounted on <body>); at 60 they opened
+   behind the panel (F-017). ModalV2 (9999), dropdowns and tooltips (2000+) and the FileViewer (70) stay above. */
 .sop-root {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 40;
   display: flex;
   justify-content: flex-end;
 }

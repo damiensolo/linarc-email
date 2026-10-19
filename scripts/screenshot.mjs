@@ -16,8 +16,13 @@ if (!slug) {
   process.exit(1);
 }
 
+// The first installed browser wins: Edge on Windows; Edge, then Chrome, on macOS (F-011).
+const CANDIDATES = {
+  win32: ['C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe'],
+  darwin: ['/Applications/Microsoft Edge.app/Contents/MacOS/Microsoft Edge', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'],
+};
 const EDGE =
-  process.env.EDGE_PATH || 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe';
+  process.env.EDGE_PATH || (CANDIDATES[process.platform] || []).find((p) => fs.existsSync(p)) || CANDIDATES.win32[0];
 const widths = widthsArg.split(',').map(Number);
 fs.mkdirSync(outDir, { recursive: true });
 

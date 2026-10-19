@@ -1,7 +1,7 @@
 <template>
   <!-- CANDIDATE 2026-10-16: proposed design-system component, see docs/components/ThreadStream.md (D-17, D-38).
        The entries of an email thread as one hairline list: messages (sender, company, time, ONE delivery signal, body,
-       files, an actions slot), internal team notes (InlineNotice warning; internal role only), system events (muted
+       files as AttachmentThumbnail tiles, an actions slot), internal team notes (InlineNotice warning; internal role only), system events (muted
        row with an in-document link), and a bounce notice under a failed message with an actions slot. No AI summary
        and no composer here (D-38): the screen composes those around it. Entries arrive already resolved (names,
        labels, tones): this component holds no module data. -->
@@ -44,11 +44,15 @@
               <span v-if="entry.resendOf">Resent</span>
             </div>
             <p class="m-0 whitespace-pre-line font-label text-fontsize-14 leading-lineheight-20 text-text-default">{{ entry.body }}</p>
-            <ul v-if="entry.attachments && entry.attachments.length" class="m-0 flex list-none flex-col gap-space-4 p-0">
-              <li v-for="a in entry.attachments" :key="a.id" class="flex flex-wrap items-center gap-space-8 font-label text-fontsize-14 leading-lineheight-20">
-                <Paperclip :size="16" :stroke-width="1.75" class="shrink-0 text-icon-inactive" aria-hidden="true" />
-                <Button :label="a.name" variant="text" color-scheme="primary" size="small" @onClick="$emit('open-attachment', a)" />
-                <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ a.sizeMb }} MB{{ a.byLink ? ' · by secure link' : '' }}</span>
+            <!-- Files: a tile each (preview or file type), captioned with name and size; open steps through the message's files -->
+            <ul v-if="entry.attachments && entry.attachments.length" class="m-0 flex list-none flex-wrap gap-space-12 p-0" :aria-label="`${entry.attachments.length} ${entry.attachments.length === 1 ? 'file' : 'files'}`">
+              <li v-for="(a, i) in entry.attachments" :key="a.id" class="flex w-space-88 flex-col gap-space-4 font-label">
+                <AttachmentThumbnail :name="a.name" :thumbnail-url="a.thumbnailUrl || ''" @open="$emit('open-attachment', a, entry.attachments, i)" @download="$emit('download-attachment', a)" />
+                <span class="flex flex-col text-fontsize-12 leading-lineheight-16">
+                  <span class="truncate text-text-default" :title="a.name">{{ a.name }}</span>
+                  <span class="text-text-subtle">{{ a.sizeMb }} MB</span>
+                  <span v-if="a.byLink" class="text-text-subtle">By secure link</span>
+                </span>
               </li>
             </ul>
             <InlineNotice v-if="entry.bounce && !entry.bounce.resolved" tone="error" title="Delivery failed" :message="`${entry.bounce.email}: ${entry.bounce.reason}`">
@@ -82,18 +86,18 @@
 import Avatar from '@/components/Avatar/Avatar.vue';
 import Button from '@/components/Button/Button.vue';
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
-import { Paperclip } from '@development/linarc-icons';
+import AttachmentThumbnail from '@/componentsV2/AttachmentThumbnail/AttachmentThumbnail.vue';
 import InlineNotice from '~/candidates/InlineNotice/InlineNotice.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 
 export default {
   name: 'ThreadStream',
-  components: { Avatar, Button, StatusChip, Paperclip, InlineNotice, Skeleton },
+  components: { Avatar, Button, StatusChip, AttachmentThumbnail, InlineNotice, Skeleton },
   props: {
     /**
      * Resolved entries, oldest first (README):
      *  message { id, type: 'message', direction, sender: { name, company, initials }, sentAt, body, toText?,
-     *            attachments: [{ id, name, sizeMb, byLink }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }
+     *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }
      *  note    { id, type: 'note', sender, sentAt, body }
      *  event   { id, type: 'event', sentAt, text, recordId? }
      * The screen applies the role before passing entries (an external role never receives notes).
@@ -104,6 +108,7 @@ export default {
     loading: { type: Boolean, default: false },
     emptyText: { type: String, default: 'No messages yet.' },
   },
+  // open-attachment (file, theMessageFiles, index) · download-attachment (file) · navigate (recordId)
   methods: {
     when(iso) {
       return this.$moment(iso).format('D MMM, HH:mm');

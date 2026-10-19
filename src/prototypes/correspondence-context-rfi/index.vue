@@ -68,8 +68,8 @@
                   </div>
                   <Button label="Open in Email" variant="text" color-scheme="primary" size="small" @onClick="go('thread', t.id)" />
                 </header>
-                <ThreadStream :entries="threadEntries(t)" @navigate="openRecord" @open-attachment="openAttachment" />
-                <Composer :ref="`composer-${t.id}`" :allow-note="role.internal" :busy="write.status === 'loading'" @send="(m) => send(t.id, m)" />
+                <ThreadStream :entries="threadEntries(t)" @navigate="openRecord" @open-attachment="openFiles" @download-attachment="downloadFile" />
+                <Composer :ref="`composer-${t.id}`" :allow-note="role.internal" :busy="write.status === 'loading'" @send="(m) => send(t.id, m)" @open-attachment="openFiles" />
               </article>
             </section>
 
@@ -95,6 +95,7 @@
       </LoadRegion>
 
       <ComposePanel v-if="record" :open="composing" :role="role" :record-id="record.id" :busy="write.status === 'loading'" @close="composing = false" @sent="onSent" />
+      <FileViewer :open="viewer.open" :files="viewer.files" :index.sync="viewer.index" @close="closeFiles" @download="downloadFile" />
     </template>
   </AppShell>
 </template>
@@ -108,6 +109,7 @@ import TabNavigation from '@/componentsV2/TabNavigation/TabNavigation.vue';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 import ThreadStream from '~/candidates/ThreadStream/ThreadStream.vue';
+import FileViewer from '~/candidates/FileViewer/FileViewer.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
@@ -117,6 +119,7 @@ import { RFIS, ROLES, currentRole, setRole, getRecord, getPerson, getThread, vie
 import { threadEntries } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
+import { fileViewing } from '~/modules/correspondence/fileViewing';
 
 const RECORD_SCREEN = { rfi: 'rfi', drawing: 'sheet' };
 
@@ -129,7 +132,8 @@ export default {
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
   },
-  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, ThreadStream, Composer, ComposePanel },
+  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, ThreadStream, FileViewer, Composer, ComposePanel },
+  mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
     return {
@@ -232,7 +236,7 @@ export default {
     send(threadId, { mode, body, attachments }) {
       const senderId = this.role.personId;
       this.writeThen(
-        () => (mode === 'note' ? postNote(threadId, { senderId, body }) : sendMessage(threadId, { senderId, body, attachmentIds: attachments.map((a) => a.id) })),
+        () => (mode === 'note' ? postNote(threadId, { senderId, body }) : sendMessage(threadId, { senderId, body, attachments })),
         () => {
           const ref = this.$refs[`composer-${threadId}`];
           const c = Array.isArray(ref) ? ref[0] : ref;
@@ -251,9 +255,6 @@ export default {
       const r = getRecord(recordId);
       const screen = r && RECORD_SCREEN[r.type];
       if (screen && isBuilt(screen)) go(screen, recordId);
-    },
-    openAttachment() {
-      this.notice = { text: 'Files open in the viewer in the product; not in this prototype.' };
     },
     back() {
       if (window.history.length > 1) window.history.back();

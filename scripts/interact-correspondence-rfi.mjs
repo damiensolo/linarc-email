@@ -1,4 +1,4 @@
-// Interaction check for correspondence-context-rfi and the compose panel: Email tab, Compose with Add by email (inline
+// Interaction check for correspondence-context-rfi and the compose panel: Email tab, Compose with Add a guest user (inline
 // guest), rich-text body, send → new thread on the tab; Compose from the Email screen → lands on the new thread;
 // guest role on the RFI. Needs the dev server. Run from the repo root: node scripts/interact-correspondence-rfi.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
@@ -48,23 +48,23 @@ try {
   check((await buttons()).includes('Open in Email'), 'Open in Email link present');
   await page.screenshot({ path: `${out}/rfi-email-tab.png` });
 
-  // --- Compose from the RFI: pinned record, To pre-filled, Add by email → inline guest
+  // --- Compose from the RFI: pinned record, To pre-filled, Add a guest user → inline guest
   await click('Compose');
   await sleep(500);
   check(await has('Linked record') && await has('RFI-143') && await has('Attach a PDF of RFI-143'), 'compose panel open with the RFI pinned and the PDF option');
   const subject = await page.evaluate(() => { const i = document.querySelector('input#fv2-subject'); return i ? i.value : ''; });
   check(subject.startsWith('[RMC-04] RFI-143'), `subject prefilled: ${subject}`);
   await typeInto('name@company.com', 'm.vance@acoustix.com');
-  await click('Add');
+  await click('Add guest');
   await sleep(400);
-  check(await has("isn't a guest on this project yet"), 'unknown address opens the inline guest form');
+  check(await has("isn't in the project directory yet. Add them"), 'unknown address opens the inline guest form');
   const guessed = await page.evaluate(() => [...document.querySelectorAll('input')].filter((i) => i.offsetParent).map((i) => i.value).filter((v) => /Vance|Acoustix/.test(v)));
   check(guessed.length === 2, `name and company guessed from the address: ${guessed.join(' / ')}`);
   await page.evaluate(() => { const i = [...document.querySelectorAll('input')].find((i) => i.value === 'M Vance'); if (i) { i.focus(); i.select(); } });
   await page.keyboard.type('Marcus Vance');
-  await click('Add recipient');
+  await click('Add guest user');
   await sleep(400);
-  check(!(await has("isn't a guest on this project yet")), 'inline form closed after adding');
+  check(!(await has("isn't in the project directory yet. Add them")), 'inline form closed after adding');
   check(await has('Marcus Vance'), 'Marcus Vance is now a recipient');
   await page.screenshot({ path: `${out}/rfi-compose-panel.png` });
   // Body: TipTap editor (contenteditable)
@@ -87,15 +87,15 @@ try {
   check(await has('5 threads') || await has('6 threads'), `list now includes the new thread (${await page.evaluate(() => (document.body.innerText.match(/\d+ threads/) || [''])[0])})`);
   await click('Compose');
   await sleep(700);
-  check(await has('Add by email'), 'compose panel open from the Email screen');
-  const opened = await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose guest users'); if (!i) return false; i.focus(); i.click(); return true; });
+  check(await has('Add a guest user'), 'compose panel open from the Email screen');
+  const opened = await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose recipients'); if (!i) return false; i.focus(); i.click(); return true; });
   check(opened, 'To select opened');
   await sleep(400);
   await click('Elena Rostova, PE · Thornton Structural Engineers', 'li, [role="option"], span, div');
   // Esc here must close only the dropdown (SlideOverPanel ignores Esc while a dropdown inside it is expanded).
   await page.keyboard.press('Escape');
   await sleep(300);
-  check(await has('Add by email'), 'Esc closed the dropdown, not the panel');
+  check(await has('Add a guest user'), 'Esc closed the dropdown, not the panel');
   await page.evaluate(() => { const i = document.querySelector('input#fv2-subject'); i.focus(); });
   await page.keyboard.type('Beam sleeve detail');
   await page.evaluate(() => { const ed = document.querySelector('.ProseMirror, [contenteditable="true"]'); ed.focus(); });

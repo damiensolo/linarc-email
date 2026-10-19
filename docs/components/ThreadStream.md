@@ -16,7 +16,7 @@ The list of entries in a correspondence thread (external messages, internal note
 
 ## Anatomy
 Entries top to bottom (oldest first), each separated by a `border/subtle` hairline, no outline on the list:
-- **Message**: avatar or initials → name, company, time → delivery signal → body → attachment rows (file glyph, name, size, *by link* when streamed) → row action slot (*Promote to record*).
+- **Message**: avatar or initials → name, company, time → delivery signal → body → attachment tiles (library `AttachmentThumbnail`, P-048: preview or file type; caption with name, size and *By secure link*; open in `FileViewer`, D-45) → row action slot (*Promote to record*).
 - **Internal note**: an InlineNotice `warning` with the fixed heading; hidden for external roles.
 - **System event**: a muted single line with an in-document link.
 - **Bounce**: an InlineNotice `error` under the message, with an action slot.
@@ -29,7 +29,7 @@ Entries top to bottom (oldest first), each separated by a `border/subtle` hairli
 | `highlightId` | String | `''` | the entry kept highlighted while a panel acts on it |
 | `loading` | Boolean | `false` | renders skeleton entries (the consumer wraps in LoadRegion) |
 
-Slots: `message-actions` (scoped: entry), `bounce-actions` (scoped: entry), `empty`. Events: `select` (entry), `open-attachment` (file), `navigate` (record code; the screen calls `router.go`).
+Slots: `message-actions` (scoped: entry), `bounce-actions` (scoped: entry), `empty`. Events: `select` (entry), `open-attachment` (file, files, index), `download-attachment` (file), `navigate` (record code; the screen calls `router.go`).
 
 ## States and variants
 Empty (*No messages yet*); loading (three skeleton entries); highlighted entry; external role; both themes.
@@ -38,7 +38,7 @@ Empty (*No messages yet*); loading (three skeleton entries); highlighted entry; 
 `border/subtle`, `text/default`, `text/subtle`, `surface/container`, `surface/warning/low/subtle` and `surface/error/subtle` (through InlineNotice), `space-16` and `space-24` (entry padding), `label/sm/regular`, `label/sm/bold`.
 
 ## Behaviour
-Responsive: metadata wraps under the name at 390px; attachment rows stack. Keyboard: entries are not focus stops; actions and links are. ARIA: `role="list"` / `listitem`; a note announces its heading. Long bodies are not truncated (a thread is read in full); quoted previous messages collapse behind *Show quoted text*.
+Responsive: metadata wraps under the name at 390px; attachment tiles wrap. Keyboard: entries are not focus stops; actions and links are. ARIA: `role="list"` / `listitem`; a note announces its heading. Long bodies are not truncated (a thread is read in full); quoted previous messages collapse behind *Show quoted text*.
 
 ## Content
 Delivery labels from `correspondence/status-model.md`. Note heading: *Internal team note (hidden from external recipients)*. Event copy: *Promoted to RFI-143 by Alex Morgan · View RFI*.

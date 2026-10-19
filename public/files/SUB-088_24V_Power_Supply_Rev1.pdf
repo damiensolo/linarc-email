@@ -1,0 +1,151 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [7 0 R 9 0 R 11 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>
+endobj
+5 0 obj
+<< /Title (SUB-088 24V power supply Rev 1) /Producer (Linarc prototype) >>
+endobj
+6 0 obj
+<< /Length 1467 >>
+stream
+BT 0.35 g /F1 9 Tf 54 750 Td (SUBMITTAL SUB-088 - 08 71 00 Door Hardware) Tj ET
+BT 0.35 g /F1 9 Tf 470 750 Td (Page 1 of 3) Tj ET
+0.5 w 0.6 G [] 0 d 54 742 m 558 742 l S
+BT 0 g /F2 18 Tf 54 700 Td (Card-reader door hardware - 24V power supply) Tj ET
+BT 0.3 g /F1 12 Tf 54 678 Td (Revision 1 - Patient rooms, Level 2) Tj ET
+BT 0.35 g /F2 9 Tf 54 630 Td (Project) Tj ET
+BT 0 g /F1 10 Tf 180 630 Td (Riverside Medical Center - North Tower Expansion \(RMC-04\)) Tj ET
+BT 0.35 g /F2 9 Tf 54 604 Td (Submitted by) Tj ET
+BT 0 g /F1 10 Tf 180 604 Td (Secure Access Hardware Co. - via Vanguard Construction Group) Tj ET
+BT 0.35 g /F2 9 Tf 54 578 Td (Spec section) Tj ET
+BT 0 g /F1 10 Tf 180 578 Td (08 71 00 Door Hardware; 28 13 00 Access Control) Tj ET
+BT 0.35 g /F2 9 Tf 54 552 Td (Revision) Tj ET
+BT 0 g /F1 10 Tf 180 552 Td (Rev 1 supersedes Rev 0 \(12V supply\)) Tj ET
+BT 0.35 g /F2 9 Tf 54 526 Td (Reason) Tj ET
+BT 0 g /F1 10 Tf 180 526 Td (Electrified mortise locks specified at 24VDC; Rev 0 listed a 12VDC supply.) Tj ET
+BT 0.35 g /F2 9 Tf 54 500 Td (Action requested) Tj ET
+BT 0 g /F1 10 Tf 180 500 Td (Owner acknowledgement before hardware fabrication release.) Tj ET
+0.75 w 0.6 G [] 0 d 54 300 504 120 re S
+BT 0.5 g /F2 9 Tf 66 400 Td (REVIEW STAMP) Tj ET
+BT 0.4 g /F1 9 Tf 66 380 Td ([ ] Reviewed - no exceptions   [ ] Make corrections noted   [ ] Revise and resubmit) Tj ET
+BT 0.4 g /F1 9 Tf 66 330 Td (Reviewer: ____________________     Date: ____________) Tj ET
+endstream
+endobj
+7 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
+endobj
+8 0 obj
+<< /Length 2815 >>
+stream
+BT 0.35 g /F1 9 Tf 54 750 Td (SUBMITTAL SUB-088 - 08 71 00 Door Hardware) Tj ET
+BT 0.35 g /F1 9 Tf 470 750 Td (Page 2 of 3) Tj ET
+0.5 w 0.6 G [] 0 d 54 742 m 558 742 l S
+BT 0 g /F2 14 Tf 54 710 Td (Hardware schedule - patient room doors \(excerpt\)) Tj ET
+0.9 g 54 668 504 22 re f
+BT 0 g /F2 9 Tf 60 675 Td (Door) Tj ET
+BT 0 g /F2 9 Tf 146 675 Td (Lock) Tj ET
+BT 0 g /F2 9 Tf 256 675 Td (Reader) Tj ET
+BT 0 g /F2 9 Tf 366 675 Td (Supply) Tj ET
+BT 0 g /F2 9 Tf 476 675 Td (Draw \(A\)) Tj ET
+0.4 w 0.75 G [] 0 d 54 644 m 558 644 l S
+BT 0 g /F1 9 Tf 60 651 Td (L2-201) Tj ET
+BT 0 g /F1 9 Tf 146 651 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 651 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 651 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 651 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 620 m 558 620 l S
+BT 0 g /F1 9 Tf 60 627 Td (L2-203) Tj ET
+BT 0 g /F1 9 Tf 146 627 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 627 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 627 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 627 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 596 m 558 596 l S
+BT 0 g /F1 9 Tf 60 603 Td (L2-205) Tj ET
+BT 0 g /F1 9 Tf 146 603 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 603 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 603 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 603 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 572 m 558 572 l S
+BT 0 g /F1 9 Tf 60 579 Td (L2-207) Tj ET
+BT 0 g /F1 9 Tf 146 579 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 579 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 579 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 579 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 548 m 558 548 l S
+BT 0 g /F1 9 Tf 60 555 Td (L2-209) Tj ET
+BT 0 g /F1 9 Tf 146 555 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 555 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 555 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 555 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 524 m 558 524 l S
+BT 0 g /F1 9 Tf 60 531 Td (L2-211) Tj ET
+BT 0 g /F1 9 Tf 146 531 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 531 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 531 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 531 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 500 m 558 500 l S
+BT 0 g /F1 9 Tf 60 507 Td (L2-213) Tj ET
+BT 0 g /F1 9 Tf 146 507 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 507 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 507 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 507 Td (0.45) Tj ET
+0.4 w 0.75 G [] 0 d 54 476 m 558 476 l S
+BT 0 g /F1 9 Tf 60 483 Td (L2-215) Tj ET
+BT 0 g /F1 9 Tf 146 483 Td (ML20900 EL) Tj ET
+BT 0 g /F1 9 Tf 256 483 Td (R10 iCLASS) Tj ET
+BT 0 g /F1 9 Tf 366 483 Td (PS902 24V) Tj ET
+BT 0 g /F1 9 Tf 476 483 Td (0.45) Tj ET
+BT 0 g /F1 9 Tf 54 420 Td (Rough-in: single-gang box at 48" AFF on the latch side, 6" from the frame \(revised from 42"\).) Tj ET
+BT 0.35 g /F1 9 Tf 54 404 Td (Changed in Rev 1 are the supply and the reader box height; lock hardware is unchanged.) Tj ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 8 0 R >>
+endobj
+10 0 obj
+<< /Length 828 >>
+stream
+BT 0.35 g /F1 9 Tf 54 750 Td (SUBMITTAL SUB-088 - 08 71 00 Door Hardware) Tj ET
+BT 0.35 g /F1 9 Tf 470 750 Td (Page 3 of 3) Tj ET
+0.5 w 0.6 G [] 0 d 54 742 m 558 742 l S
+BT 0 g /F2 14 Tf 54 710 Td (Product data - PS902 power supply) Tj ET
+BT 0 g /F1 10 Tf 54 680 Td (Regulated, filtered 24VDC 2A power supply with fire-alarm interface and battery charging.) Tj ET
+BT 0 g /F1 10 Tf 54 666 Td (Supports up to four electrified locks on independent PTC-protected outputs. UL 294 and UL) Tj ET
+BT 0 g /F1 10 Tf 54 652 Td (603 listed. Enclosure 11" x 11" x 4", mounts above the ceiling within 50 ft of the door,) Tj ET
+BT 0 g /F1 10 Tf 54 638 Td (served from the nearest life-safety branch circuit.) Tj ET
+1 w 0.5 G [] 0 d 54 420 220 160 re S
+0.5 w 0.6 G [] 0 d 74 440 180 120 re S
+BT 0.5 g /F1 9 Tf 120 495 Td (PS902 enclosure) Tj ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 10 0 R >>
+endobj
+xref
+0 12
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000128 00000 n 
+0000000225 00000 n 
+0000000327 00000 n 
+0000000417 00000 n 
+0000001936 00000 n 
+0000002072 00000 n 
+0000004939 00000 n 
+0000005075 00000 n 
+0000005955 00000 n 
+trailer
+<< /Size 12 /Root 1 0 R /Info 5 0 R >>
+startxref
+6093
+%%EOF

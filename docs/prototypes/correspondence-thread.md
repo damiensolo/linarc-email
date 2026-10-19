@@ -24,8 +24,8 @@
 ## Components
 - `AppShell screen="thread" header-size="comfortable"` with the Title Bar / Workflow slot: back (`HeaderToolIcon type="back"`), subject, `Chip` with the thread id, `Status:` triage `StatusChip`, a Confidential chip when restricted.
 - **AiSummary** (candidate): AI `StatusChip` in a focusable span with the §9 `Tooltip`; Decisions / Open questions / Commitments; "Source" buttons trace a bullet to its message (highlight + scroll); evidence line; "Not accurate" feedback.
-- **ThreadStream** (candidate): hairline entries; `Avatar` initials; one delivery signal per message (chip only for Delivery failed); file rows with the paperclip glyph; `InlineNotice warning` for internal notes with the fixed heading; `InlineNotice error` for a bounce with the `bounce-actions` slot; muted event rows with an in-document link; `message-actions` slot carries *Promote to record* (inbound, internal role, unpromoted thread).
-- **Composer** (composition, `src/modules/correspondence/components/Composer.vue`): `SelectV2` mode (Reply to all / Internal team note, internal roles only), FormV2's `TextareaField` standalone, `DropArea` behind an *Attach files* toggle, one button whose label follows the mode; note mode tints the composer.
+- **ThreadStream** (candidate): hairline entries; `Avatar` initials; one delivery signal per message (chip only for Delivery failed); files as `AttachmentThumbnail` tiles (P-048) with a name / size caption, opening in the **FileViewer** candidate (D-45); `InlineNotice warning` for internal notes with the fixed heading; `InlineNotice error` for a bounce with the `bounce-actions` slot; muted event rows with an in-document link; `message-actions` slot carries *Promote to record* (inbound, internal role, unpromoted thread).
+- **Composer** (composition, `src/modules/correspondence/components/Composer.vue`): `SelectV2` mode (Reply to all / Internal team note, internal roles only), FormV2's `TextareaField` standalone, `DropArea` (several files, any type) behind an *Attach files* toggle, the picked files as tiles (`FileTiles.vue`: open, remove; content kept in the file store, `src/modules/fileStore.js`), one button whose label follows the mode; note mode tints the composer.
 - **PromotePanel** (`components/PromotePanel.vue`): **SlideOverPanel** `md` with `FormV2 flat` (Title, Question, Assigned to, Due date `width: 'short'`, one checkbox field per "Include" item). The Question field's slot adds the *Drafted by AI* chip and tooltip until the text is edited (then "Edited"); *Create RFI* stays disabled until the Question field has been visited (D-44).
 - **FixContactModal** (`components/FixContactModal.vue`): `ModalV2` with `InputV2` pre-filled with the suggested address; *Update and resend*.
 - Right panel: `TabNavigation` (Linked items, Delivery for internal roles) over two small local lists; inline at the end below 1024px.
@@ -38,6 +38,9 @@
 | FormV2 `checkbox` with `options` rendered one unlabelled box | One boolean checkbox field per include item, label via `props.checkboxLabel` | — |
 | LoadRegion wraps its slot, so a `gap` on it does not space the sections | Inner column `flex flex-col gap-space-32` | — |
 | A conditional delivery signal (chip only when failed) | Done in ThreadStream's template, no new component | — |
+| Attachments were names only; opening one showed a "not in this prototype" notice | Library `AttachmentThumbnail` for Figma's Image Links Thumbnail; `FileViewer` candidate; real sample files | P-048, D-45 |
+| Files attached to a reply vanished once sent (ids not in the static file table) | Reply files travel inline on the entry, like a new thread's | F-014 |
+| Previews of stored files didn't appear after a reload | `fileStore` keeps its map one level inside `Vue.observable` | F-013 |
 
 ## Verification
 - `yarn verify` passes (conventions + build).
@@ -46,13 +49,19 @@
 - `?latency=fail` → "Couldn't load the thread." with Retry (one-off check); `slow` and `fail-once` share the LoadRegion path verified on the list.
 - Data loop: `node scripts/smoke-correspondence-data.mjs` (F-006).
 
+- Attachments (2026-10-18): `/private/tmp/…/scratchpad/viewer-test.mjs`, `flow-test.mjs`, `states-test.mjs` (one-off, Chrome): tiles and hover; viewer opens on the markup with focus on the name, + + zooms to 150%, → plays the clip (8s, 960 wide), Esc closes and focus returns to the tile; PDF in the browser viewer; reply with a photo → tile → reload → preview and viewer still work; RFI-143 compose with *Attach a PDF* → generated PDF opens; portal open → "Streamed … from the secure link" on the Delivery tab; `.dwg` → No preview; PDF 404 → Couldn't open + Retry; remove a picked file. Light and dark, 1440 and 390, no console errors.
+
+## Sample files
+Mock attachments point at real files in `public/files/` (PLACEHOLDER DATA). PDFs come from `node scripts/make-sample-files.mjs` (`src/modules/mock/pdf.js`); *Attach a PDF of the record* is generated the same way in the browser. The site photos are the Figma Image Links Thumbnail photo (resized and cropped with `sips`), so `IMG_4471_Level2_Door_Frame.jpg` doesn't show a door frame yet: replace it with real project photos when they exist. The A-302 markup is the prototype's own sheet drawing captured at 2x; the site-walk clip (8s, H.264) was recorded from a canvas pan over the site photo in Chrome, with its poster frame.
+
 ## Design flags (for the Figma review, not fixed in code)
+- Attachment tiles have no video marker (P-048); the viewer's stage is dark in light mode; the ✕ stays visible on touch screens. See `docs/components/FileViewer.md` › Open questions.
 - The AI chip in the panel sits between the Question label and its control; Figma may prefer it inline with the label. The slot renders either.
 - `Due date` shows the DatePicker's US format (10/21/2026) while the thread shows "21 Oct"; a locale decision for the library.
 - The thread keeps the hybrid-model line ("Replies from any mail client are kept here · Forward mail here") above the summary; it may belong in the title bar's right side.
 
 ## Findings
-F-008 (lodash.throttle shim; dark badge). Also F-006, F-007 (shared with the list).
+F-008 (lodash.throttle shim; dark badge). Also F-006, F-007 (shared with the list). Attachments: F-011 to F-014.
 
 ## Screenshots
 Scratchpad only (`shots/correspondence-thread-*.png`, `thread-promote-panel.png`, `thread-after-promote.png`, `thread-after-resend.png`, `thread-guest.png`).

@@ -7,6 +7,7 @@
 // screen directly), call `persist()` after each change, and read `session.<key>` from the data modules.
 // Imported by src/main.js before the app mounts, so the overlay is in place before any screen reads the data.
 import Vue from 'vue';
+import { clearFiles } from './fileStore';
 
 const KEY = 'linarc-prototypes:session:v1';
 
@@ -18,7 +19,7 @@ const empty = () => ({
   bookmarks: {}, // mega-menu item id → bookmarked, where the user changed it (nav.js MEGA_MENU holds the default)
   // Correspondence
   settings: {}, // sandbox settings that belong to the demo: `role` (the viewer, D-41)
-  guests: [], // guest users created with Add by email (D-36)
+  guests: [], // guest users created with Add a guest user (D-36, D-46)
   newThreads: [], // threads started in the demo (compose from a record or the Email screen)
   threadEntries: {}, // threadId → entries appended (messages, notes, events)
   threadPatches: {}, // threadId → fields changed (triage, promotion, addLinkedRecordIds, resolvedBounces, …)
@@ -116,5 +117,6 @@ export function resetSession() {
   } catch (e) {
     /* ignore */
   }
-  window.location.reload();
+  // Files attached in the demo go too (their bytes are in IndexedDB, src/modules/fileStore.js).
+  clearFiles().then(() => window.location.reload());
 }
