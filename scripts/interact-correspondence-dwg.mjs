@@ -53,11 +53,14 @@ try {
   check(!(await has('Attach a PDF of')), 'no record PDF option for a drawing');
   await page.screenshot({ path: `${out}/dwg-compose.png` });
   // recipients: suggested first (Kenji, Dave, Elena)
-  await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose recipients'); i.focus(); i.click(); });
+  // RecipientField (D-47): focusing To opens the suggestions
+  await page.evaluate(() => { const i = document.querySelector('.rf input'); i.focus(); });
   await sleep(400);
-  const firstOption = await page.evaluate(() => { const o = [...document.querySelectorAll('[role="option"], li')].find((e) => e.offsetParent && /Kenji|Dave|Elena/.test(e.textContent)); return o ? o.textContent.trim().slice(0, 40) : ''; });
+  const firstOption = await page.evaluate(() => { const o = document.querySelector('[role="listbox"] [role="option"]'); return o ? o.textContent.replace(/\s+/g, ' ').trim().slice(0, 40) : ''; });
   check(/Kenji/.test(firstOption), `suggested recipients first: ${firstOption}`);
-  await click('Kenji Takahashi, AIA · Studio West Architecture', 'li, [role="option"], span, div');
+  await page.evaluate(() => { const o = [...document.querySelectorAll('[role="listbox"] [role="option"]')].find((e) => e.textContent.includes('Kenji Takahashi')); o.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); o.click(); });
+  await sleep(200);
+  check(await page.evaluate(() => [...document.querySelectorAll('.rf-chip')].some((c) => c.textContent.includes('Kenji'))), 'Kenji picked as a To chip');
   await page.keyboard.press('Escape');
   await sleep(300);
   check(await has('Add a guest user'), 'Esc closed the dropdown only');

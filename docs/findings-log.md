@@ -149,3 +149,11 @@ Why it mattered: the tools looked broken; a picker behind a backdrop can't be us
 How it was caught: the user's screenshot.
 What changed: SlideOverPanel moves to `z-index: 40` (above the page, whose highest layer is AppLayout's header at z-10; below the legacy Modal, ModalV2 at 9999, dropdowns and tooltips at 2000+, and the FileViewer at 70). Proposal doc's Behaviour line records the layer. Checked: emoji picker and Create Table on top and usable from the drawing's compose panel. Library follow-up: the overlay layers have no scale (z-50, 2000, 9999, 10000 and 10003 in different components); a z-index token scale would stop this recurring.
 Case study: N
+
+## F-018 · 2026-10-19 · RecipientField: two traps in the parts it reuses
+Tags: design-system
+What happened: (1) MemberCardV2 paints itself selected (blue fill, `#2B76E780`) whenever `index === selectedMemberIndex`; both props default to undefined, so a card placed alone (the chip's *View contact*) always looked selected. (2) Chip and StatusChip Type=Avatar took a photo URL only, while Figma nests a 16px Avatar with initials, and code Avatar had no xs; every recipient without a photo would have had no avatar.
+Why it mattered: a contact card that looks like a selection, and chips missing the avatar the design shows.
+How it was caught: the View contact screenshot; reading the chip anatomy in Figma before building.
+What changed: the candidate passes `:index="0" :selected-member-index="-1"`; P-050 adds Avatar xs, `avatarInitials` on Chip / StatusChip, and an avatar on SelectV2ListItem detailed rows. Library follow-up: MemberCardV2 should treat an undefined selection as none, and its hardcoded colours need tokens (light avatar band in dark).
+Case study: N

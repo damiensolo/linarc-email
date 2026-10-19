@@ -112,11 +112,12 @@ export function sendMessage(threadId, { senderId, body, recipients = [], attachm
 }
 
 /**
- * Compose (spec §5): start a thread from a record, a drawing pin or the Email screen. `toIds` are guest ids (any guest
- * created inline is already in the session), `cc` is typed addresses, `attachments` are resolved file objects
+ * Compose (spec §5): start a thread from a record, a drawing pin or the Email screen. `toIds`, `ccIds`, `bccIds` are
+ * people (any guest created inline is already in the session; Bcc, D-47), `cc` is typed addresses (older callers),
+ * `attachments` are resolved file objects
  * ({ id, name, sizeMb, byLink }); `attachRecordPdf` adds today's "generate a PDF of the record" as a file.
  */
-export function createThread({ senderId, toIds = [], cc = '', subject, body, attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false }) {
+export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc = '', subject, body, attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false }) {
   const id = nextThreadId();
   const at = nowIso();
   const sender = getPerson(senderId);
@@ -124,7 +125,7 @@ export function createThread({ senderId, toIds = [], cc = '', subject, body, att
   const record = linkedRecordIds.length ? getRecord(linkedRecordIds[0]) : null;
   const files = [...attachments];
   if (attachRecordPdf && record) files.push(recordPdfAttachment(uid('att'), record));
-  const ccList = cc.split(/[,;\s]+/).filter(Boolean);
+  const ccList = String(cc || '').split(/[,;\s]+/).filter(Boolean); // typed addresses (older callers)
   const thread = {
     id,
     subject,
@@ -134,7 +135,7 @@ export function createThread({ senderId, toIds = [], cc = '', subject, body, att
     promotedRecordId: null,
     responseDueAt,
     lastActivityAt: at,
-    participantIds: [senderId, ...toIds],
+    participantIds: [senderId, ...toIds, ...ccIds, ...bccIds],
     primaryCompany: first ? first.company : ccList[0] || '',
     trade: record ? record.spec : '',
     estimatedCostImpact: null,
@@ -144,7 +145,12 @@ export function createThread({ senderId, toIds = [], cc = '', subject, body, att
     entries: [
       {
         id: uid('msg'), type: 'message', direction: 'outbound', senderId, sentAt: at, body, attachments: files,
-        recipients: [...toIds.map((personId) => ({ personId, kind: 'to', delivery: 'delivered' })), ...ccList.map((email) => ({ email, kind: 'cc', delivery: 'delivered' }))],
+        recipients: [
+          ...toIds.map((personId) => ({ personId, kind: 'to', delivery: 'delivered' })),
+          ...ccIds.map((personId) => ({ personId, kind: 'cc', delivery: 'delivered' })),
+          ...bccIds.map((personId) => ({ personId, kind: 'bcc', delivery: 'delivered' })),
+          ...ccList.map((email) => ({ email, kind: 'cc', delivery: 'delivered' })),
+        ],
       },
     ],
     audit: [{ id: uid('aud'), at, event: 'SMTP_DISPATCHED', actorId: senderId, detail: `Message sent via the Linarc relay (250 2.0.0 OK)${files.some((f) => f.byLink) ? ' · large files by secure link' : ''}` }],

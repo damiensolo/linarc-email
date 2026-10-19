@@ -30,6 +30,7 @@ Subject · Linked record (code and revision; *Link to record* action when empty)
 | Table, segments, filter panel | existing | `DataGrid`, `DataGridToolbar`, `SegmentedControl` md | quick filters (P-044); DataGrid `loading` (P-034) |
 | Loading and write states | existing (template candidates) | `LoadRegion`, `LoadStatus`, `Skeleton`, `createLoad` | buttons disabled while loading |
 | Forms and inputs | existing | `FormV2` flat, `InputV2`, `SelectV2` (`multiple`, P-041 unchanged), `Textarea`, `TextEditorV2`, `DatePicker`, `Checkbox` | left-aligned; short dates (D-26) |
+| **RecipientField** (To / Cc / Bcc) | candidate (D-47) | typeahead + chips over StatusChip, Avatar xs, SelectV2ListItem, Popover, MemberCardV2 | P-050 (avatar initials, Avatar xs, list-row avatar) |
 | **Add a guest user row** | existing (composition; Q-02 settled, D-46) | heading + one line, `InputV2` (large) + `Button` (large) on one row, opening an inline `FormV2` (name, company, role) | no library change |
 | Upload zone | existing | `DropArea` (P-020) | large-file note is text under it |
 | Tabs (record, right panel) | existing | `TabNavigation` (P-028) | |

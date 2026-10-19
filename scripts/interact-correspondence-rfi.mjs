@@ -88,10 +88,13 @@ try {
   await click('Compose');
   await sleep(700);
   check(await has('Add a guest user'), 'compose panel open from the Email screen');
-  const opened = await page.evaluate(() => { const i = [...document.querySelectorAll('input[role="combobox"]')].find((i) => i.offsetParent && i.placeholder === 'Choose recipients'); if (!i) return false; i.focus(); i.click(); return true; });
-  check(opened, 'To select opened');
+  const opened = await page.evaluate(() => { const i = document.querySelector('.rf input'); if (!i) return false; i.focus(); return true; });
+  check(opened, 'To field focused (RecipientField, D-47)');
   await sleep(400);
-  await click('Elena Rostova, PE · Thornton Structural Engineers', 'li, [role="option"], span, div');
+  await page.evaluate(() => { const o = [...document.querySelectorAll('[role="listbox"] [role="option"]')].find((e) => e.textContent.includes('Elena Rostova')); o.dispatchEvent(new MouseEvent('mousedown', { bubbles: true })); o.click(); });
+  await sleep(200);
+  await page.evaluate(() => { const i = document.querySelector('.rf input'); i.focus(); });
+  await sleep(300);
   // Esc here must close only the dropdown (SlideOverPanel ignores Esc while a dropdown inside it is expanded).
   await page.keyboard.press('Escape');
   await sleep(300);

@@ -24,10 +24,66 @@
         <span class="text-fontsize-14 leading-lineheight-20 text-text-subtle">{{ sender ? `${sender.name} · ${sender.email}` : '' }}</span>
       </div>
 
-      <!-- 3. To (today, upgraded): anyone already in the project directory (team and guest users), suggested first.
-           Someone new is added as a guest user by email, inline (D-36); they then join To. -->
+      <!-- 3–4. To, Cc, Bcc (today's To and CC, upgraded; D-47): RecipientField rows. Typeahead over the project directory
+           (suggested first), chips amber outside the company domain, red when invalid; chips drag between rows or move
+           from their menu. An address nobody in the directory has opens the guest form below for that row (D-36, D-46):
+           only guest users and team members become chips. -->
       <div class="flex flex-col gap-space-8">
-        <SelectV2 v-model="to" label="To" placeholder="Choose recipients" :options="recipientOptions" :multiple="true" :max-visible-tags="2" :visible-item-count="8" />
+        <RecipientField
+          v-model="to"
+          label="To"
+          :contacts="contacts"
+          :internal-domains="internalDomains"
+          :organization-name="organizationName"
+          :show-avatar="false"
+          :allow-unknown="false"
+          unknown-action-label="Add {email} as a guest user…"
+          group="compose"
+          :move-targets="moveTargets('to')"
+          placeholder="Name or email address"
+          :error="hasInvalid('to')"
+          @unknown="startGuest($event, 'to')"
+          @move="moveRecipient"
+        >
+          <template v-if="!showBcc" #trailing>
+            <Button label="Bcc" color-scheme="secondary" variant="text" size="small" native-type="button" @onClick="showBcc = true" />
+          </template>
+        </RecipientField>
+        <RecipientField
+          v-model="cc"
+          label="Cc"
+          :contacts="contacts"
+          :internal-domains="internalDomains"
+          :organization-name="organizationName"
+          :show-avatar="false"
+          :allow-unknown="false"
+          unknown-action-label="Add {email} as a guest user…"
+          group="compose"
+          :move-targets="moveTargets('cc')"
+          :suggest-on-focus="false"
+          :error="hasInvalid('cc')"
+          @unknown="startGuest($event, 'cc')"
+          @move="moveRecipient"
+        />
+        <RecipientField
+          v-if="showBcc"
+          v-model="bcc"
+          label="Bcc"
+          :contacts="contacts"
+          :internal-domains="internalDomains"
+          :organization-name="organizationName"
+          :show-avatar="false"
+          :allow-unknown="false"
+          unknown-action-label="Add {email} as a guest user…"
+          group="compose"
+          :move-targets="moveTargets('bcc')"
+          :suggest-on-focus="false"
+          :error="hasInvalid('bcc')"
+          @unknown="startGuest($event, 'bcc')"
+          @move="moveRecipient"
+        />
+        <!-- A warning that guides (5-ui-patterns.md §3): what is wrong, where, and how to fix it. -->
+        <p v-if="invalidNote" class="m-0 text-fontsize-12 leading-lineheight-16 text-text-error">{{ invalidNote }}</p>
         <div class="flex flex-col gap-space-8 pl-space-12">
           <div class="flex flex-col gap-space-2">
             <label :for="guestEmailId" class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Add a guest user</label>
@@ -40,7 +96,7 @@
           </div>
           <!-- Inline guest form: name and company guessed from the address, role chosen; creates the guest user. -->
           <div v-if="adding" class="flex flex-col gap-space-12 border-l border-border-subtle pl-space-12">
-            <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ adding.email }} isn't in the project directory yet. Add them as a guest user and they can be emailed from any record.</span>
+            <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ adding.email }} isn't in the project directory yet. Add them as a guest user and they can be emailed from any record. They'll be added to {{ ROW_LABEL[guestTarget] }}.</span>
             <div class="grid grid-cols-1 gap-space-12 sm:grid-cols-2">
               <InputV2 v-model="adding.name" label="Full name" placeholder="Full name" />
               <InputV2 v-model="adding.company" label="Company" placeholder="Company" />
@@ -48,14 +104,11 @@
             </div>
             <div class="flex flex-wrap gap-space-8">
               <Button label="Add guest user" color-scheme="primary" variant="solid" size="small" :is-disabled="!adding.name.trim()" @onClick="confirmAdd" />
-              <Button label="Cancel" color-scheme="secondary" variant="minimal" size="small" @onClick="adding = null" />
+              <Button label="Cancel" color-scheme="secondary" variant="minimal" size="small" @onClick="cancelGuest" />
             </div>
           </div>
         </div>
       </div>
-
-      <!-- 4. CC (today) -->
-      <InputV2 v-model="cc" label="CC" placeholder="Addresses, separated by commas" />
 
       <!-- 5–6. Subject, Response due, Message -->
       <FormV2 v-model="values" :schema="schema" :flat="true" mode="manual" label-position="top" :submit-on-enter="false">
@@ -89,6 +142,7 @@ import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
 import DropArea from '@/componentsV2/DropArea/DropArea.vue';
 import FormV2 from '@/componentsV2/FormV2/FormV2.vue';
 import SlideOverPanel from '~/candidates/SlideOverPanel/SlideOverPanel.vue';
+import RecipientField from '~/candidates/RecipientField/RecipientField.vue';
 import { PROJECT, MAIL_SIZE_LIMIT_MB } from '../data/project';
 import { getPerson, getPeople, findPersonByEmail, guessFromEmail, isValidEmail } from '../data/people';
 import { getRecord, recordLabel } from '../data/records';
@@ -97,11 +151,14 @@ import { fileView } from '../view';
 import FileTiles from './FileTiles.vue';
 
 let seq = 0;
+const ROW_LABEL = { to: 'To', cc: 'Cc', bcc: 'Bcc' };
+/** A directory person as RecipientField takes them. */
+const asRecipient = (p) => ({ id: p.id, email: p.email, name: p.name, company: p.company, role: p.role });
 const GUEST_ROLES = ['External consultant', 'Subcontractor', 'Architect or engineer', 'Owner representative', 'Inspector'].map((r) => ({ value: r, label: r }));
 
 export default {
   name: 'ComposePanel',
-  components: { Button, Chip, Checkbox, InputV2, SelectV2, DropArea, FormV2, SlideOverPanel, FileTiles },
+  components: { Button, Chip, Checkbox, InputV2, SelectV2, DropArea, FormV2, SlideOverPanel, RecipientField, FileTiles },
   props: {
     open: { type: Boolean, default: false },
     /** The viewer (sender): a role from data/project.js ROLES */
@@ -114,7 +171,7 @@ export default {
   },
   data() {
     seq += 1;
-    return { guestEmailId: `compose-guest-email-${seq}`, GUEST_ROLES, MAIL_SIZE_LIMIT_MB, to: [], cc: '', addEmail: '', addError: '', adding: null, values: {}, attachments: [], attachPdf: false };
+    return { guestEmailId: `compose-guest-email-${seq}`, GUEST_ROLES, ROW_LABEL, MAIL_SIZE_LIMIT_MB, to: [], cc: [], bcc: [], showBcc: false, guestTarget: 'to', addEmail: '', addError: '', adding: null, values: {}, attachments: [], attachPdf: false };
   },
   computed: {
     record() {
@@ -127,11 +184,26 @@ export default {
       return getPerson(this.role.personId);
     },
     /** Everyone in the project directory but the sender: suggested first (the record's reviewers or distribution list), then the rest. */
-    recipientOptions() {
+    contacts() {
       const suggested = this.record ? this.record.suggestedRecipientIds || (this.record.assignedToId ? [this.record.assignedToId] : []) : [];
       const people = getPeople().filter((p) => p.id !== this.role.personId);
       const ordered = [...suggested.map((id) => people.find((p) => p.id === id)).filter(Boolean), ...people.filter((p) => !suggested.includes(p.id))];
-      return ordered.map((p) => ({ value: p.id, label: `${p.name} · ${p.company}` }));
+      return ordered.map(asRecipient);
+    },
+    /** The sender's company, named in the external chip's tooltip ("Outside Vanguard Construction Group"). */
+    organizationName() {
+      return PROJECT.gc;
+    },
+    /** The company's own domains (the team's addresses): anyone else gets the external chip (D-47). */
+    internalDomains() {
+      return [...new Set(getPeople().filter((p) => !p.guest).map((p) => p.email.split('@')[1].toLowerCase()))];
+    },
+    /** "“dave@apex” in To isn't a valid email address…" for the first invalid chip, or ''. */
+    invalidNote() {
+      const row = ['to', 'cc', 'bcc'].find((k) => this.hasInvalid(k));
+      if (!row) return '';
+      const bad = this[row].find((r) => r.invalid);
+      return `“${bad.email}” in ${ROW_LABEL[row]} isn't a valid email address. Double-click it to fix it, or remove it.`;
     },
     schema() {
       return {
@@ -156,7 +228,7 @@ export default {
       return (this.values.body || '').replace(/<[^>]*>/g, '').trim();
     },
     canSend() {
-      return this.to.length > 0 && !!(this.values.subject || '').trim() && this.bodyText.length > 0;
+      return this.to.length > 0 && !this.invalidNote && !!(this.values.subject || '').trim() && this.bodyText.length > 0;
     },
   },
   watch: {
@@ -171,8 +243,12 @@ export default {
     recordLabel,
     reset() {
       const r = this.record;
-      this.to = r && r.type === 'rfi' && r.assignedToId ? [r.assignedToId] : [];
-      this.cc = '';
+      const assignee = r && r.type === 'rfi' && r.assignedToId ? getPerson(r.assignedToId) : null;
+      this.to = assignee ? [asRecipient(assignee)] : [];
+      this.cc = [];
+      this.bcc = [];
+      this.showBcc = false;
+      this.guestTarget = 'to';
       this.addEmail = '';
       this.addError = '';
       this.adding = null;
@@ -194,17 +270,42 @@ export default {
       this.addError = '';
       const known = findPersonByEmail(email);
       if (known) {
-        if (!this.to.includes(known.id)) this.to = [...this.to, known.id];
+        this.addTo('to', asRecipient(known));
         this.addEmail = '';
         return;
       }
-      this.adding = { email, ...guessFromEmail(email), role: GUEST_ROLES[0].value };
+      this.startGuest({ email }, 'to');
+    },
+    /** An address nobody in the directory has, from the guest row or a recipient row: the inline guest form, pre-filled. */
+    startGuest({ email, name = '' }, row) {
+      const guess = guessFromEmail(email);
+      this.guestTarget = row;
+      this.addEmail = email;
+      this.adding = { email, ...guess, name: name || guess.name, role: GUEST_ROLES[0].value };
+    },
+    cancelGuest() {
+      this.adding = null;
+      this.addEmail = '';
     },
     confirmAdd() {
       const guest = addGuest(this.adding);
-      this.to = [...this.to, guest.id];
+      this.addTo(this.guestTarget, asRecipient(guest));
       this.adding = null;
       this.addEmail = '';
+    },
+    addTo(row, recipient) {
+      if (row === 'bcc') this.showBcc = true;
+      if (!this[row].some((r) => r.email === recipient.email)) this[row] = [...this[row], recipient];
+    },
+    hasInvalid(row) {
+      return this[row].some((r) => r.invalid);
+    },
+    moveTargets(row) {
+      return ['to', 'cc', 'bcc'].filter((k) => k !== row).map((k) => ({ id: k, label: ROW_LABEL[k] }));
+    },
+    /** A chip's "Move to …" (the keyboard and touch alternative to dragging it). */
+    moveRecipient({ recipient, to }) {
+      this.addTo(to, recipient);
     },
     addFiles({ files } = {}) {
       [...(files || [])].forEach((f) => this.attachments.push(newAttachment(f)));
@@ -216,8 +317,9 @@ export default {
       if (!this.canSend || this.busy) return;
       const thread = createThread({
         senderId: this.role.personId,
-        toIds: this.to,
-        cc: this.cc,
+        toIds: this.to.map((r) => r.id),
+        ccIds: this.cc.map((r) => r.id),
+        bccIds: this.bcc.map((r) => r.id),
         subject: this.values.subject.trim().replace(/\s*[—-]\s*$/, ''), // a prefix left as-is loses its trailing dash
         body: this.bodyText,
         attachments: this.attachments,
