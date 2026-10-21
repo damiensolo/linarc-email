@@ -157,3 +157,19 @@ Why it mattered: a contact card that looks like a selection, and chips missing t
 How it was caught: the View contact screenshot; reading the chip anatomy in Figma before building.
 What changed: the candidate passes `:index="0" :selected-member-index="-1"`; P-050 adds Avatar xs, `avatarInitials` on Chip / StatusChip, and an avatar on SelectV2ListItem detailed rows. Library follow-up: MemberCardV2 should treat an undefined selection as none, and its hardcoded colours need tokens (light avatar band in dark).
 Case study: N
+
+## F-019 · 2026-10-20 · Tab count badges were empty circles in dark mode
+Tags: design-system
+What happened: TabNavigation's default count badge (StatusIndicator number, subtle `disabled`) drew its digit in `text-on-surface-default`, which is #131313 in both themes, on `surface-warning-neutral-subtle` (#ffffff1a in dark). In dark the digit disappeared.
+Why it mattered: every tab count in dark (the RFI's Q&A and Watchers, any screen using `count`) read as an empty circle.
+How it was caught: the dark-mode screenshot of the rebuilt RFI at 390 and 1440.
+What changed: P-051, the subtle disabled badge's text is `text-text-default` (unchanged in light). Flagged for design to confirm the Figma variable.
+Case study: N
+
+## F-020 · 2026-10-20 · Session patches replace arrays; a scripted list edit can delete instead of insert
+Tags: process
+What happened: (1) RFI Q&A steps, workflow steps and activity live in `session.patches[id]`, which is a shallow merge: writing `qa` replaces the whole array, so every action reads the current record and writes the full list. (2) While splicing the new RFI records into `records.js` with a script, the slice assignment ran without the new block and removed 49 lines (the RFIs and the end of DRAWINGS); caught at once by `git diff --stat` and restored from HEAD before re-splicing.
+Why it mattered: (1) appending to a patched array in place would not be reactive and would drop earlier demo changes; (2) a silent deletion in mock data breaks every screen.
+How it was caught: (1) by design; (2) printing the lines around the edit.
+What changed: `rfi.js` writes whole arrays through `patchRecord`; large data edits are written to a scratch file and spliced with asserted line anchors.
+Case study: N

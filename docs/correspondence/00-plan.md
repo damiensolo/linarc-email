@@ -40,6 +40,7 @@ In:
 - Compose panel with parity to today's Compose (From, To, CC, Subject, rich text, attachments, Attach record PDF) plus: linked record with revision pin, inline guest creation (Q-02 → an add-by-email row), Response due, large files by link.
 - Inbound mail from outside (Q-06 → yes): the project address, an **Unmatched** view, *Link to record*.
 - Internal notes, Promote to RFI, AI summary (mock), Delivery tab with Link opened / Files downloaded, bounce with a guided fix.
+- The RFI with Email (added 2026-10-20, `rfi-integration.md`, D-48, D-49): the RFI detail as the Figma draws it (Details, Q&A, Workflow, Email, Activity, Watchers), *Add to Q&A* from an emailed answer, workflow moves with *Notify by email*.
 - Notifications (Q-11 → yes) as specified behaviour, not a new screen: three events added to today's Notification preferences (`spec.md` §7); the prototype shows the mail footer and the reply-by-mail path, not the preferences page.
 - DrawingPinPreview as a confirmed candidate (Q-13 → nothing exists in Figma or the Drawings tool); drawn in Figma through the candidate flow (D-15).
 

@@ -6,3 +6,4 @@ export * from './records';
 export * from './threads';
 export * from './links';
 export * from './actions';
+export * from './rfi';

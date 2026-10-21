@@ -52,13 +52,23 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 | `current` | Current | neutral | word |
 | `superseded` | Superseded by Rev N | warning | chip, plus the note on the preview |
 
-### `rfiStatus` (RFI stand-in)
+### `rfiStatus` (RFI; proposed labels for the Figma Status Tag frames, `rfi-integration.md` §G)
 | Value | Label | Tone | Signal |
 |---|---|---|---|
 | `draft` | Draft | neutral | word |
 | `open` | Open | warning | chip |
-| `answered` | Answered | info | chip |
+| `answered` | Answered | info | chip (a response is in review) |
 | `closed` | Closed | success | check |
+| `rejected` | Rejected | error | chip |
+
+### `workflowStep` (RFI › Workflow; `overdue` computed from the step's due date)
+| Value | Label | Tone | Signal |
+|---|---|---|---|
+| `not_started` | Not started | neutral | word |
+| `in_progress` | In progress | info | chip |
+| `overdue` | Overdue | error | chip |
+| `returned` | Returned | warning | chip (Revise sent it back) |
+| `completed` | Completed | success | chip |
 
 ## Where each dimension is read
 
@@ -69,11 +79,14 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 | Thread title bar | `triage` as the `Status:` chip; `visibility` chip only when restricted |
 | ThreadStream entry | `delivery` per message |
 | Linked items | `drawingRevision`, `rfiStatus` |
+| RFI title bar | `rfiStatus` as the `Status:` chip; `sla` chip for Due only when due today or overdue |
+| RFI › Workflow | `workflowStep` per step |
+| RFI › Email tab | `triage` per thread; the tab's count = threads in Needs action |
 | Portal | `drawingRevision` on the pinned sheet; the link's own state (valid / expired / revoked, `spec.md` §10) |
 
 ## Audit event vocabulary (right panel › Delivery)
 
-`SMTP_DISPATCHED`, `SMTP_BOUNCED`, `INBOUND_REPLY_INGESTED`, `INBOUND_UNMATCHED` (mail to the project address with no thread), `RECORD_LINKED`, `MAGIC_LINK_ACCESSED`, `ATTACHMENT_DOWNLOADED`, `RECORD_PROMOTED`, `LINK_REVOKED`, `CONTACT_UPDATED`. Today's product already records per-recipient delivery and failure; the rest is new. Rows show event, actor and time; IP and checksum sit in the row's expand only (Q-09; no export in the MVP).
+`SMTP_DISPATCHED`, `SMTP_BOUNCED`, `INBOUND_REPLY_INGESTED`, `INBOUND_UNMATCHED` (mail to the project address with no thread), `RECORD_LINKED`, `MAGIC_LINK_ACCESSED`, `ATTACHMENT_DOWNLOADED`, `RECORD_PROMOTED`, `LINK_REVOKED`, `CONTACT_UPDATED`, `QA_ADDED` (a message added to an RFI's Q&A, D-49). Today's product already records per-recipient delivery and failure; the rest is new. Rows show event, actor and time; IP and checksum sit in the row's expand only (Q-09; no export in the MVP).
 
 ## Entry types (ThreadStream)
 

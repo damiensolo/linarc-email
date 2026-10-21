@@ -90,12 +90,22 @@ export const DRAWING_REVISION = def([
   ['superseded', 'Superseded', 'warning', 'Signal: chip, plus the note on the preview'],
 ]);
 
-/** RFI stand-in */
+/** RFI (docs/correspondence/rfi-integration.md §G; labels proposed for the Figma Status Tag frames) */
 export const RFI_STATUS = def([
   ['draft', 'Draft', 'neutral', 'Signal: word'],
   ['open', 'Open', 'warning', 'Signal: chip'],
-  ['answered', 'Answered', 'info', 'Signal: chip'],
+  ['answered', 'Answered', 'info', 'Signal: chip (a response is in review)'],
   ['closed', 'Closed', 'success', 'Signal: check'],
+  ['rejected', 'Rejected', 'error', 'Signal: chip'],
+]);
+
+/** RFI workflow step (Create → Respond → Review → Close); `overdue` is computed from the step's due date */
+export const WORKFLOW_STEP = def([
+  ['not_started', 'Not started', 'neutral', 'Signal: word'],
+  ['in_progress', 'In progress', 'info', 'Signal: chip'],
+  ['overdue', 'Overdue', 'error', 'Signal: chip'],
+  ['returned', 'Returned', 'warning', 'Signal: chip (Revise sent it back)'],
+  ['completed', 'Completed', 'success', 'Signal: chip'],
 ]);
 
 /** Delivery-tab event labels (status-model.md › Audit event vocabulary) */
@@ -110,6 +120,7 @@ export const AUDIT_EVENT = def([
   ['RECORD_PROMOTED', 'Promoted to record', 'info'],
   ['LINK_REVOKED', 'Link withdrawn', 'neutral'],
   ['CONTACT_UPDATED', 'Contact updated', 'neutral'],
+  ['QA_ADDED', 'Added to Q&A', 'info'],
 ]);
 
 /** Look up one value safely; an unmapped key is visible during verification instead of silently blank. */

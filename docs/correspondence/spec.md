@@ -14,7 +14,7 @@ The facts the screens need. Open points are **Q-NN** in `00-plan.md` §6; UI rul
 Module **Project** (the template's). Only rails with a built screen are shown:
 - **Communication** › `Email` → `correspondence-list`. Needs action, Waiting, Overdue and Unmatched are segments on the screen.
 - **Drawings** › `Sheets` → `correspondence-context-dwg` (stand-in).
-- **RFIs** › `All RFIs` → `correspondence-context-rfi` (stand-in).
+- **RFIs** › `All RFIs` → `correspondence-context-rfi` (the RFI detail as the Documentation file's ☉ Create RFI page draws it, with Email built in; §8b).
 - The list's primary action is *Compose* (today's name).
 
 ## 3. Who sees what (decided 2026-10-16, D-41)
@@ -94,6 +94,16 @@ From *Promote to record* on an inbound message. SlideOverPanel `md` beside the t
 
 Button *Create RFI*. The number is assigned on creation and shown in the confirmation (*RFI-143 created · Open RFI*). On success: record in the session, a system event in the thread, promotion state Promoted to RFI, confirmation links to `correspondence-context-rfi#RFI-143`. The thread is the RFI's Email tab from then on.
 
+## 8b. The RFI with Email (D-48, D-49; full review in `rfi-integration.md`)
+
+- **Record:** Details (name, type, sequence, priority, location, due date, spec section, reference, schedule and cost impact (cost for `canSeeCost`), ball in court, question, proposed solution, custom details, linked items), **Q&A** (numbered steps: question, responses, comments; each with author, company, time, files, *From email* when filed from a message), **Workflow** (template *Design team RFI*: Create → Respond → Review → Close; parties with company type, process days, in / due / out dates, `workflowStep` status), **Email** (the RFI's threads; count = Needs action). Right panel: **Activity** (record events plus the threads' sent / reply received / link opened / file downloaded / delivery failed rows, each with *Open thread*) and **Watchers** (notification only).
+- **Placement (D-50):** the workflow move is the title bar's action; **Compose** sits at the top of the Email tab (secondary button, with *Email about RFI-n. Replies from any mail client land here.*) and shows only on that tab, so it can't be read as composing an RFI.
+- **Compose on an RFI:** suggestions = current step's parties, then the distribution list, then the directory; To = the ball-in-court party; Subject `[RMC-04] RFI-n — <name>`; Response due = the step's due date; *Attach a PDF* on.
+- **Add to Q&A** (inbound messages, internal roles): panel with Step type (Response when the sender has the ball, else Comment), From, Text (quoted history and sign-off left out and listed), files from the email; *Add as Step n*. Writes the step (`source: email`), a thread event *Added to RFI-n Q&A as Step n by …*, a `QA_ADDED` audit row, an Activity row; a thread in Needs action becomes Resolved. Nothing is sent. The message an RFI was created from is Step 1 (*In Q&A · Step 1*).
+- **Email this** on a Q&A step: Compose to the step's author and the party in hand, the step quoted.
+- **Workflow moves** (tab bar, internal roles, by the step in hand): Respond → **Route** (to Review; the RFI becomes Answered); Review → **Reject** (reason required; Rejected, workflow ends, no email), **Revise** (back to Respond, *Returned*; RFI Open), **Approve** (to Close); Close → **Close** (Closed). Each is a compact ModalV2 naming the next step, its parties and due date. Route and Revise offer **Notify by email** (on by default when a party is outside the company; optional message): one thread to the parties with the RFI pinned, its PDF and Response due.
+- **Closed or rejected RFI:** Compose disabled (*Closed RFIs can't send email*), no Add to Q&A, no response editor.
+
 ## 9. Email screen and the thread's right panel
 
 - **Email screen** (`correspondence-list`): segments All / Needs action / Waiting / Overdue / Unmatched cross-linked with the grid's Filter panel (D-30); quick filters for the segments, Has attachments, Confidential. Columns: `screens.md` §1. Loads through LoadRegion.
@@ -113,7 +123,7 @@ Button *Create RFI*. The number is assigned on creation and shown in the confirm
 | `correspondence-list` | *No email yet. Mail sent from drawings and records, and mail sent to rmc-04@mail.linarc.io, appears here.* | grid skeleton | *Couldn't load the email.* + Retry (LoadRegion wording) | empty segment: the grid's own empty state |
 | `correspondence-thread` | right panel *No linked items* | stream and summary skeletons | *Couldn't load the thread.* + Retry; *Summary unavailable* + Retry | bounce; promoted; linked |
 | `correspondence-context-dwg` | — | sheet placeholder | — | superseded note on the preview |
-| `correspondence-context-rfi` | Email tab: *No email on this RFI yet* | tab skeleton | Retry in the tab | closed record: Compose disabled |
+| `correspondence-context-rfi` | Email tab: *No email on this RFI yet* | tab skeleton | Retry in the tab | closed / rejected: Compose disabled; workflow moves; Add to Q&A panel |
 | `correspondence-portal` | — | file streaming | send failed + Retry | expired; revoked; *Reply sent* |
 | Compose / Promote panels | — | button disabled | InlineNotice + Retry, panel stays | guest added; *By secure link* |
 

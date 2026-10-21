@@ -147,6 +147,7 @@ import { PROJECT, MAIL_SIZE_LIMIT_MB } from '../data/project';
 import { getPerson, getPeople, findPersonByEmail, guessFromEmail, isValidEmail } from '../data/people';
 import { getRecord, recordLabel } from '../data/records';
 import { addGuest, createThread, defaultResponseDue, newAttachment } from '../data/actions';
+import { rfiRecipients } from '../data/rfi';
 import { fileView } from '../view';
 import FileTiles from './FileTiles.vue';
 
@@ -167,6 +168,8 @@ export default {
     recordId: { type: String, default: null },
     /** Drawing pin id when composing from a markup */
     pinId: { type: String, default: null },
+    /** Prefill for a reply started elsewhere, e.g. *Email this* on an RFI Q&A step: `{ toIds?, body? }` */
+    prefill: { type: Object, default: null },
     busy: { type: Boolean, default: false },
   },
   data() {
@@ -183,9 +186,13 @@ export default {
     sender() {
       return getPerson(this.role.personId);
     },
-    /** Everyone in the project directory but the sender: suggested first (the record's reviewers or distribution list), then the rest. */
+    /** On an RFI: the current workflow step's parties, then the distribution list (rfi-integration.md §B). */
+    rfi() {
+      return this.record && this.record.type === 'rfi' && this.record.workflow ? rfiRecipients(this.record, this.role.personId) : null;
+    },
+    /** Everyone in the project directory but the sender: suggested first (the record's reviewers, step parties or distribution list), then the rest. */
     contacts() {
-      const suggested = this.record ? this.record.suggestedRecipientIds || (this.record.assignedToId ? [this.record.assignedToId] : []) : [];
+      const suggested = this.rfi ? this.rfi.suggestedIds : this.record ? this.record.suggestedRecipientIds || (this.record.assignedToId ? [this.record.assignedToId] : []) : [];
       const people = getPeople().filter((p) => p.id !== this.role.personId);
       const ordered = [...suggested.map((id) => people.find((p) => p.id === id)).filter(Boolean), ...people.filter((p) => !suggested.includes(p.id))];
       return ordered.map(asRecipient);
@@ -243,8 +250,10 @@ export default {
     recordLabel,
     reset() {
       const r = this.record;
+      // To: the prefill, else on an RFI the ball-in-court party (the current step's), else nobody.
       const assignee = r && r.type === 'rfi' && r.assignedToId ? getPerson(r.assignedToId) : null;
-      this.to = assignee ? [asRecipient(assignee)] : [];
+      const toIds = (this.prefill && this.prefill.toIds) || (this.rfi ? this.rfi.toIds : assignee ? [assignee.id] : []);
+      this.to = toIds.map(getPerson).filter(Boolean).map(asRecipient);
       this.cc = [];
       this.bcc = [];
       this.showBcc = false;
@@ -255,9 +264,11 @@ export default {
       this.attachments = [];
       this.attachPdf = !!(r && r.type !== 'drawing');
       this.values = {
-        subject: r ? `[${PROJECT.code}] ${recordLabel(r.id)} — ` : `[${PROJECT.code}] `,
-        dueOn: defaultResponseDue().slice(0, 10),
-        body: '',
+        // An RFI's subject carries its name (rfi-integration.md §B); other records leave the topic to the sender.
+        subject: r ? `[${PROJECT.code}] ${recordLabel(r.id)} — ${r.type === 'rfi' ? r.title : ''}` : `[${PROJECT.code}] `,
+        // On an RFI the step's due date (§B), else three working days (spec §7)
+        dueOn: ((this.rfi && this.rfi.dueOn) || defaultResponseDue()).slice(0, 10),
+        body: (this.prefill && this.prefill.body) || '',
       };
     },
     /** Add a guest user: a known address joins To at once; an unknown one opens the inline guest form (D-36). */
