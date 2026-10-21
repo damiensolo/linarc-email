@@ -180,4 +180,11 @@ What happened: (1) The obvious palettes failed contrast: white initials (`text/d
 Why it mattered: (1) illegible initials in one theme; (2) generated images left on the cover page.
 How it was caught: (1) computing contrast for every pair in both themes before choosing; (2) checking the returned node ids' page.
 What changed: (1) Avatar uses charts + on-surface/neutral, minus teal (3.7:1) and red/grey by meaning (P-052); (2) the fills were copied into the slots by image hash and the stray frames removed. Generated photos are face-cropped (prototype files cropped with `sips`; Figma fills with an image transform) so faces read at 24px.
+
+## F-022 · 2026-10-21 · Library work left uncommitted on another machine broke the build here
+Tags: setup, process
+What happened: the linarc-email commits of 2026-10-19 to 2026-10-21 were pushed from the Mac, but the library changes they use (P-048 to P-052, including the new `AttachmentThumbnail`) stayed uncommitted in the Mac's `../linarc-design-components`. After `git pull` on Windows, `yarn verify` failed: `Could not load …/componentsV2/AttachmentThumbnail/AttachmentThumbnail.vue`. Both library copies sat on the same commit (`30871507e`) with their own uncommitted work: 143 files on Windows (P-001 to P-047), the same plus 15 more on the Mac.
+Why it mattered: this repo builds from the sibling library's working tree, so a pull is only complete when the library work it depends on travels with it. A zip of the folder is the only copy of that work until it is committed.
+How it was caught: `yarn verify` after the pull.
+What changed: the Mac folder was zipped and compared three ways (zip, Windows copy, shared HEAD, line endings ignored); the zip turned out to be a strict superset. The library now has the branch `feature/proto-linarc-email` with two commits: P-001 to P-047 as they were on Windows, then P-048 to P-052 from the zip. From now on, library changes are committed on that branch (and pushed) in the same sitting as the linarc-email commit that needs them.
 Case study: N
