@@ -154,7 +154,7 @@ import FileTiles from './FileTiles.vue';
 let seq = 0;
 const ROW_LABEL = { to: 'To', cc: 'Cc', bcc: 'Bcc' };
 /** A directory person as RecipientField takes them. */
-const asRecipient = (p) => ({ id: p.id, email: p.email, name: p.name, company: p.company, role: p.role });
+const asRecipient = (p) => ({ id: p.id, email: p.email, name: p.name, company: p.company, role: p.role, avatarUrl: p.avatarUrl || '' });
 const GUEST_ROLES = ['External consultant', 'Subcontractor', 'Architect or engineer', 'Owner representative', 'Inspector'].map((r) => ({ value: r, label: r }));
 
 export default {

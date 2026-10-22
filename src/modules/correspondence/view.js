@@ -15,7 +15,7 @@ const initials = (name) =>
 
 const personView = (id) => {
   const p = getPerson(id);
-  return p ? { id: p.id, name: p.name, company: p.company, initials: initials(p.name), guest: p.guest } : { id, name: 'Unknown sender', company: '', initials: '?', guest: true };
+  return p ? { id: p.id, name: p.name, company: p.company, initials: initials(p.name), avatarUrl: p.avatarUrl || '', guest: p.guest } : { id, name: 'Unknown sender', company: '', initials: '?', avatarUrl: '', guest: true };
 };
 
 /**

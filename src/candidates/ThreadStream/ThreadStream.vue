@@ -31,7 +31,8 @@
       >
         <!-- Message -->
         <article v-if="entry.type === 'message'" class="flex gap-space-12">
-          <Avatar :full-name-initials="entry.sender.initials" size="sm" shape="circle" class="shrink-0" />
+          <!-- The sender's photo, else initials in a colour of their own (Avatar color="auto", P-052), so senders are told apart. -->
+          <Avatar :img="entry.sender.avatarUrl || undefined" :full-name-initials="entry.sender.initials" color="auto" :color-seed="entry.sender.name" :aria-label="entry.sender.name" size="sm" shape="circle" class="shrink-0" />
           <div class="flex min-w-0 flex-1 flex-col gap-space-8">
             <div class="flex flex-wrap items-baseline gap-x-space-8 gap-y-space-2 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
               <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">{{ entry.sender.name }}</span>
@@ -96,7 +97,7 @@ export default {
   props: {
     /**
      * Resolved entries, oldest first (README):
-     *  message { id, type: 'message', direction, sender: { name, company, initials }, sentAt, body, toText?,
+     *  message { id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, toText?,
      *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }
      *  note    { id, type: 'note', sender, sentAt, body }
      *  event   { id, type: 'event', sentAt, text, recordId? }

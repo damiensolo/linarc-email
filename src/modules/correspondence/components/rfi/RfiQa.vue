@@ -6,7 +6,7 @@
   <div class="flex flex-col gap-space-24 font-label">
     <ol class="m-0 flex list-none flex-col p-0">
       <li v-for="s in steps" :id="`qa-${s.id}`" :key="s.id" class="flex gap-space-12 border-b border-border-subtle py-space-16 first:pt-0">
-        <Avatar :full-name-initials="s.initials" size="sm" shape="circle" class="shrink-0" />
+        <Avatar :img="s.avatarUrl || undefined" :full-name-initials="s.initials" color="auto" :color-seed="s.name" :aria-label="s.name" size="sm" shape="circle" class="shrink-0" />
         <div class="flex min-w-0 flex-1 flex-col gap-space-8">
           <div class="flex flex-wrap items-center gap-x-space-8 gap-y-space-2 text-fontsize-12 leading-lineheight-16 text-text-subtle">
             <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Step {{ s.n }} · {{ s.name }}</span>
@@ -77,6 +77,7 @@ export default {
           n: i + 1,
           name: p.name,
           initials: initials(p.name),
+          avatarUrl: p.avatarUrl || '',
           company: p.company,
           authorId: s.authorId,
           kindLabel: QA_KINDS[s.kind],

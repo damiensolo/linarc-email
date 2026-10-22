@@ -3,17 +3,21 @@
 // (spec §5, D-36) live in the demo session and are merged here.
 import { session } from '~/modules/session';
 
+// Profile photos (AI-generated, fictional people; public/avatars/, same files as the Figma "Persona photos" frame).
+// People without one show initials in the chart palette (Avatar color="auto", P-052).
+const photo = (slug) => `${import.meta.env.BASE_URL}avatars/${slug}.jpg`;
+
 export const PEOPLE = Object.freeze([
   // Vanguard Construction Group (the GC; internal)
-  { id: 'usr-alex', name: 'Alex Morgan', email: 'a.morgan@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'Senior Project Engineer', trade: '01 00 00 · General Requirements', guest: false },
-  { id: 'usr-sarah', name: 'Sarah Jenkins', email: 's.jenkins@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'Project Manager', trade: '01 00 00 · General Requirements', guest: false },
-  { id: 'usr-carlos', name: 'Carlos Reyes', email: 'c.reyes@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'General Superintendent', trade: '01 00 00 · General Requirements', guest: false },
+  { id: 'usr-alex', name: 'Alex Morgan', email: 'a.morgan@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'Senior Project Engineer', trade: '01 00 00 · General Requirements', guest: false, avatarUrl: photo('alex-morgan') },
+  { id: 'usr-sarah', name: 'Sarah Jenkins', email: 's.jenkins@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'Project Manager', trade: '01 00 00 · General Requirements', guest: false, avatarUrl: photo('sarah-jenkins') },
+  { id: 'usr-carlos', name: 'Carlos Reyes', email: 'c.reyes@vanguard-gc.com', company: 'Vanguard Construction Group', role: 'General Superintendent', trade: '01 00 00 · General Requirements', guest: false, avatarUrl: photo('carlos-reyes') },
   // Guest users
-  { id: 'usr-dave', name: 'Dave Miller', email: 'dmiller@apex-mech.com', company: 'Apex Mechanical Systems', role: 'HVAC Project Manager', trade: '23 00 00 · HVAC', guest: true },
+  { id: 'usr-dave', name: 'Dave Miller', email: 'dmiller@apex-mech.com', company: 'Apex Mechanical Systems', role: 'HVAC Project Manager', trade: '23 00 00 · HVAC', guest: true, avatarUrl: photo('dave-miller') },
   { id: 'usr-elena', name: 'Elena Rostova, PE', email: 'erostova@thornton-seor.com', company: 'Thornton Structural Engineers', role: 'Structural Engineer of Record', trade: '05 12 00 · Structural Steel', guest: true },
-  { id: 'usr-kenji', name: 'Kenji Takahashi, AIA', email: 'ktakahashi@studio-arch.com', company: 'Studio West Architecture', role: 'Architect of Record', trade: '00 00 00 · Design Team', guest: true },
+  { id: 'usr-kenji', name: 'Kenji Takahashi, AIA', email: 'ktakahashi@studio-arch.com', company: 'Studio West Architecture', role: 'Architect of Record', trade: '00 00 00 · Design Team', guest: true, avatarUrl: photo('kenji-takahashi') },
   { id: 'usr-valerie', name: 'Valerie Chen', email: 'vchen@riversidehealth.org', company: 'Riverside Health System', role: 'Owner Representative', trade: '00 00 00 · Owner', guest: true },
-  { id: 'usr-ray', name: 'Ray Castellano', email: 'rcastellano@sunstate-drywall.com', company: 'SunState Drywall & Framing', role: 'Framing Foreman', trade: '09 22 16 · Non-Structural Metal Framing', guest: true },
+  { id: 'usr-ray', name: 'Ray Castellano', email: 'rcastellano@sunstate-drywall.com', company: 'SunState Drywall & Framing', role: 'Framing Foreman', trade: '09 22 16 · Non-Structural Metal Framing', guest: true, avatarUrl: photo('ray-castellano') },
 ]);
 
 /** Everyone, including guests added in this session. */

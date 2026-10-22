@@ -173,3 +173,11 @@ Why it mattered: (1) appending to a patched array in place would not be reactive
 How it was caught: (1) by design; (2) printing the lines around the edit.
 What changed: `rfi.js` writes whole arrays through `patchRecord`; large data edits are written to a scratch file and spliced with asserted line anchors.
 Case study: N
+
+## F-021 · 2026-10-21 · Two traps adding avatar colours and photos
+Tags: design-system, figma
+What happened: (1) The obvious palettes failed contrast: white initials (`text/default-invert`, white in both themes) on the chart colours turn unreadable in dark, where the charts are pastel; the accent palette is mid-tone in both themes. Only `text/on-surface/neutral` (white → #131313) works with the charts. (2) Figma `generate_image` with a `nodeId` didn't fill the target: it created new frames on the file's first page (the Thumbnail cover), returning their ids.
+Why it mattered: (1) illegible initials in one theme; (2) generated images left on the cover page.
+How it was caught: (1) computing contrast for every pair in both themes before choosing; (2) checking the returned node ids' page.
+What changed: (1) Avatar uses charts + on-surface/neutral, minus teal (3.7:1) and red/grey by meaning (P-052); (2) the fills were copied into the slots by image hash and the stray frames removed. Generated photos are face-cropped (prototype files cropped with `sips`; Figma fills with an image transform) so faces read at 24px.
+Case study: N
