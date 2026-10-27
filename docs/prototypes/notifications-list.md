@@ -7,7 +7,7 @@
 
 ## Scope
 - **Persona and decision:** GC PM: triage across the project and the team; acknowledge in bulk; see an item's history (`docs/notifications/screens.md` §2). Flow 3, Tasks 4 and 5 (the override is reached from here).
-- **Nav:** no tool, no rail (Q-A2, D-52): `AppShell rail-mode="none"`, opened from the bell's *View all*; the top nav highlights no tool.
+- **Nav:** Project › Communication › **Notifications**, a rail item under Email (Q-A2 resolved by the user on 2026-10-26; the first build was rail-less); also opened from the bell's *View all*.
 - **Data:** `itemsFor(role)` per scope (`src/modules/notifications/data/items.js`), `teamItems` for the Team scope, rows and columns in `src/modules/notifications/listColumns.js`; the `signal` cell slot (`src/modules/notifications/gridSlots.js`) and the Email screen's `sla-due` slot for timing.
 - **Patterns:** list (`5-ui-patterns.md` §1, §8): Title Bar / Page; scope SegmentedControl (My responsibilities · My team · Watching; a guest has none); the views SegmentedControl (Needs action · Waiting · Updates · All) cross-linked with the grid's Filter panel through a hidden `views` column (D-30), quick filters for the views, Critical, Overdue, Not acknowledged, Snoozed and the sources; LoadStatus meta line; DataGrid in a LoadRegion; row checkboxes only on rows the viewer may acknowledge (`:row-selectable`), the grid's own selection toolbar off, one bulk action *Acknowledge n* in the title bar; a row opens its card (ItemCard) in a SlideOverPanel `sm` with every action and *View history*; the row's action button opens the record.
 

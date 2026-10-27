@@ -7,7 +7,7 @@
 
 ## Scope
 - **Persona and decision:** GC PM / PE: choose a preset, adjust delivery per event family and channel, set quiet hours, hand over while away (`docs/notifications/screens.md` §2, spec §9, §11). Flow 3, Task 4.
-- **Nav:** no tool, no rail (D-52); from the drawer's footer and the full page; the back button returns to the full page.
+- **Nav:** the Communication rail with Notifications highlighted (`screens` alias on the rail item); from the drawer's footer and the full page; the back button returns to the full page.
 - **Data:** `preferencesFor`, `savePreferences`, `presetMatrix`, `coverPreview`, `startCover`, `endCover` (`src/modules/notifications/data/actions.js`); `EVENT_FAMILIES`, `CHANNELS`, `CADENCES`, `LOCKED`, `PRESETS`, `PRODUCT_CATALOG` (`policy.js`).
 - **Patterns:** settings form (`5-ui-patterns.md` §1, §7, D-19, D-20, D-25): comfortable title bar with `HeaderToolIcon type="back"`, a centred `max-w-4xl` column, sections separated by white space and hairlines, the fixed bottom panel with Cancel · Save aligned to the column and a LoadStatus write line (*Saving…* / *Saved*). Preset as `Radio`; the matrix as a table of small `SelectV2` cells (Immediate · Digest · Off) with locked cells rendered as text plus *Set by Vanguard Construction Group policy*; quiet hours as `Checkbox` days, two time inputs and a timezone select; cover with a delegate select, two dates, a live preview of covered and excluded items with the reason, *Start cover* / *End cover*; the product's wider catalog behind a disclosure, read-only.
 
