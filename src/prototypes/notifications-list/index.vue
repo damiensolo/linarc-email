@@ -5,12 +5,13 @@
        with the grid's Filter panel (D-30: a view other than All is one "View is …" condition; the views and Critical,
        Overdue, Not acknowledged, Snoozed and the sources are quick filters), a meta line with LoadStatus, the DataGrid
        in a LoadRegion (D-24). Rows are the viewer's projected items (D-55); the Team scope lists each internal person's
-       open obligations with a Person column. Row checkboxes drive one bulk action, Acknowledge, on rows the viewer may
-       acknowledge; the grid's own selection toolbar (cut / copy / paste) stays off. A row opens its card in a
+       open obligations with a Person column. Every row has the grid's checkbox, as in every table; the one bulk action,
+       Acknowledge n, counts the selected rows the viewer may still acknowledge; the grid's own selection toolbar
+       (cut / copy / paste) stays off. A row opens its card in a
        SlideOverPanel (the card's actions and history); the row's action button opens the record. -->
   <AppShell screen="notifications" title="Notifications">
     <template #header-actions>
-      <Button v-if="selected.length" :label="`Acknowledge ${selected.length}`" color-scheme="primary" variant="solid" size="medium" @onClick="acknowledgeSelected" />
+      <Button v-if="acknowledgeable.length" :label="`Acknowledge ${acknowledgeable.length}`" color-scheme="primary" variant="solid" size="medium" @onClick="acknowledgeSelected" />
     </template>
 
     <template #content>
@@ -48,7 +49,6 @@
             :application-should-handle-download="true"
             :row-height="40"
             height="100%"
-            :row-selectable="canSelect"
             :show-selection-toolbar="false"
             :selected-row-ids="selected"
             @selection-change="onSelection"
@@ -144,6 +144,11 @@ export default {
     emptyText() {
       return EMPTY[this.scope];
     },
+    /** Selected rows the viewer may still acknowledge: the bulk action's count (every row stays selectable, as in
+        every table; an acknowledged or watched row simply doesn't count). */
+    acknowledgeable() {
+      return this.selected.filter((key) => (this.rows.find((r) => r.key === key) || {}).canAcknowledge);
+    },
   },
   created() {
     this.fetch();
@@ -173,15 +178,11 @@ export default {
         },
       );
     },
-    /** Only rows the viewer may acknowledge take a checkbox (a stable method, as the grid asks). */
-    canSelect(row) {
-      return !!row.canAcknowledge;
-    },
     onSelection({ selectedRowIds }) {
       this.selected = [...selectedRowIds];
     },
     acknowledgeSelected() {
-      this.selected.forEach((key) => acknowledge(key));
+      this.acknowledgeable.forEach((key) => acknowledge(key));
       this.fetch();
     },
     pickScope(id) {

@@ -115,7 +115,7 @@ Assumed: push deep links restore the destination after sign-in; offline acknowle
 | Archive | the viewer, open Important or any resolved | `presentation = archived` (All view) | an open Critical |
 | Mark as critical, Override | §5 | | |
 
-Every action is a history row (`status-model.md` audit vocabulary). Bulk: Acknowledge only, on the full page, on items the viewer may acknowledge; never bulk override, never bulk approve.
+Every action is a history row (`status-model.md` audit vocabulary). Bulk: Acknowledge only, on the full page; every row is selectable and the count is the selected rows the viewer may still acknowledge; never bulk override, never bulk approve.
 
 ## 9. Ownership, fallback and cover (source: *Ownership and escalation*)
 
