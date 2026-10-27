@@ -97,6 +97,7 @@ import AppShell from '~/modules/app/AppShell.vue';
 import { currentRoute, go } from '~/modules/app/router';
 import { DRAWING_REVISION, toneToChipStatus } from '~/modules/app/status';
 import { DRAWINGS, ROLES, currentRole, setRole, getRecord, getPerson, getThread, viewFor, inboundSandbox } from '~/modules/correspondence/data';
+import { eventsSandbox } from '~/modules/notifications/data';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
 import SheetSvg from '~/modules/correspondence/components/SheetSvg.vue';
 
@@ -108,6 +109,7 @@ export default {
     records: () => DRAWINGS.map((d) => ({ value: d.id, label: `${d.code} · ${d.revision} — ${d.title}` })),
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
+    events: eventsSandbox,
   },
   components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, Popover, LoadRegion, Skeleton, DrawingPinPreview, ComposePanel, SheetSvg },
   data() {

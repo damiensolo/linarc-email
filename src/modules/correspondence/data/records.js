@@ -155,6 +155,53 @@ export const RFIS = Object.freeze([
     closed: false,
     createdInDemo: false,
   },
+  // RFI-139 is in Review: Kenji answered, the response waits for Sarah (PM) to approve. Created by Alex, so the same
+  // obligation is Sarah's Needs action and Alex's Waiting (docs/notifications/00-plan.md §4, Flow 1).
+  {
+    type: 'rfi',
+    id: 'RFI-139',
+    code: 'RFI-139',
+    title: 'Level 1 lobby soffit: recessed linear fixture depth at the reception canopy',
+    status: 'answered',
+    rfiType: 'coordination',
+    priority: 'medium',
+    sequence: 'Level 1 · Lobby',
+    location: 'Level 1 · Reception · Grid C-2',
+    reference: 'A-401 Detail 7 · E-201',
+    spec: '26 51 00 · Interior Lighting',
+    assignedToId: 'usr-sarah',
+    ballInCourt: 'Vanguard Construction Group',
+    dueOn: relDate(3),
+    createdById: 'usr-alex',
+    createdAt: relDate(-8, '14:10:00'),
+    costImpact: 'None anticipated',
+    costAmount: null,
+    scheduleImpact: 'None if answered this week',
+    scheduleDays: 0,
+    question:
+      'A-401 Detail 7 shows the reception canopy soffit at 10" deep; the specified linear fixture (E-201, type L4) needs 12" of recess plus the driver box. Please confirm whether the soffit drops to 12" or the fixture changes to the 9" L4-S variant.',
+    proposedSolution: 'Switch to the L4-S surface-mount variant and keep the 10" soffit; no change to the canopy steel.',
+    customFields: [{ label: 'Discipline', value: 'Electrical' }],
+    answer: null,
+    drawingIds: [],
+    threadId: null,
+    distributionIds: ['usr-kenji', 'usr-sarah'],
+    watcherIds: ['usr-sarah'],
+    qa: [
+      { id: 'qa-139-1', kind: 'question', authorId: 'usr-alex', at: relDate(-8, '14:10:00'), body: null, attachmentIds: [], source: 'linarc' },
+      { id: 'qa-139-2', kind: 'response', authorId: 'usr-kenji', at: relDate(-2, '11:25:00'), attachmentIds: [], source: 'linarc', body: 'Use the L4-S variant and keep the 10" soffit. Revised fixture schedule to follow in the next E-201 issue.' },
+    ],
+    workflow: {
+      template: 'Design team RFI',
+      steps: [
+        { id: 'wf-139-1', action: 'create', partyIds: ['usr-alex'], processDays: 1, inDate: relDate(-8, '14:10:00'), dueDate: relDate(-7), outDate: relDate(-8, '14:15:00'), status: 'completed' },
+        { id: 'wf-139-2', action: 'respond', partyIds: ['usr-kenji'], processDays: 3, inDate: relDate(-8, '14:15:00'), dueDate: relDate(-5), outDate: relDate(-2, '11:25:00'), status: 'completed' },
+        { id: 'wf-139-3', action: 'review', partyIds: ['usr-sarah'], processDays: 2, inDate: relDate(-2, '11:25:00'), dueDate: relDate(3), outDate: null, status: 'in_progress' },
+        { id: 'wf-139-4', action: 'close', partyIds: ['usr-alex'], processDays: 1, inDate: null, dueDate: null, outDate: null, status: 'not_started' },
+      ],
+    },
+    closed: false,
+  },
 ]);
 
 export const SUBMITTALS = Object.freeze([

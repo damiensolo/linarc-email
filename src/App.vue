@@ -47,10 +47,12 @@
         <!-- Last simulated mail, with a link to its thread. -->
         <span v-if="received" class="flex items-center gap-space-8 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
           {{ received.message }}
-          <a href="#" class="text-text-primary" @click.prevent="openReceived">{{ received.openLabel }}</a>
+          <a v-if="received.openLabel" href="#" class="text-text-primary" @click.prevent="openReceived">{{ received.openLabel }}</a>
         </span>
         <!-- Mail from outside the product (prototype.inbound), which the static prototype can't receive for real. -->
         <Button v-if="inbound" label="Simulate inbound email" color-scheme="secondary" variant="outline" size="small" @onClick="inboundOpen = true" />
+        <!-- What the platform would do on its own (prototype.events): a Critical arriving, a reminder, a cover. -->
+        <Button v-if="events" label="Simulate event" color-scheme="secondary" variant="outline" size="small" @onClick="eventOpen = true" />
         <!-- The demo session (src/modules/session.js): back to the starting data. Shown once something changed. -->
         <Button v-if="demoChanged" label="Reset demo data" color-scheme="secondary" variant="outline" size="small" @onClick="resetDemo" />
         <!-- Theme, simulated loading speed (remounts the screen) and the Figma frame. -->
@@ -71,6 +73,7 @@
     </main>
 
     <SimulateInboundModal v-if="inbound" :open="inboundOpen" :config="inbound" @close="inboundOpen = false" @received="onReceived" />
+    <SimulateEventModal v-if="events" :open="eventOpen" :config="events" @close="eventOpen = false" @fired="onFired" />
   </div>
 </template>
 
@@ -78,11 +81,12 @@
 import Button from '@/components/Button/Button.vue';
 import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
 import prototypes from '~/prototypes';
-import { NAVIGATE_EVENT } from '~/modules/app/router';
+import { NAVIGATE_EVENT, go } from '~/modules/app/router';
 import { LATENCY_OPTIONS, latencyScenario } from '~/modules/mock/request';
 import { hasChanges, resetSession } from '~/modules/session';
 import { sandbox } from '~/modules/sandbox';
 import SimulateInboundModal from '~/modules/SimulateInboundModal.vue';
+import SimulateEventModal from '~/modules/SimulateEventModal.vue';
 import SandboxMenu from '~/modules/SandboxMenu.vue';
 
 const THEME_KEY = 'linarc-prototypes:theme';
@@ -93,7 +97,7 @@ function readQuerySlug() {
 
 export default {
   name: 'App',
-  components: { Button, SelectV2, SimulateInboundModal, SandboxMenu },
+  components: { Button, SelectV2, SimulateInboundModal, SimulateEventModal, SandboxMenu },
   data() {
     const slug = readQuerySlug();
     const fallback = (prototypes[0] || {}).slug;
@@ -107,6 +111,7 @@ export default {
       pickerWidth: 0,
       roleKey: '',
       inboundOpen: false,
+      eventOpen: false,
       received: null, // { message, openLabel, open } of the last simulated mail
       mailCount: 0, // bumped on each simulated mail: the screen remounts and loads the new data
     };
@@ -135,6 +140,10 @@ export default {
     /** `prototype.inbound`: the screen accepts simulated mail from outside (Simulate inbound email). */
     inbound() {
       return this.current && this.current.inbound ? this.current.inbound() : null;
+    },
+    /** `prototype.events`: the screen accepts simulated platform events (Simulate event). */
+    events() {
+      return this.current && this.current.events ? this.current.events() : null;
     },
     roleOptions() {
       return this.roles ? this.roles.options : [];
@@ -231,6 +240,15 @@ export default {
       this.inboundOpen = false;
       this.received = result || null;
       this.mailCount += 1;
+    },
+    /** A simulated event: same bar line as a received mail, with a link to the record when there is one. */
+    onFired(result) {
+      this.eventOpen = false;
+      this.received = result
+        ? { message: result.message, openLabel: result.action ? 'Open' : '', open: result.action ? () => go(result.action.screen, result.action.id) : null }
+        : null;
+      // No remount: the bell, the banner and the drawer derive from the session, and a draft on screen must survive
+      // a Critical arriving (docs/notifications/spec.md §7). The screen's own data refreshes on its next navigation.
     },
     openReceived() {
       const { open } = this.received || {};

@@ -7,7 +7,7 @@
     <TopNavBar
       ref="topNav"
       :module="{ ...MODULE, clickToToggle: true, chevronOpen: menuOpen }"
-      :tools="{ items: tools, needBookmarks: true, needCreate: !!QUICK_CREATE, isAdmin: false, selectedColor: ACCENT.text, dropdownOffsetY: MENU_OFFSET }"
+      :tools="{ items: tools, needBookmarks: SHOW.bookmarks, needCreate: SHOW.create && !!QUICK_CREATE, isAdmin: false, selectedColor: ACCENT.text, dropdownOffsetY: MENU_OFFSET }"
       :context="{
         enabled: true,
         primaryLabel: currentProject.label,
@@ -19,11 +19,11 @@
       :overflow="overflow"
       :user-details="USER"
       @tool-click="onTool"
-      @account-click="onAccountClick"
+      @account-click="onAccount"
       @module-click="menuOpen = !menuOpen"
     >
       <!-- Bookmarks menu: the mega-menu items the user bookmarked (DynamicMegaMenu, Figma Mega Menu/Bookmarks). -->
-      <template #bookmarks-dropdown>
+      <template v-if="SHOW.bookmarks" #bookmarks-dropdown>
         <DynamicMegaMenu
           :items="bookmarkedItems"
           :active-module-id="activeMenuItem"
@@ -40,7 +40,7 @@
         </DynamicMegaMenu>
       </template>
       <!-- Create menu: Quick Create Menu (StaticMegaMenu, in flow inside the Create cell's dropdown). -->
-      <template v-if="QUICK_CREATE" #create-dropdown>
+      <template v-if="SHOW.create && QUICK_CREATE" #create-dropdown>
         <StaticMegaMenu :columns="QUICK_CREATE" aria-label="Quick create" @item-click="onCreate">
           <template #item-icon="{ item, iconColor }">
             <component :is="item.icon" :size="20" :stroke-width="1.75" :color="iconColor" />
@@ -69,8 +69,12 @@
       </template>
     </StaticMegaMenu>
 
+    <!-- A Critical that arrived in this session: a nonblocking bar under the top nav (docs/notifications/spec.md §7). -->
+    <NotificationsBanner />
+
     <div class="flex flex-1 min-h-0">
       <SideNavV2
+        v-if="railMode !== 'none'"
         class="hidden md:flex h-full shrink-0"
         :aria-label="currentTool.label"
         :module-list="rail"
@@ -114,6 +118,9 @@
         </template>
       </AppLayout>
     </div>
+
+    <!-- Notifications (the bell): the drawer over the page (docs/notifications/screens.md §1, D-52). -->
+    <NotificationsDrawer :open="ui.drawerOpen" @close="ui.drawerOpen = false" />
   </div>
 </template>
 
@@ -128,13 +135,21 @@ import { MODULE, ACCENT, TOOLS, RAILS, MEGA_MENU, QUICK_CREATE, PROJECTS, CURREN
 import { go, href, isBuilt } from './router';
 import { accountWithSettings, overflowWithSettings, onAccountClick } from '~/modules/sandbox';
 import { session, setBookmark } from '~/modules/session';
+import { currentRole } from '~/modules/correspondence/data';
+import { countsFor } from '~/modules/notifications/data';
+import { ui, openDrawer } from '~/modules/notifications/ui';
+import NotificationsDrawer from '~/modules/notifications/components/NotificationsDrawer.vue';
+import NotificationsBanner from '~/modules/notifications/components/NotificationsBanner.vue';
 
 /** Gap (px) between the top nav and its menus: the module mega menu and the tool dropdowns line up. */
 const MENU_OFFSET = 6;
 
+/** Top-nav controls this prototype doesn't use yet; set to true to bring one back (menus and nav.js config are kept). */
+const SHOW = { bookmarks: false, create: false, message: false };
+
 export default {
   name: 'AppShell',
-  components: { TopNavBar, StaticMegaMenu, DynamicMegaMenu, SideNavV2, AppLayout },
+  components: { TopNavBar, StaticMegaMenu, DynamicMegaMenu, SideNavV2, AppLayout, NotificationsDrawer, NotificationsBanner },
   props: {
     /** Screen name from router.js SCREENS; selects the tool and its rail item. */
     screen: { type: String, required: true },
@@ -148,6 +163,8 @@ export default {
     /** `comfortable` (64px, Title Bar / Workflow Size=Comfortable) on detail and create screens with a back button
         (HeaderToolIcon type="back", D-25); list screens keep the 48px Title Bar / Page (`default`). */
     headerSize: { type: String, default: 'default' },
+    /** `tool` (the rail of the tool that lists the screen) or `none` for a screen outside every tool (Notifications, Q-A2). */
+    railMode: { type: String, default: 'tool' },
   },
   data() {
     // The tool whose rail lists this screen; the first tool otherwise.
@@ -160,8 +177,10 @@ export default {
       PLACES,
       USER,
       MENU_OFFSET,
+      SHOW,
       selectedTool: owner || TOOLS[0].id,
       menuOpen: false,
+      ui,
     };
   },
   computed: {
@@ -192,14 +211,24 @@ export default {
     activeMenuItem() {
       return this.currentTool.menuItem || null;
     },
+    /** The bell's count = distinct Needs action items for the viewer or their cover; its colour says whether a Critical
+        is unacknowledged (warning-high), acknowledged (standby) or none (indeterminate). docs/notifications/spec.md §6. */
     account() {
-      return accountWithSettings({ announcement: true, message: true, chatSupport: true, help: true, notifications: true, profile: true });
+      const c = countsFor(currentRole());
+      const status = c.criticalUnacknowledged ? 'warning-high' : c.critical ? 'standby' : 'indeterminate';
+      const base = accountWithSettings({ announcement: true, message: SHOW.message, chatSupport: true, help: true, notifications: true, profile: true });
+      return {
+        ...base,
+        notificationsBadge: { count: c.bell || undefined, status },
+        ariaLabels: { ...base.ariaLabels, notifications: `Notifications: ${c.bell} need action${c.critical ? `, ${c.critical} critical, ${c.criticalUnacknowledged} not acknowledged` : ''}` },
+      };
     },
     overflow() {
       return overflowWithSettings();
     },
     tools() {
-      return TOOLS.map((t) => ({ ...t, isSelected: t.id === this.selectedTool }));
+      // A rail-less screen (Notifications) belongs to no tool, so none is highlighted.
+      return TOOLS.map((t) => ({ ...t, isSelected: this.railMode !== 'none' && t.id === this.selectedTool }));
     },
     currentTool() {
       return TOOLS.find((t) => t.id === this.selectedTool) || TOOLS[0];
@@ -225,7 +254,11 @@ export default {
     document.removeEventListener('keydown', this.onMenuKeydown);
   },
   methods: {
-    onAccountClick,
+    /** The bell opens the Notifications drawer; the gear toggles the sandbox chrome (sandbox.js). */
+    onAccount(payload) {
+      if (payload && payload.id === 'notifications') openDrawer();
+      else onAccountClick(payload);
+    },
     bookmarkIcon() {
       return Bookmark;
     },

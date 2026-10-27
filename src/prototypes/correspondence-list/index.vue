@@ -92,6 +92,7 @@ import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
 import { go } from '~/modules/app/router';
 import { PROJECT, ROLES, currentRole, setRole, visibleThreads, inboundSandbox, linkableRecords, linkThreadToRecord } from '~/modules/correspondence/data';
+import { eventsSandbox } from '~/modules/notifications/data';
 import { VIEWS, VIEW_FIELD, emailRows, emailColumns, emailQuickFilters } from '~/modules/correspondence/emailColumns';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
 
@@ -115,6 +116,7 @@ export default {
     figma: 'https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4090-93',
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
+    events: eventsSandbox,
   },
   components: { AppShell, Button, DataGrid, ModalV2, SelectV2, SegmentedControl, LoadRegion, LoadStatus, ComposePanel },
   data() {

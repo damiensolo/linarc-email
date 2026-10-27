@@ -9,6 +9,9 @@
  *   inbound  () => ({ senders, destinations, files: [{ value, label }], receive(mail) → { message, openLabel, open } }):
  *            mail from outside the product, for the sandbox's *Simulate inbound email* (src/modules/SimulateInboundModal.vue;
  *            `mail` = { fromId | fromEmail, to, subject, body, file }; the screen remounts after receipt)
+ *   events   () => ({ events: [{ value, label }], fire(id) → { key, message, action } }): what the platform would do on
+ *            its own (a Critical arriving, a reminder, a cover), for the sandbox's *Simulate event*
+ *            (src/modules/SimulateEventModal.vue; the screen remounts after the event)
  *   hidden   true keeps the slug out of the picker (still opens by URL). Slugs starting with `_` are hidden too.
  */
 const modules = import.meta.glob('./*/index.vue', { eager: true });
@@ -24,6 +27,7 @@ export default Object.entries(modules)
       records: meta.records || null,
       roles: meta.roles || null,
       inbound: meta.inbound || null,
+      events: meta.events || null,
       hidden: Boolean(meta.hidden) || slug.startsWith('_'),
       component: mod.default,
     };

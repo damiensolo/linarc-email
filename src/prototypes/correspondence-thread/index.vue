@@ -121,6 +121,7 @@ import {
   PROJECT, ROLES, THREADS, currentRole, setRole, getThread, getThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
   sendMessage, postNote, promoteToRfi, updateContactAndResend,
 } from '~/modules/correspondence/data';
+import { eventsSandbox } from '~/modules/notifications/data';
 import { threadEntries, summaryView, linkedItems, deliveryRows } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
 import { fileViewing } from '~/modules/correspondence/fileViewing';
@@ -197,6 +198,7 @@ export default {
     records: () => getThreads().map((t) => ({ value: t.id, label: `${t.id} · ${t.subject}` })),
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
+    events: eventsSandbox,
   },
   components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
   mixins: [fileViewing],

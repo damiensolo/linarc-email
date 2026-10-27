@@ -21,6 +21,9 @@ export const SCREENS = Object.freeze({
   rfi: 'correspondence-context-rfi',
   sheet: 'correspondence-context-dwg',
   portal: 'correspondence-portal',
+  // Notifications (docs/notifications/screens.md): rail-less screens opened from the bell (D-52)
+  notifications: 'notifications-list',
+  notificationsPrefs: 'notifications-preferences',
 });
 
 const SLUG_TO_SCREEN = Object.fromEntries(Object.entries(SCREENS).map(([screen, slug]) => [slug, screen]));

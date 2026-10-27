@@ -121,6 +121,87 @@ export const AUDIT_EVENT = def([
   ['LINK_REVOKED', 'Link withdrawn', 'neutral'],
   ['CONTACT_UPDATED', 'Contact updated', 'neutral'],
   ['QA_ADDED', 'Added to Q&A', 'info'],
+  // Notifications (docs/notifications/status-model.md › Audit event vocabulary): a card's history rows
+  ['ITEM_CREATED', 'Item created', 'neutral'],
+  ['ITEM_UPDATED', 'Updated', 'neutral'],
+  ['ITEM_RESOLVED', 'Resolved', 'success'],
+  ['ITEM_REOPENED', 'Reopened', 'warning'],
+  ['ACKNOWLEDGED', 'Acknowledged', 'neutral'],
+  ['SNOOZED', 'Snoozed', 'neutral'],
+  ['ASSIGNED', 'Assigned', 'info'],
+  ['FALLBACK_ROUTED', 'Routed to the project fallback', 'warning'],
+  ['COVER_STARTED', 'Cover started', 'neutral'],
+  ['COVER_ENDED', 'Cover ended', 'neutral'],
+  ['SEVERITY_OVERRIDDEN', 'Severity changed', 'warning'],
+  ['MARKED_CRITICAL', 'Marked Critical', 'warning'],
+  ['CHANNEL_SENT', 'Sent', 'neutral'],
+  ['CHANNEL_FAILED', 'Delivery failed', 'error'],
+]);
+
+// ---------------------------------------------------------------------------------------------------------------------
+// Notifications (docs/notifications/status-model.md, D-54, D-55). The dimensions coexist: a card can be Critical + Needs action
+// + Acknowledged + Overdue. Critical is NOT red: `warning` with strong emphasis, the word, and its reason line.
+
+/** Severity of the canonical item (the same for every viewer) */
+export const SEVERITY = def([
+  ['critical', 'Critical', 'warning', 'Signal: chip (strong) + the reason line'],
+  ['important', 'Important', 'neutral', 'Signal: word'],
+  ['update', 'Update', 'neutral', 'Signal: none (the Updates view is the signal)'],
+]);
+
+/** Work status, per accountable party (derived from responsibility, never stored) */
+export const WORK_STATUS = def([
+  ['needs_action', 'Needs action', 'warning', 'Signal: chip'],
+  ['waiting', 'Waiting', 'neutral', 'Signal: word'],
+  ['resolved', 'Resolved', 'success', 'Signal: check'],
+  ['none', '', 'neutral', 'Signal: none (an Update, or watching)'],
+]);
+
+/** Engagement, per viewer */
+export const ENGAGEMENT = def([
+  ['unseen', 'New', 'info', 'Signal: dot'],
+  ['seen', '', 'neutral', 'Signal: none'],
+  ['acknowledged', 'Acknowledged', 'neutral', 'Signal: word with the time'],
+]);
+
+/** Timing of the obligation against today (Overdue is a filter, not a view) */
+export const TIMING = def([
+  ['overdue', 'Overdue', 'error', 'Signal: chip'],
+  ['due_today', 'Due today', 'warning', 'Signal: chip'],
+  ['on_track', 'Due', 'neutral', 'Signal: word with the date'],
+  ['none', '', 'neutral', 'Signal: none'],
+]);
+
+/** Personal presentation */
+export const PRESENTATION = def([
+  ['shown', '', 'neutral', 'Signal: none'],
+  ['snoozed', 'Snoozed', 'neutral', 'Signal: word with the date; stays in the snoozed subtotal of the count'],
+  ['archived', 'Archived', 'neutral', 'Signal: word (All view only)'],
+]);
+
+/** Why this card is in front of this viewer */
+export const ROUTING = def([
+  ['assigned', 'Assigned to you', 'neutral', 'Signal: word'],
+  ['fallback', 'Project fallback: no eligible owner', 'warning', 'Signal: word'],
+  ['covering', 'Covering for', 'neutral', 'Signal: word with the name'],
+  ['requester', 'You asked for this', 'neutral', 'Signal: word'],
+  ['oversight', 'Project oversight', 'neutral', 'Signal: word (PM sees every Critical; never counted)'],
+  ['watching', 'Watching this record', 'neutral', 'Signal: word (never counted)'],
+]);
+
+/** Outcome of a Critical override (audit) */
+export const OVERRIDE_OUTCOME = def([
+  ['false_positive', 'False positive', 'neutral', 'Signal: word'],
+  ['duplicate', 'Duplicate', 'neutral', 'Signal: word'],
+  ['resolved', 'Condition resolved', 'success', 'Signal: check'],
+  ['accepted_risk', 'Accepted risk', 'warning', 'Signal: chip with the review date'],
+]);
+
+/** A channel delivery attempt (View history only); provider acceptance is never acknowledgment */
+export const CHANNEL = def([
+  ['queued', 'Queued', 'neutral', 'Signal: word'],
+  ['sent', 'Sent', 'neutral', 'Signal: word'],
+  ['failed', 'Delivery failed', 'error', 'Signal: chip'],
 ]);
 
 /** Look up one value safely; an unmapped key is visible during verification instead of silently blank. */

@@ -26,6 +26,16 @@ const empty = () => ({
   threadAudit: {}, // threadId → Delivery rows appended
   revokedLinks: {}, // token → true
   linkReplies: {}, // token → true once the recipient replied from the page
+  // Notifications (src/modules/notifications/data/, docs/notifications/spec.md). Items are derived (D-55); only what a person did
+  // is stored, keyed `<itemKey>|<personId>` where it is personal.
+  ntfEngagement: {}, // item|person → { seenAt, acknowledgedAt }
+  ntfPresentation: {}, // item|person → { snoozedUntil, archived }
+  ntfAssignments: {}, // `rfi:<id>:<stepId>` or `thread:<id>` → { toId, byId, at }
+  ntfCritical: {}, // item → a manual Mark as critical { reason, evidence, markedById, markedAt }
+  ntfOverrides: {}, // item → a Critical override { outcome, reason, reviewOn, actorId, at, from, to }
+  ntfHistory: {}, // item → history rows appended (acknowledged, snoozed, assigned, reminders, cover, overrides)
+  ntfCover: {}, // the active cover { forId, byId, from, to, startedAt } (empty when none)
+  ntfPrefs: {}, // personId → { preset, matrix, quiet }
 });
 
 function read() {
@@ -102,6 +112,29 @@ export function revokeLink(token) {
 
 export function markLinkReplied(token) {
   Vue.set(session.linkReplies, token, true);
+  persistSession();
+}
+
+// --- Notifications primitives (flows in src/modules/notifications/data/actions.js).
+
+/** Set one entry of a Notifications map (`ntfEngagement`, `ntfPresentation`, `ntfAssignments`, `ntfCritical`, `ntfOverrides`). */
+export function setNotificationEntry(mapKey, key, value) {
+  Vue.set(session[mapKey], key, value);
+  persistSession();
+}
+
+export function appendNotificationHistory(itemKey, row) {
+  pushTo(session.ntfHistory, itemKey, row);
+  persistSession();
+}
+
+export function setCover(cover) {
+  session.ntfCover = cover || {};
+  persistSession();
+}
+
+export function setPrefs(personId, prefs) {
+  Vue.set(session.ntfPrefs, personId, prefs);
   persistSession();
 }
 

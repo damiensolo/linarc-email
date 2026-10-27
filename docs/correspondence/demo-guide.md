@@ -152,3 +152,50 @@ Scripts: `yarn verify`, `yarn shot <slug>`, `node scripts/smoke-correspondence-d
 Figma: Documentation file, page Email (`4084:9896`); library `_ ☉ Candidates` page for the first four candidates (FileViewer not drawn yet).
 
 Docs: `docs/correspondence/` (plan, spec, status model, screens), `docs/prototypes/` (one record per screen), `docs/components/` (candidate backlog), `docs/4-decisions.md` (D-34 to D-47), `docs/findings-log.md` (F-003 to F-018).
+
+## 9. Notifications (added 2026-10-26): the second thing this app demonstrates
+
+The same prototype now carries the Notifications upgrade (`docs/notifications/`, D-52): the bell on every screen, a drawer, a banner when a Critical arrives, a full page and preferences. It reads the Email data, so everything above is also its demo data. Run it after Act 3, or on its own.
+
+### Act 4 · What needs me, and why (8 min)
+
+Start on **Communication › Email** as *GC project engineer* (Alex).
+
+1. **The bell.** Point at the count and its colour: *1 need action, 1 critical, not acknowledged*. Say: today's drawer is a stream of 1,300 unread events; this one counts obligations, and only mine.
+2. **Open the drawer.** Critical first: *Respond RFI-142*. Read the reason line aloud: *Critical because the lead-lined partition answer is due today and Carlos Reyes confirmed on site that framing at Grid D-7 has stopped.* Then the evidence quote, *Acknowledge by 11:45 · then Carlos Reyes is told*, and *Waiting on Kenji Takahashi* (the question is Kenji's to answer; Alex follows it up).
+3. **Acknowledge it.** The card stays Critical and Due today; the header turns to *1 critical, acknowledged*; the deadline line goes. Ask the room: is it dealt with? (No. Acknowledgment is awareness, never resolution.)
+4. **Tabs.** Needs action: *Reply to Dave Miller*, due today. Waiting: RFI-143 on Elena, RFI-139 on Sarah (*You asked for this*). Switch the sandbox role to *GC project manager*: RFI-139's review is Sarah's Needs action, the same obligation seen from the other side; the Critical sits under *Project oversight* and is not in her count.
+5. **Snooze** (More › Snooze until next Monday) on Dave's reply as Alex: it leaves Needs action, the subtotal says *1 snoozed · still in your count*, the bell stays at 1.
+
+### Act 5 · A Critical arrives while you work (4 min)
+
+On **Drawings › Sheet** as Alex, open Compose and type a line. In the sandbox bar: **Simulate event › Critical: Alex's email to Kenji about RFI-142 bounces**. The bar appears under the top nav, the draft is untouched, the bell reads *2 critical, 1 not acknowledged*. Click *Acknowledge* on the bar: it goes, the item stays in the drawer. Later, *Update contact and resend* on the thread resolves it; the drawer's All view keeps it as Resolved.
+
+### Act 6 · Triage at scale, handing over, changing a Critical (6 min)
+
+As Sarah, bell › *View all* (**Notifications › All notifications**): scopes *My responsibilities · My team · Watching*, views cross-linked with the Filter panel, checkboxes only on rows she may acknowledge → *Acknowledge 3*. A row opens its card with *View history*. Then *Preferences*: the preset sets delivery only; locked cells say *Set by Vanguard Construction Group policy*; under *Out of office: cover* choose Alex: the preview says what he will cover and what stays with her (the Confidential thread). *Start cover*; as Alex the drawer shows *Covering for Sarah Jenkins*. Finally, from *Watching*, RFI-142 › More › *Change severity…*: an outcome, a required reason, and the card now reads *Was Critical · Condition resolved …*; History shows *Severity changed*. Switch to Alex: the option is disabled, *Only a project manager can change a Critical item*.
+
+### Talking points
+
+- **Obligations, not events.** One card per obligation; a reminder adds a history row, never a card (Simulate event › Reminder shows it).
+- **Explainable counts.** The bell says what it counts; snoozed stays in the total; watching and oversight are never counted.
+- **Acknowledge ≠ resolve.** The source record resolves an item; nothing in Notifications closes an RFI.
+- **Email and Notifications are one.** A thread's Needs action, Overdue and Delivery failed and an RFI's step are the same obligations in the drawer, on the Email screen and on the record.
+- **Critical is explained, not shouted.** The reason, the evidence, the acknowledgment clock and the fallback are on the card; only a project manager can change it, with a reason that is kept.
+
+### Questions you will get
+
+- *Can I turn Critical off?* Only its optional channels; a mandatory delivery policy is per event family (the locked cells), and the obligation itself never goes away.
+- *What about finance and safety events?* The catalog is in the preferences' Advanced disclosure; this prototype shows only events whose records exist here (Email, RFIs, drawings).
+- *Where is the phone?* The drawer is a full-width sheet at 390 and the bell is a row in the hamburger drawer; a bottom tab is the proposal's open question.
+
+### Quick reference (Notifications)
+
+| Where | What |
+|---|---|
+| Any Email screen | the bell (count and critical state), the drawer, the banner |
+| `?p=notifications-list` | the full page: scopes, views, bulk Acknowledge, a row's card |
+| `?p=notifications-preferences` | preset, matrix, quiet hours, cover |
+| Sandbox › Simulate event | a Critical bounce, a reminder, a reassignment, a cover start (no remount: a draft survives) |
+| Figma | Documentation file › **Notifications** page (`4187:3492`): 01 drawer · 02 banner · 03 card states · 04 full page · 05 preferences · 06 Change severity |
+| Scripts | `interact-notifications-drawer.mjs` 31/31 · `interact-notifications-list.mjs` 16/16 · `interact-notifications-prefs.mjs` 16/16 · `smoke-notifications-data.mjs` |

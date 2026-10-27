@@ -176,6 +176,7 @@ import {
   RFI_TYPES, WORKFLOW_ACTIONS, currentStep, nextStep, hasExternal, addWorkingDays, rfiThreads, rfiActivity,
   addToQa, postQaStep, routeRfi, approveRfi, reviseRfi, rejectRfi, closeRfi, setWatchers,
 } from '~/modules/correspondence/data';
+import { eventsSandbox } from '~/modules/notifications/data';
 import { threadEntries } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
@@ -198,6 +199,7 @@ export default {
     records: () => RFIS.map((r) => ({ value: r.id, label: `${r.code} · ${r.title}` })),
     roles: () => ({ options: ROLES.map((r) => ({ value: r.id, label: r.label })), value: currentRole().id, set: setRole }),
     inbound: inboundSandbox,
+    events: eventsSandbox,
   },
   components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, SelectV2, LoadRegion, Skeleton, ThreadStream, FileViewer, Composer, ComposePanel, AddToQaPanel, RouteModal, RfiDetails, RfiQa, RfiWorkflow, RfiActivity },
   mixins: [fileViewing],

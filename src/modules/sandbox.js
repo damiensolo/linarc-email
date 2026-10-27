@@ -1,5 +1,5 @@
 import Vue from 'vue';
-import { HelpCircle, LogOut, Settings } from '@development/linarc-icons';
+import { Bell, HelpCircle, LogOut, Settings } from '@development/linarc-icons';
 
 // Sandbox chrome visibility (the "Prototypes" bar in App.vue). Toggled by the settings gear in each screen's
 // top nav (account rail, P-045; the hamburger drawer on narrow screens). Remembered per browser; ?chrome=0 starts hidden.
@@ -38,6 +38,8 @@ export function accountWithSettings(show) {
 export function overflowWithSettings() {
   return {
     actions: [
+      // The phone's way to the bell (the desktop account rail is hidden in hamburger mode); AppShell handles the id.
+      { id: 'notifications', label: 'Notifications', icon: Bell },
       { id: 'help', label: 'Help', icon: HelpCircle },
       { id: 'settings', label: sandbox.controls ? 'Hide prototype controls' : 'Show prototype controls', icon: Settings },
       { id: 'logout', label: 'Logout', icon: LogOut },
