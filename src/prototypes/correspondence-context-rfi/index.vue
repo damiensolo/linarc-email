@@ -90,7 +90,7 @@
                   <template #message-actions="{ entry }">
                     <template v-if="role.internal && entry.direction === 'inbound'">
                       <Button v-if="qaStepOf(entry.id)" :label="`In Q&A · Step ${qaStepOf(entry.id)}`" variant="text" color-scheme="secondary" size="small" @onClick="tab = 'qa'" />
-                      <Button v-else-if="!record.closed" label="Add to Q&A" color-scheme="secondary" variant="outline" size="small" @onClick="startQa(t, entry)" />
+                      <Button v-else-if="!record.closed" label="Add to Q&A" color-scheme="primary" variant="text" size="small" @onClick="startQa(t, entry)" />
                     </template>
                   </template>
                 </ThreadStream>
@@ -460,9 +460,9 @@ export default {
       const screen = r && RECORD_SCREEN[r.type];
       if (screen && isBuilt(screen)) go(screen, recordId);
     },
+    /** Back to the RFI log (the screen that lists this one), never to wherever history happens to point. */
     back() {
-      if (window.history.length > 1) window.history.back();
-      else go('email');
+      go('rfis');
     },
   },
 };

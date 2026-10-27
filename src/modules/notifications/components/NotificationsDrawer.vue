@@ -54,8 +54,8 @@
         <Button v-if="view === 'updates' && counts.updates" label="Mark updates reviewed" color-scheme="secondary" variant="text" size="small" @onClick="reviewed" />
       </div>
       <div class="flex items-center gap-space-8">
-        <Button v-if="prefsBuilt" label="Preferences" color-scheme="secondary" variant="outline" size="small" @onClick="goTo('notificationsPrefs')" />
-        <Button v-if="listBuilt" label="View all" color-scheme="primary" variant="solid" size="small" @onClick="goTo('notifications')" />
+        <Button v-if="prefsBuilt" label="Preferences" color-scheme="secondary" variant="text" size="small" @onClick="goTo('notificationsPrefs')" />
+        <Button v-if="listBuilt" label="View all" color-scheme="primary" variant="text" size="small" @onClick="goTo('notifications')" />
       </div>
     </template>
   </SlideOverPanel>

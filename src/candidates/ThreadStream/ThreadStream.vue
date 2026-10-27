@@ -34,15 +34,22 @@
           <!-- The sender's photo, else initials in a colour of their own (Avatar color="auto", P-052), so senders are told apart. -->
           <Avatar :img="entry.sender.avatarUrl || undefined" :full-name-initials="entry.sender.initials" color="auto" :color-seed="entry.sender.name" :aria-label="entry.sender.name" size="sm" shape="circle" class="shrink-0" />
           <div class="flex min-w-0 flex-1 flex-col gap-space-8">
-            <div class="flex flex-wrap items-baseline gap-x-space-8 gap-y-space-2 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
-              <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">{{ entry.sender.name }}</span>
-              <span>{{ entry.sender.company }}</span>
-              <span>{{ when(entry.sentAt) }}</span>
-              <span v-if="entry.toText">to {{ entry.toText }}</span>
-              <!-- One delivery signal (D-17): a chip only when it failed, a muted word otherwise. -->
-              <StatusChip v-if="entry.delivery && entry.delivery.tone === 'error'" :label="entry.delivery.label" status="error" fill-style="outline" type="default" :removable="false" />
-              <span v-else-if="entry.delivery">{{ entry.delivery.label }}</span>
-              <span v-if="entry.resendOf">Resent</span>
+            <!-- Header row: sender and metadata on the left, the message's utilities (Promote to record, Add to Q&A)
+                 on the right, parallel to the name (D-57). On a narrow screen the utilities wrap under the metadata. -->
+            <div class="flex flex-wrap items-start justify-between gap-x-space-16 gap-y-space-4">
+              <div class="flex min-w-0 flex-wrap items-baseline gap-x-space-8 gap-y-space-2 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
+                <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">{{ entry.sender.name }}</span>
+                <span>{{ entry.sender.company }}</span>
+                <span>{{ when(entry.sentAt) }}</span>
+                <span v-if="entry.toText">to {{ entry.toText }}</span>
+                <!-- One delivery signal (D-17): a chip only when it failed, a muted word otherwise. -->
+                <StatusChip v-if="entry.delivery && entry.delivery.tone === 'error'" :label="entry.delivery.label" status="error" fill-style="outline" type="default" :removable="false" />
+                <span v-else-if="entry.delivery">{{ entry.delivery.label }}</span>
+                <span v-if="entry.resendOf">Resent</span>
+              </div>
+              <div v-if="$scopedSlots['message-actions']" class="ml-auto flex shrink-0 items-center gap-space-8">
+                <slot name="message-actions" :entry="entry" />
+              </div>
             </div>
             <p class="m-0 whitespace-pre-line font-label text-fontsize-14 leading-lineheight-20 text-text-default">{{ entry.body }}</p>
             <!-- Files: a tile each (preview or file type), captioned with name and size; open steps through the message's files -->
@@ -56,14 +63,12 @@
                 </span>
               </li>
             </ul>
+            <!-- Files end the message: nothing sits under them (D-57). -->
             <InlineNotice v-if="entry.bounce && !entry.bounce.resolved" tone="error" title="Delivery failed" :message="`${entry.bounce.email}: ${entry.bounce.reason}`">
               <template #actions>
                 <slot name="bounce-actions" :entry="entry" />
               </template>
             </InlineNotice>
-            <div v-if="$scopedSlots['message-actions']" class="flex flex-wrap gap-space-8">
-              <slot name="message-actions" :entry="entry" />
-            </div>
           </div>
         </article>
 

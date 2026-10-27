@@ -29,7 +29,7 @@ Entries top to bottom (oldest first), each separated by a `border/subtle` hairli
 | `highlightId` | String | `''` | the entry kept highlighted while a panel acts on it |
 | `loading` | Boolean | `false` | renders skeleton entries (the consumer wraps in LoadRegion) |
 
-Slots: `message-actions` (scoped: entry), `bounce-actions` (scoped: entry), `empty`. Events: `select` (entry), `open-attachment` (file, files, index), `download-attachment` (file), `navigate` (record code; the screen calls `router.go`).
+Slots: `message-actions` (scoped: entry; rendered in the header row, right of the sender metadata, as text buttons, D-57), `bounce-actions` (scoped: entry; the notice's right side), `empty`. Events: `select` (entry), `open-attachment` (file, files, index), `download-attachment` (file), `navigate` (record code; the screen calls `router.go`).
 
 ## States and variants
 Empty (*No messages yet*); loading (three skeleton entries); highlighted entry; external role; both themes.
@@ -38,7 +38,7 @@ Empty (*No messages yet*); loading (three skeleton entries); highlighted entry; 
 `border/subtle`, `text/default`, `text/subtle`, `surface/container`, `surface/warning/low/subtle` and `surface/error/subtle` (through InlineNotice), `space-16` and `space-24` (entry padding), `label/sm/regular`, `label/sm/bold`.
 
 ## Behaviour
-Responsive: metadata wraps under the name at 390px; attachment tiles wrap. Keyboard: entries are not focus stops; actions and links are. ARIA: `role="list"` / `listitem`; a note announces its heading. Long bodies are not truncated (a thread is read in full); quoted previous messages collapse behind *Show quoted text*.
+Responsive: metadata wraps under the name at 390px and the utilities wrap under the metadata; attachment tiles wrap and end the message (nothing under them, D-57). Keyboard: entries are not focus stops; actions and links are. ARIA: `role="list"` / `listitem`; a note announces its heading. Long bodies are not truncated (a thread is read in full); quoted previous messages collapse behind *Show quoted text*.
 
 ## Content
 Delivery labels from `correspondence/status-model.md`. Note heading: *Internal team note (hidden from external recipients)*. Event copy: *Promoted to RFI-143 by Alex Morgan · View RFI*.

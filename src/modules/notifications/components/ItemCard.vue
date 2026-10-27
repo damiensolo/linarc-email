@@ -37,18 +37,20 @@
           </ol>
         </div>
       </template>
+      <!-- Actions end bottom-right, where the reader finishes (D-56): secondary text buttons, then the card's own
+           action as a primary-colour text button. Solid primary is kept for a page's one primary action (D-17). -->
       <template #actions>
-        <Button :label="item.action.label" color-scheme="primary" variant="solid" size="small" @onClick="open" />
-        <Button v-if="item.canAcknowledge" label="Acknowledge" color-scheme="secondary" variant="outline" size="small" @onClick="ack" />
-        <Button v-if="item.canTakeOwnership" label="Take ownership" color-scheme="secondary" variant="outline" size="small" @onClick="take" />
         <span ref="more">
           <Button label="More" color-scheme="secondary" variant="text" size="small" :aria-expanded="menuOpen ? 'true' : 'false'" @onClick="menuOpen = !menuOpen" />
         </span>
+        <Button v-if="item.canTakeOwnership" label="Take ownership" color-scheme="secondary" variant="text" size="small" @onClick="take" />
+        <Button v-if="item.canAcknowledge" label="Acknowledge" color-scheme="secondary" variant="text" size="small" @onClick="ack" />
+        <Button :label="item.action.label" color-scheme="primary" variant="text" size="small" @onClick="open" />
       </template>
     </NotificationItem>
 
     <!-- More: the rest of the card's actions, each a single click (spec §8) -->
-    <Popover :open="menuOpen" :anchor="$refs.more" placement="bottom-start" :max-width="280" @close="menuOpen = false">
+    <Popover :open="menuOpen" :anchor="$refs.more" placement="bottom-end" variant="card" :offset="4" :max-width="280" @close="menuOpen = false">
       <div class="flex min-w-full flex-col py-space-4" role="menu" :aria-label="`Actions for ${item.title}`">
         <template v-if="item.canSnooze">
           <button v-for="o in snoozeOptions" :key="o.value" type="button" role="menuitem" :class="ROW" @click="doSnooze(o.value)">Snooze {{ o.label.toLowerCase() }}</button>

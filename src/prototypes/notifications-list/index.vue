@@ -8,7 +8,7 @@
        open obligations with a Person column. Row checkboxes drive one bulk action, Acknowledge, on rows the viewer may
        acknowledge; the grid's own selection toolbar (cut / copy / paste) stays off. A row opens its card in a
        SlideOverPanel (the card's actions and history); the row's action button opens the record. -->
-  <AppShell screen="notifications" title="Notifications" rail-mode="none">
+  <AppShell screen="notifications" title="Notifications">
     <template #header-actions>
       <Button v-if="selected.length" :label="`Acknowledge ${selected.length}`" color-scheme="primary" variant="solid" size="medium" @onClick="acknowledgeSelected" />
     </template>

@@ -6,7 +6,9 @@
   <NotificationBar v-if="item" close-label="Dismiss (the item stays in Notifications)" @close="dismiss">
     <span class="font-bold">Critical</span> · {{ item.title }}<template v-if="item.detail">: {{ item.detail }}</template>
     <template #actions>
-      <Button v-if="item.canAcknowledge" label="Acknowledge" color-scheme="secondary" variant="outline" size="small" @onClick="ack" />
+      <!-- Both buttons secondary solid: on the bar's primary surface the outline and text variants have no contrast
+           (the library Button has no on-primary scheme, F-028). -->
+      <Button v-if="item.canAcknowledge" label="Acknowledge" color-scheme="secondary" variant="solid" size="small" @onClick="ack" />
       <Button :label="item.action.label" color-scheme="secondary" variant="solid" size="small" @onClick="open" />
     </template>
   </NotificationBar>

@@ -34,7 +34,7 @@ import {
   Send,
   ShieldCheck,
   UserCog,
-} from '@development/linarc-icons';
+ Bell } from '@development/linarc-icons';
 
 /** Top-nav module tile. `icon` is a module icon from @development/linarc-icons (ProjectModuleIcon, FinanceModuleIcon,
  *  DocsModuleIcon, FieldModuleIcon, ScheduleModuleIcon, QualityModuleIcon, PayrollModuleIcon). A module whose icon
@@ -69,9 +69,14 @@ const rail = (tool, items) =>
 export const RAILS = {
   // Only rails with a screen (docs/correspondence/screens.md: no dead rails). Needs action, Waiting, Overdue and
   // Unmatched are segments on the Email screen, not rail items.
-  communication: rail('communication', [['Email', Mail, { screen: 'email' }]]),
+  // Notifications (D-52, amended 2026-10-26): a rail item under Email; `screens` names the other screens that keep it
+  // highlighted (the preferences page).
+  communication: rail('communication', [
+    ['Email', Mail, { screen: 'email' }],
+    ['Notifications', Bell, { screen: 'notifications', screens: ['notificationsPrefs'] }],
+  ]),
   drawings: rail('drawings', [['Sheets', PencilRuler, { screen: 'sheet' }]]),
-  rfis: rail('rfis', [['All RFIs', List, { screen: 'rfi' }]]),
+  rfis: rail('rfis', [['All RFIs', List, { screen: 'rfis' }]]),
   submittals: rail('submittals', [
     ['All Submittals', List, { screen: 'list' }],
     ['Packages', Package],

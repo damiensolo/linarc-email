@@ -228,3 +228,11 @@ Why it mattered: a wrong chip colour on the one Critical card would have misled 
 How it was caught: the frame screenshots after composition; the error message's node id.
 What changed: variants chosen from the set's own names; the fix script iterates by id; for design: add `Meta` and `Actions` slots to Notification Item and an `Actions` slot plus wrapping to Notification Bar (P-054, P-055 notes), so the map's cards can be pure instances. Page: [Notifications](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4187-3492).
 Case study: N
+
+## F-028 · 2026-10-26 · A secondary outline button disappears on the primary surface
+Tags: design-system
+What happened: the Critical banner (NotificationBar, P-055, `surface/primary/default`) carried Acknowledge as a secondary outline button: `border/secondary` and `text/secondary` are the primary blue, so the button blended into the bar. The library Button has no on-primary (inverse) scheme; only the secondary solid variant (container surface, default text) reads on that bar.
+Why it mattered: the banner's first action was invisible in a review.
+How it was caught: the user, in review.
+What changed: both banner buttons are secondary solid (app and Figma frame 02). For the library: a Button `colorScheme` for primary surfaces (inverse outline / text), or a Notification Bar actions slot drawn by design, is the durable fix (P-055 notes).
+Case study: N

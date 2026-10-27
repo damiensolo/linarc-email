@@ -10,10 +10,14 @@
     :role="tone === 'error' || tone === 'warning' ? 'alert' : 'status'"
   >
     <component :is="toneIcon" v-if="boxed" :size="16" :stroke-width="1.75" class="mt-space-2 shrink-0" :class="toneClasses.icon" aria-hidden="true" />
-    <div class="flex min-w-0 flex-1 flex-col gap-space-2">
-      <span v-if="title" class="font-bold text-text-default">{{ title }}</span>
-      <span :class="boxed ? 'text-text-default' : 'text-text-subtle'"><slot>{{ message }}</slot></span>
-      <div v-if="$slots.actions" class="flex flex-wrap items-center gap-space-8 pt-space-4">
+    <!-- Text on the left, the contextual action on the right, parallel to the description (D-57); when the width
+         narrows the actions wrap to the bottom-right of the block. -->
+    <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-x-space-16 gap-y-space-8">
+      <div class="flex min-w-0 flex-1 flex-col gap-space-2">
+        <span v-if="title" class="font-bold text-text-default">{{ title }}</span>
+        <span :class="boxed ? 'text-text-default' : 'text-text-subtle'"><slot>{{ message }}</slot></span>
+      </div>
+      <div v-if="$slots.actions" class="ml-auto flex basis-full shrink-0 flex-wrap items-center justify-end gap-space-8 sm:basis-auto">
         <slot name="actions" />
       </div>
     </div>

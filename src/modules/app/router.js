@@ -18,6 +18,7 @@ export const SCREENS = Object.freeze({
   // Correspondence (docs/correspondence/screens.md)
   email: 'correspondence-list',
   thread: 'correspondence-thread',
+  rfis: 'correspondence-rfi-list',
   rfi: 'correspondence-context-rfi',
   sheet: 'correspondence-context-dwg',
   portal: 'correspondence-portal',

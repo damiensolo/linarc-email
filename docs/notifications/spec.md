@@ -187,7 +187,7 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Preferences › Delegation | active | *Alex Morgan is covering for you until 12 Nov.* with *End cover* |
 | Lost access | — | *You no longer have access to this item.* |
 
-Buttons are label-only (D-17). Status is text plus colour, never colour alone.
+Buttons are label-only (D-17). A card's actions end bottom-right as text buttons, the primary colour on the card's own action only (D-56). Status is text plus colour, never colour alone.
 
 ## 13. Assumed platform behaviour, not shown
 

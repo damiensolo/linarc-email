@@ -46,14 +46,14 @@
               <Button
                 v-if="role.internal && entry.direction === 'inbound' && thread.promotion === 'unpromoted'"
                 label="Promote to record"
-                color-scheme="secondary"
-                variant="outline"
+                color-scheme="primary"
+                variant="text"
                 size="small"
                 @onClick="startPromote(entry)"
               />
             </template>
             <template #bounce-actions="{ entry }">
-              <Button v-if="role.internal" label="Update contact and resend" color-scheme="secondary" variant="outline" size="small" @onClick="startFix(entry)" />
+              <Button v-if="role.internal" label="Update contact and resend" color-scheme="primary" variant="text" size="small" @onClick="startFix(entry)" />
             </template>
           </ThreadStream>
 

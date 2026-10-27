@@ -168,7 +168,8 @@ export default {
   },
   data() {
     // The tool whose rail lists this screen; the first tool otherwise.
-    const owner = Object.keys(RAILS).find((tool) => RAILS[tool].some((i) => i.screen === this.screen));
+    const owns = (i) => i.screen === this.screen || (i.screens || []).includes(this.screen);
+    const owner = Object.keys(RAILS).find((tool) => RAILS[tool].some(owns));
     return {
       MODULE,
       ACCENT,
@@ -240,7 +241,7 @@ export default {
       return RAILS[this.selectedTool] || [];
     },
     selectedNav() {
-      const item = this.rail.find((i) => i.screen === this.screen);
+      const item = this.rail.find((i) => i.screen === this.screen || (i.screens || []).includes(this.screen));
       return item ? item.id : (this.rail[0] || {}).id;
     },
   },

@@ -5,7 +5,7 @@
        defaults only), the event family × channel × cadence matrix with the rows company policy locks, quiet hours with
        the mandatory exceptions, delegation (cover) with its preview, and the product's wider catalog as a disclosure.
        Saving is a write through createLoad (LoadStatus: Saving… / Saved). A guest sees preferences without cover. -->
-  <AppShell screen="notificationsPrefs" title="Notification preferences" rail-mode="none" header-size="comfortable" bottom-panel>
+  <AppShell screen="notificationsPrefs" title="Notification preferences" header-size="comfortable" bottom-panel>
     <template #header>
       <span class="flex min-w-0 items-center gap-space-8">
         <HeaderToolIcon type="back" aria-label="Back to Notifications" @click="back" />
