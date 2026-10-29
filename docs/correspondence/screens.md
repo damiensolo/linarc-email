@@ -32,7 +32,7 @@ Subject · Linked record (code and revision; *Link to record* action when empty)
 | Loading and write states | existing (template candidates) | `LoadRegion`, `LoadStatus`, `Skeleton`, `createLoad` | buttons disabled while loading |
 | Forms and inputs | existing | `FormV2` flat, `InputV2`, `SelectV2` (`multiple`, P-041 unchanged), `Textarea`, `TextEditorV2`, `DatePicker`, `Checkbox` | left-aligned; short dates (D-26) |
 | **RecipientField** (To / Cc / Bcc) | candidate (D-47) | typeahead + chips over StatusChip, Avatar xs, SelectV2ListItem, Popover, MemberCardV2 | P-050 (avatar initials, Avatar xs, list-row avatar) |
-| **Add a guest user row** | existing (composition; Q-02 settled, D-46) | heading + one line, `InputV2` (large) + `Button` (large) on one row, opening an inline `FormV2` (name, company, role) | no library change |
+| ~~Add a guest user row~~ | removed 2026-10-28 (D-60) | was a heading + `InputV2` + `Button` row opening an inline form (Q-02, D-46); deferred until customer discovery. An unknown address now gets RecipientField's directory message | no library change |
 | Upload zone | existing | `DropArea` (P-020) | large-file note is text under it |
 | Tabs (record, right panel) | existing | `TabNavigation` (P-028) | |
 | Status | existing | `StatusChip`, muted text, check, `StatusIndicator` spinner | one signal per value |
@@ -42,7 +42,7 @@ Subject · Linked record (code and revision; *Link to record* action when empty)
 | **ThreadStream** | **candidate #2** | `src/candidates/ThreadStream/` | [proposal](../components/ThreadStream.md); list only (D-38) |
 | **AiSummary** | **candidate #3** | `src/candidates/AiSummary/` | [proposal](../components/AiSummary.md) |
 | **DrawingPinPreview** | **candidate #4** | `src/candidates/DrawingPinPreview/` | [proposal](../components/DrawingPinPreview.md); Q-13 confirmed no thumbnail exists in Figma or the Drawings tool |
-| Thread composer | existing (composition) | `SelectV2` sm + `TextEditorV2` + `DropArea` + `Button` | screen-level (D-38) |
+| Thread composer | existing (composition) | `SelectV2` sm + `TextEditorV2` (toolbar trimmed to bold / italic / underline / lists / link, P-056) + `Chip` + icon-only `Button`s in `Tooltip`s + `ModalV2` pickers (D-58) | screen-level (D-38) |
 | RFI parts (Details, Q&A, Workflow, Activity), Add to Q&A, workflow move dialog | existing (composition) | `components/rfi/*`, `AddToQaPanel` (SlideOverPanel + SelectV2 + textarea + Checkbox), `RouteModal` (ModalV2 + Checkbox + textarea) | screen-level; no new candidate. Library fix P-051 (dark count badge) |
 
 Four candidates, no library extension. `correspondence-portal` and `correspondence-context-rfi` need no candidates of their own.

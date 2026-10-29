@@ -15,6 +15,7 @@ import {
 import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, MAIL_SIZE_LIMIT_MB, roleById, replyAddress } from './project';
 import { findPersonByEmail, getPeople, getPerson, guessFromEmail } from './people';
 import { getRecord, recordLabel } from './records';
+import { cloudFile } from './cloud';
 import { getThread, getThreads, nextThreadId, sampleFileUrl } from './threads';
 import { go } from '~/modules/app/router';
 import { storeFile } from '~/modules/fileStore';
@@ -40,7 +41,11 @@ export function defaultResponseDue() {
   return relDate(days);
 }
 
-/** Add a guest user (spec §5, D-36, D-46): creates a guest user from an address; returns the existing person if known. */
+/**
+ * A guest user from an address; returns the existing person if known. Data-layer only since 2026-10-28 (D-60): the
+ * compose panel no longer adds guests (deferred for customer discovery); inbound mail from an unknown address and a
+ * secure-link recipient still need a person record to show.
+ */
 export function addGuest({ email, name, company, role }) {
   const existing = findPersonByEmail(email);
   if (existing) return existing;
@@ -69,6 +74,24 @@ export function newAttachment(file) {
   return { id, name: file.name, sizeMb, byLink: sizeMb > MAIL_SIZE_LIMIT_MB, stored: true, previewable: /^image\//.test(file.type) };
 }
 
+/** The composer's *Attach a record* (spec §7): the record goes with the message as its PDF, like today's checkbox. */
+export function recordAttachment(recordId) {
+  const record = getRecord(recordId);
+  if (!record) return null;
+  return { ...recordPdfAttachment(uid('att'), record), kind: 'record', recordId: record.id, name: `${record.code}.pdf` };
+}
+
+/** The composer's *Choose from cloud drive*: the drive file is copied in as a real PDF (kept in the file store). */
+export function cloudAttachment(cloudId) {
+  const item = cloudFile(cloudId);
+  if (!item) return null;
+  const id = uid('att');
+  const pdf = recordPdf({ project: `${PROJECT.name} (${PROJECT.code})`, code: item.name.replace(/\.pdf$/i, ''), title: item.title, fields: [['Source', item.provider], ['Folder', item.folder], ['Modified', item.modified]] });
+  const blob = pdfBlob(pdf);
+  storeFile(id, blob);
+  return { id, kind: 'cloud', provider: item.provider, cloudId: item.id, name: item.name, sizeMb: item.sizeMb, byLink: item.sizeMb > MAIL_SIZE_LIMIT_MB, generated: true, stored: true };
+}
+
 /** Today's "Attach a PDF of the record", generated as a real PDF (kept in the file store under `id`). */
 function recordPdfAttachment(id, record) {
   const fields = [
@@ -91,11 +114,14 @@ function recordPdfAttachment(id, record) {
  * Send a message (compose or reply). `recipients` = [{ personId, kind: 'to' | 'cc' }]. Outbound mail from an internal
  * sender puts the thread in Waiting; an inbound one (guest role replying) puts it in Needs action.
  */
-export function sendMessage(threadId, { senderId, body, recipients = [], attachments = [], attachmentIds = [], responseDueAt }) {
+export function sendMessage(threadId, { senderId, body, bodyHtml = '', links = [], recipients = [], attachments = [], attachmentIds = [], responseDueAt }) {
   const sender = getPerson(senderId);
   const outbound = sender && !sender.guest;
   const entry = {
     id: uid('msg'), type: 'message', direction: outbound ? 'outbound' : 'inbound', senderId, sentAt: nowIso(), body,
+    // Written in the composer: the formatted body (shown when present) and any links attached (spec §6.3).
+    ...(bodyHtml ? { bodyHtml } : {}),
+    ...(links.length ? { links } : {}),
     // Files picked in the demo travel inline (they are not in the static file table); static ones by id.
     ...(attachments.length ? { attachments } : { attachmentIds }),
     recipients: outbound ? recipients.map((r) => ({ ...r, delivery: 'delivered' })) : [],
@@ -117,7 +143,7 @@ export function sendMessage(threadId, { senderId, body, recipients = [], attachm
  * `attachments` are resolved file objects
  * ({ id, name, sizeMb, byLink }); `attachRecordPdf` adds today's "generate a PDF of the record" as a file.
  */
-export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc = '', subject, body, attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false }) {
+export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc = '', subject, body, bodyHtml = '', links = [], attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false }) {
   const id = nextThreadId();
   const at = nowIso();
   const sender = getPerson(senderId);
@@ -145,6 +171,8 @@ export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc
     entries: [
       {
         id: uid('msg'), type: 'message', direction: 'outbound', senderId, sentAt: at, body, attachments: files,
+        ...(bodyHtml ? { bodyHtml } : {}),
+        ...(links.length ? { links } : {}),
         recipients: [
           ...toIds.map((personId) => ({ personId, kind: 'to', delivery: 'delivered' })),
           ...ccIds.map((personId) => ({ personId, kind: 'cc', delivery: 'delivered' })),
@@ -162,8 +190,8 @@ export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc
 }
 
 /** Internal team note (spec §6.1): never leaves the company, never changes triage. */
-export function postNote(threadId, { senderId, body }) {
-  const entry = { id: uid('note'), type: 'note', senderId, sentAt: nowIso(), body };
+export function postNote(threadId, { senderId, body, bodyHtml = '', links = [] }) {
+  const entry = { id: uid('note'), type: 'note', senderId, sentAt: nowIso(), body, ...(bodyHtml ? { bodyHtml } : {}), ...(links.length ? { links } : {}) };
   appendThreadEntry(threadId, entry);
   patchThread(threadId, { lastActivityAt: entry.sentAt });
   return entry;

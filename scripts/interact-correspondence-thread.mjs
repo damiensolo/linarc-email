@@ -31,8 +31,25 @@ try {
     if (!ok) throw new Error(`no visible "${text}"`);
     await sleep(400);
   };
-  const setTextarea = (id, text) => page.evaluate((id, text) => { const t = document.querySelector(`textarea#${id}`); t.focus(); t.value = text; t.dispatchEvent(new Event('input', { bubbles: true })); }, id, text);
-  const openSelect = (match) => page.evaluate((match) => { const i = [...document.querySelectorAll('input')].find((i) => i.placeholder === match || i.getAttribute('aria-label') === match || i.value === match); if (!i) return false; i.focus(); i.click(); return true; }, match);
+  // The composer is the product's editor (TextEditorV2): click into it and type (its change event is debounced 500ms).
+  const typeMessage = async (text) => {
+    const hs = await page.$$('.ProseMirror');
+    let target = null;
+    for (const h of hs) if (await h.evaluate((e) => !!e.offsetParent)) target = h;
+    if (!target) throw new Error('no composer editor');
+    await target.evaluate((e) => e.scrollIntoView({ block: 'center' }));
+    await target.click();
+    await page.keyboard.type(text);
+    await sleep(700);
+  };
+  // SelectV2 closes its list on any scroll (its scroll listener is capture-phase), so bring the select on screen and
+  // let that scroll settle before focusing it: a focus that scrolls would open the list and close it again.
+  const openSelect = async (match) => {
+    const found = await page.evaluate((match) => { const i = [...document.querySelectorAll('input')].find((i) => i.placeholder === match || i.getAttribute('aria-label') === match || i.value === match); if (!i) return false; i.scrollIntoView({ block: 'center' }); return true; }, match);
+    if (!found) return false;
+    await sleep(300);
+    return page.evaluate((match) => { const i = [...document.querySelectorAll('input')].find((i) => i.placeholder === match || i.getAttribute('aria-label') === match || i.value === match); i.focus(); i.click(); return true; }, match);
+  };
 
   // --- THR-1031: bounce → Update contact and resend
   await page.goto(`http://localhost:${port}/?p=correspondence-thread&theme=light#THR-1031`, { waitUntil: 'networkidle0' });
@@ -81,7 +98,7 @@ try {
   await page.screenshot({ path: `${out}/thread-after-promote.png` });
 
   // --- reply, then an internal note
-  await setTextarea('fv2-composer', 'Thanks Dave, RFI-143 is with Thornton.');
+  await typeMessage('Thanks Dave, RFI-143 is with Thornton.');
   await sleep(200);
   await click('Send');
   await sleep(1000);
@@ -90,7 +107,7 @@ try {
   await sleep(400);
   await click('Internal team note', 'li, [role="option"], span, div');
   await sleep(300);
-  await setTextarea('fv2-composer', 'Team: watch the $4,200 claim.');
+  await typeMessage('Team: watch the $4,200 claim.');
   await sleep(200);
   await click('Post note');
   await sleep(1000);

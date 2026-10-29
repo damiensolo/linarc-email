@@ -212,7 +212,7 @@ function rfiItems(rfi) {
     threadId: rfi.threadId || null,
     watcherIds: [...(rfi.watcherIds || []), ...(rfi.distributionIds || [])],
     costImpact: rfi.costAmount,
-    action: { label: EVENT_RULES.rfi_step.action, screen: 'rfi', id: rfi.id },
+    action: { label: EVENT_RULES.rfi_step.action, screen: 'rfi', id: `${rfi.id}/workflow` },
   };
   if (step) {
     const assigned = session.ntfAssignments[`rfi:${rfi.id}:${step.id}`];

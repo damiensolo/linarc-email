@@ -212,7 +212,9 @@ export default {
     this.saving.destroy();
   },
   methods: {
-    day: (iso) => (iso ? new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
+    // A date-only value is parsed as local midnight: `new Date('2026-10-16')` is UTC midnight and reads as 15 Oct in the
+    // Americas (F-031).
+    day: (iso) => (iso ? new Date(iso.length === 10 ? `${iso}T00:00:00` : iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : ''),
     cadenceLabel(id) {
       return (CADENCES.find((c) => c.id === id) || {}).label || id;
     },

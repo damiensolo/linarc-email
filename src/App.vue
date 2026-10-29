@@ -5,6 +5,7 @@
          hidden with the settings gear in each screen's top nav (~/modules/sandbox.js); ?chrome=0 starts hidden. -->
     <header
       v-if="showChrome"
+      ref="chrome"
       class="flex flex-wrap items-center justify-between gap-space-8 px-space-16 sm:px-space-24 py-space-12 border-b border-border-default bg-surface-container"
     >
       <div class="flex flex-1 basis-full sm:basis-0 flex-wrap items-center gap-space-12 min-w-0">
@@ -180,6 +181,9 @@ export default {
       else url.searchParams.set('latency', value);
       window.history.replaceState(null, '', url);
     },
+    showChrome() {
+      this.$nextTick(this.measureChrome);
+    },
     currentSlug(slug) {
       const url = new URL(window.location.href);
       url.searchParams.set('p', slug);
@@ -194,6 +198,7 @@ export default {
   },
   mounted() {
     this.sizePicker();
+    this.measureChrome();
   },
   created() {
     // ?theme=dark|light wins (shareable links, headless screenshots); else last choice.
@@ -212,6 +217,8 @@ export default {
   beforeDestroy() {
     window.removeEventListener(NAVIGATE_EVENT, this.syncFromUrl);
     window.removeEventListener('popstate', this.syncFromUrl);
+    if (this.chromeObserver) this.chromeObserver.disconnect();
+    document.documentElement.style.removeProperty('--sandbox-offset');
   },
   methods: {
     syncFromUrl() {
@@ -219,6 +226,22 @@ export default {
       if (this.prototypes.some((p) => p.slug === slug)) this.currentSlug = slug;
       this.routeHash = window.location.hash;
       if (this.$refs.main) this.$refs.main.scrollTop = 0;
+    },
+    /** The sandbox bar's height as --sandbox-offset on <html>, so overlays that reserve it (SlideOverPanel) start under
+     *  the bar and its controls stay usable while a panel is open; 0 when the bar is hidden. The bar wraps on a phone,
+     *  so its height is observed, not read once. */
+    measureChrome() {
+      if (this.chromeObserver) {
+        this.chromeObserver.disconnect();
+        this.chromeObserver = null;
+      }
+      const el = this.$refs.chrome; // this.chromeObserver is set here, not in data(): an observer is not reactive state
+      const set = () => document.documentElement.style.setProperty('--sandbox-offset', `${el ? el.offsetHeight : 0}px`);
+      set();
+      if (el && typeof ResizeObserver !== 'undefined') {
+        this.chromeObserver = new ResizeObserver(set);
+        this.chromeObserver.observe(el);
+      }
     },
     /** Picker width = the longest option label in the trigger's own font + the trigger's padding and chevron. */
     sizePicker() {

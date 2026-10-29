@@ -32,13 +32,6 @@
             <Button v-if="notice.recordId" :label="`Open ${notice.recordId}`" variant="text" color-scheme="primary" size="small" @onClick="openRecord(notice.recordId)" />
           </p>
 
-          <!-- Hybrid model (D-42): a reply from any mail client lands here; the project address takes forwarded mail. -->
-          <p class="m-0 flex flex-wrap items-center gap-x-space-8 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
-            <span>Replies to this thread from any mail client are kept here.</span>
-            <Button label="Forward mail here" variant="text" color-scheme="secondary" size="small" :tooltip="project.inboundAddress" @onClick="copyAddress" />
-            <span v-if="copied">Address copied.</span>
-          </p>
-
           <AiSummary v-if="summary" :groups="summary.groups" :evidence="summary.evidence" :status="summaryStatus" @retry="summaryStatus = 'ready'" @trace="trace" @feedback="feedback" />
 
           <ThreadStream ref="stream" :entries="entries" :highlight-id="highlightId" @open-attachment="openFiles" @download-attachment="downloadFile" @navigate="openRecord">
@@ -57,7 +50,7 @@
             </template>
           </ThreadStream>
 
-          <Composer ref="composer" :allow-note="role.internal" :busy="write.status === 'loading'" @send="send" @open-attachment="openFiles" />
+          <Composer ref="composer" :draft-key="id" :allow-note="role.internal" :busy="write.status === 'loading'" @send="send" @open-attachment="openFiles" />
 
           <!-- Below 1024px the right panel's content moves inline at the end (§1). -->
           <section v-if="!isWide" class="flex flex-col gap-space-12">
@@ -118,7 +111,7 @@ import AppShell from '~/modules/app/AppShell.vue';
 import { currentRoute, go, isBuilt } from '~/modules/app/router';
 import { TRIAGE, VISIBILITY, toneToChipStatus } from '~/modules/app/status';
 import {
-  PROJECT, ROLES, THREADS, currentRole, setRole, getThread, getThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
+  ROLES, THREADS, currentRole, setRole, getThread, getThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
   sendMessage, postNote, promoteToRfi, updateContactAndResend,
 } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
@@ -205,7 +198,6 @@ export default {
   data() {
     const asked = currentRoute().id;
     return {
-      project: PROJECT,
       role: currentRole(),
       id: asked && getThread(asked) ? asked : THREADS[0].id,
       thread: null,
@@ -218,7 +210,6 @@ export default {
       fixing: null,
       highlightId: '',
       notice: null,
-      copied: false,
       VISIBILITY,
     };
   },
@@ -283,10 +274,10 @@ export default {
         },
       );
     },
-    send({ mode, body, attachments }) {
+    send({ mode, body, bodyHtml, attachments, links }) {
       const senderId = this.role.personId;
       this.writeThen(
-        () => (mode === 'note' ? postNote(this.id, { senderId, body }) : sendMessage(this.id, { senderId, body, attachments })),
+        () => (mode === 'note' ? postNote(this.id, { senderId, body, bodyHtml, links }) : sendMessage(this.id, { senderId, body, bodyHtml, attachments, links })),
         () => {
           if (this.$refs.composer) this.$refs.composer.reset();
           this.notice = { text: mode === 'note' ? 'Note posted for your team.' : 'Sent. Replies land in this thread.' };
@@ -336,17 +327,6 @@ export default {
       const screen = r && RECORD_SCREEN[r.type];
       if (screen && isBuilt(screen)) go(screen, recordId);
       else this.notice = { text: `${recordId} opens in its own tool; that screen is not in this prototype.` };
-    },
-    copyAddress() {
-      const text = this.project.inboundAddress;
-      const done = () => {
-        this.copied = true;
-        setTimeout(() => {
-          this.copied = false;
-        }, 2000);
-      };
-      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
-      else done();
     },
     back() {
       go('email');

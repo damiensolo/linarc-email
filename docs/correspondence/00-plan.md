@@ -12,7 +12,7 @@ From the help centre (read 2026-10-16): [Email an RFI](https://help.linarc.io/su
 |---|---|---|
 | **Email tab** on each RFI, Submittal and CO: left pane of sent mail with status; Compose with From, To (guest users), CC (typed addresses), Subject prefilled with number and subject, rich text, attachments from device or project files, generate a PDF of the record | record detail › Email | **Kept and upgraded** (`correspondence-context-rfi`): the same tab gains internal notes, Promote to record, Response due, Link opened / Files downloaded. CC and *Attach record PDF* stay so nothing regresses |
 | **Project Email screen**: same compose; list of sent and received mail with status | Project › Communication › Email | **Kept and upgraded** (`correspondence-list`): triage views, Linked record column, Unmatched, Response due |
-| Recipients must already be **guest users** (Project › My Team › Guests) | compose To | The friction Q-02 removes: create the guest inline from an address, in the compose panel |
+| Recipients must already be **guest users** (Project › My Team › Guests) | compose To | **Kept as today** (D-60, 2026-10-28): an unknown address is refused with a line naming My Team › Guests. Inline guest creation (Q-02, D-36) was built on 2026-10-16 and removed for the MVP, pending customer discovery |
 | Attachments **≤ 20 MB**; "save larger files to cloud storage and link them" | compose | Large files delivered by secure link (bet 3) |
 | **Per-recipient delivery status**, error on hover | left pane | Kept as the `delivery` dimension; adds Link opened, Files downloaded |
 | **Replies fetched automatically** and threaded; notification on reply | thread | Kept (this is the threading `spec.md` §4 relies on). Adds: outsiders can start a thread via the project address; internal notes; promote |
@@ -37,7 +37,7 @@ From the help centre (read 2026-10-16): [Email an RFI](https://help.linarc.io/su
 
 In:
 - Five screens (`screens.md`): Email list, Email thread, Drawings stand-in with compose, RFI stand-in with the upgraded Email tab, external link page.
-- Compose panel with parity to today's Compose (From, To, CC, Subject, rich text, attachments, Attach record PDF) plus: linked record with revision pin, inline guest creation (Q-02 → an add-by-email row), Response due, large files by link.
+- Compose panel with parity to today's Compose (From, To, CC, Subject, rich text, attachments, Attach record PDF) plus: linked record with revision pin, Response due, large files by link.
 - Inbound mail from outside (Q-06 → yes): the project address, an **Unmatched** view, *Link to record*.
 - Internal notes, Promote to RFI, AI summary (mock), Delivery tab with Link opened / Files downloaded, bounce with a guided fix.
 - The RFI with Email (added 2026-10-20, `rfi-integration.md`, D-48, D-49): the RFI detail as the Figma draws it (Details, Q&A, Workflow, Email, Activity, Watchers), *Add to Q&A* from an emailed answer, workflow moves with *Notify by email*.
@@ -48,6 +48,7 @@ Out, with the reason:
 - The **modal variant** of Promote (`correspondence-thread-modal`): D-34 already picked the panel and the product has no modal precedent; build it only if sessions show trouble with the panel (D-37 settled).
 - **Proof-pack export**, portal **quick-response radios**, a **Quick create › New message** item: nice, not needed to test the bets. Listed as follow-ups in `spec.md` §12.
 - Submittal and CO stand-ins (same tab as RFIs), Configure screens, promote to PCO / Submittal revision / Field issue, notification changes (today's reply notification is kept; Needs action / Overdue reuse the same preferences).
+- **Add a guest user from Compose** (Q-02, D-36 / D-46): built 2026-10-16, removed 2026-10-28 (D-60). Kept as a feature the MVP does not support until customer discovery shows people need it; recipients must already be on the project, as today.
 
 ## 3. Personas
 
@@ -63,8 +64,8 @@ Out, with the reason:
 
 Each flow is the demo script and one or two usability tasks. Mock data: `reference/correspondenceData.js` (`THR-1042`, `THR-1039`, `THR-1031`).
 
-**Flow 1: clash on a drawing → message a new consultant → they answer from a phone.** `correspondence-context-dwg#A-302-Rev3` → pin at Grid B-4 → *Email about this markup* → panel pre-pins `A-302 · Rev 3` → add Marcus Vance by address (not a guest yet) → Response due → attach the 45 MB video (by link) → Send. Then `correspondence-portal#tk-marcus-a302` on a phone.
-- **Task 1.** "You've found this clash. Get Marcus Vance at Acoustix, who isn't set up in your project yet, to look at it by Friday." Success: sent with the revision pinned, Marcus added without leaving the panel, due date set; under three minutes, no help.
+**Flow 1: clash on a drawing → message a new consultant → they answer from a phone.** `correspondence-context-dwg#A-302-Rev3` → pin at Grid B-4 → *Email about this markup* → panel pre-pins `A-302 · Rev 3` → pick Marcus Vance (a guest user already on the project) → Response due → attach the 45 MB video (by link) → Send. Then `correspondence-portal#tk-marcus-a302` on a phone.
+- **Task 1.** "You've found this clash. Get Marcus Vance at Acoustix to look at it by Friday." Success: sent with the revision pinned, Marcus found in To, due date set; under three minutes, no help. Watch for anyone typing an address that isn't on the project: that is the signal for D-60.
 - **Task 2** (on the participant's own phone if possible). "You're Marcus. Open the link, look at the markup and the video, and reply." Success: reply sent without asking how to log in.
 
 **Flow 2: reply arrives → summary and internal note → promote to RFI → the RFI's Email tab.** `correspondence-list` › Needs action → `THR-1042` (Dave's reply, AI summary, Sarah's note) → *Promote to record* on Dave's message → five fields → Create RFI → promotion row → RFI › Email tab.
@@ -90,7 +91,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 | # | Question | Blocks | Owner | Status |
 |---|---|---|---|---|
 | Q-01 | Cross-tool or standalone? | — | Product | Resolved → D-35 |
-| Q-02 | Recipient not yet a guest: how is one added from the compose panel? | compose | Design + user | **Resolved 2026-10-16** (row renamed *Add a guest user* and To widened to the whole directory on 2026-10-19, D-46): an InputV2 *Add by email* row under the recipients select opens the inline guest form (name, company, role); creates a guest user; no library change. P-041 stands. → D-36 |
+| Q-02 | Recipient not yet a guest: how is one added from the compose panel? | compose | Design + user | **Resolved 2026-10-16** (row renamed *Add a guest user* and To widened to the whole directory on 2026-10-19, D-46): an InputV2 *Add by email* row under the recipients select opens the inline guest form (name, company, role); creates a guest user; no library change. P-041 stands. → D-36. **Reopened and deferred 2026-10-28 (D-60):** the row and the form were removed for the MVP; an unknown address is refused with a line naming My Team › Guests. Revisit after customer discovery |
 | Q-03 | Promote: panel or modal? | — | — | Resolved → D-34; modal variant deferred (D-37) |
 | Q-04 | Which candidates? | — | — | Resolved → D-38 |
 | Q-05 | Where do PMs read mail: here, or Outlook with Linarc as the record? | empty-state copy, notifications | Product | **Resolved 2026-10-16: hybrid** (§1, D-42). The interview tests the boundary, not the model |
@@ -106,7 +107,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 
 ## 7. Decisions (in `../4-decisions.md`)
 
-D-34 overlay for contextual create · D-35 cross-tool capability plus central log · D-36 recipient entry (settled: add-by-email row) · D-37 promote in place, panel; modal deferred · D-38 candidate boundaries · D-39 the external page shows nothing internal and shows link state · D-40 Correspondence upgrades the existing Email tab and Email screen; parity first, Email naming · D-41 visibility model (`spec.md` §3) · D-42 hybrid inbox-plus-record model and the three notifications.
+D-34 overlay for contextual create · D-35 cross-tool capability plus central log · D-36 recipient entry (add-by-email row; removed by D-60) · D-37 promote in place, panel; modal deferred · D-38 candidate boundaries · D-39 the external page shows nothing internal and shows link state · D-40 Correspondence upgrades the existing Email tab and Email screen; parity first, Email naming · D-41 visibility model (`spec.md` §3) · D-42 hybrid inbox-plus-record model and the three notifications.
 
 ## 8. Build order
 

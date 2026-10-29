@@ -59,7 +59,7 @@ Overdue is a **filter**, not a view (the Email screen's Overdue segment is this 
 | `fallback` | Project fallback | warning | word (no eligible owner; the fallback is accountable until assigned) |
 | `covering` | Covering for Name | neutral | word |
 | `watching` | Watching this record | neutral | word (never counted in the bell) |
-| `requester` | You asked for this | neutral | word (Waiting view) |
+| `requester` | You asked for this | neutral | word (Waiting view); rendered as *Waiting on Name* while the item has a responsible party, the label itself only when it has none (*You asked for this · no eligible owner, with Carlos Reyes*) |
 
 ### `overrideOutcome` (a Critical override; audit)
 | Value | Label | Tone | Signal |

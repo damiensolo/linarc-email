@@ -42,7 +42,7 @@ const DELIVERY_RANK = ['bounced', 'sending', 'delivered', 'link_viewed', 'downlo
 export function threadEntries(thread) {
   const resolved = (thread.resolvedBounces || []);
   return thread.entries.map((e) => {
-    if (e.type === 'note') return { id: e.id, type: 'note', sender: personView(e.senderId), sentAt: e.sentAt, body: e.body };
+    if (e.type === 'note') return { id: e.id, type: 'note', sender: personView(e.senderId), sentAt: e.sentAt, body: e.body, bodyHtml: e.bodyHtml || '', links: e.links || [] };
     if (e.type === 'event') return { id: e.id, type: 'event', sentAt: e.sentAt, text: e.text, recordId: e.recordId };
     const recipients = (e.recipients || []).map((r) => ({ ...r, person: r.personId ? personView(r.personId) : null }));
     const weakest = recipients.map((r) => r.delivery).sort((a, b) => DELIVERY_RANK.indexOf(a) - DELIVERY_RANK.indexOf(b))[0];
@@ -54,6 +54,9 @@ export function threadEntries(thread) {
       sender: personView(e.senderId),
       sentAt: e.sentAt,
       body: e.body,
+      // Written in the composer: the formatted body (shown when present) and attached links (spec §6.3)
+      bodyHtml: e.bodyHtml || '',
+      links: e.links || [],
       toText: e.direction === 'outbound' ? to.join(', ') : e.toAddress || '',
       // Static messages reference the file table by id; messages composed in the demo carry their files inline.
       attachments: (e.attachments || (e.attachmentIds || []).map(getFile).filter(Boolean)).map(fileView),

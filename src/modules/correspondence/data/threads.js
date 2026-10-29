@@ -228,6 +228,16 @@ export function weakestDelivery(thread) {
 /** Unmatched: arrived at the project address and linked to nothing yet (spec §4). */
 export const isUnmatched = (thread) => thread.linkedRecordIds.length === 0;
 
+/** The records of the most recently active threads, newest first (the pickers' Recent group, D-61). */
+export function recentRecordIds(limit = 3) {
+  const ids = [];
+  getThreads()
+    .slice()
+    .sort((a, b) => String(b.lastActivityAt).localeCompare(String(a.lastActivityAt)))
+    .forEach((t) => t.linkedRecordIds.forEach((id) => { if (!ids.includes(id)) ids.push(id); }));
+  return ids.slice(0, limit);
+}
+
 /**
  * The thread as one role may see it (D-41): guests see only threads they are on; internal notes, cost and the audit
  * never reach a guest; Confidential threads reach participants and PMs only. Returns null when hidden.

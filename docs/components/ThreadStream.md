@@ -16,7 +16,7 @@ The list of entries in a correspondence thread (external messages, internal note
 
 ## Anatomy
 Entries top to bottom (oldest first), each separated by a `border/subtle` hairline, no outline on the list:
-- **Message**: avatar or initials → name, company, time → delivery signal → body → attachment tiles (library `AttachmentThumbnail`, P-048: preview or file type; caption with name, size and *By secure link*; open in `FileViewer`, D-45) → row action slot (*Promote to record*).
+- **Message**: avatar or initials → name, company, time → delivery signal → body (`bodyHtml` when written in the composer, else the plain `body`) → attached links (`links`: name and URL, opening in a new tab) → attachment tiles (library `AttachmentThumbnail`, P-048: preview or file type; caption with name, size and *By secure link*; open in `FileViewer`, D-45) → row action slot (*Promote to record*).
 - **Internal note**: an InlineNotice `warning` with the fixed heading; hidden for external roles.
 - **System event**: a muted single line with an in-document link.
 - **Bounce**: an InlineNotice `error` under the message, with an action slot.

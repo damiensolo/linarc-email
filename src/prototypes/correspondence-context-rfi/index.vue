@@ -94,7 +94,7 @@
                     </template>
                   </template>
                 </ThreadStream>
-                <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :allow-note="role.internal" :busy="write.status === 'loading'" @send="(m) => send(t.id, m)" @open-attachment="openFiles" />
+                <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :draft-key="t.id" :allow-note="role.internal" :busy="write.status === 'loading'" @send="(m) => send(t.id, m)" @open-attachment="openFiles" />
               </article>
             </section>
 
@@ -204,14 +204,16 @@ export default {
   components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, SelectV2, LoadRegion, Skeleton, ThreadStream, FileViewer, Composer, ComposePanel, AddToQaPanel, RouteModal, RfiDetails, RfiQa, RfiWorkflow, RfiActivity },
   mixins: [fileViewing],
   data() {
-    const asked = currentRoute().id;
+    // The hash is `RFI-142` or `RFI-142/workflow`: a notification card's action names the tab to open (docs/notifications/
+    // spec.md §2, "the Workflow tab on the step"); the sandbox record picker reads the id before the slash (App.vue).
+    const [asked, section] = (currentRoute().id || '').split('/');
     return {
       role: currentRole(),
       // Default to the RFI the demo creates from email (Flow 2), not the first in the list.
       id: asked && getRecord(asked) ? asked : 'RFI-143',
       record: null,
       threads: [],
-      tab: 'details',
+      tab: ['details', 'qa', 'workflow', 'email'].includes(section) ? section : 'details',
       side: 'activity',
       composing: false,
       composePrefill: null,
@@ -361,10 +363,10 @@ export default {
     qaStepOf(messageId) {
       return this.record.qa.findIndex((s) => s.messageId === messageId && s.source === 'email') + 1;
     },
-    send(threadId, { mode, body, attachments }) {
+    send(threadId, { mode, body, bodyHtml, attachments, links }) {
       const senderId = this.role.personId;
       this.writeThen(
-        () => (mode === 'note' ? postNote(threadId, { senderId, body }) : sendMessage(threadId, { senderId, body, attachments })),
+        () => (mode === 'note' ? postNote(threadId, { senderId, body, bodyHtml, links }) : sendMessage(threadId, { senderId, body, bodyHtml, attachments, links })),
         () => {
           const ref = this.$refs[`composer-${threadId}`];
           const c = Array.isArray(ref) ? ref[0] : ref;

@@ -226,6 +226,56 @@ export function linkableRecords() {
   return ALL.map((r) => ({ value: r.id, type: r.type, label: `${r.code} · ${r.title}` }));
 }
 
+/** The record kinds as the pickers' quick filters (SmartPicker `kinds`), most used first. */
+export const RECORD_KINDS = Object.freeze([
+  { id: 'rfi', label: 'RFIs', one: 'RFI' },
+  { id: 'drawing', label: 'Drawings', one: 'Drawing' },
+  { id: 'submittal', label: 'Submittals', one: 'Submittal' },
+  { id: 'change-order', label: 'Change orders', one: 'Change order' },
+]);
+
+/**
+ * Every record as a SmartPicker item (D-61): title = code · title, second line = discipline / spec and revision or
+ * who has it, meta = the kind; the code without its dash, the discipline and the location are searchable too.
+ * `suggestedIds` lead the list (what the host knows: the thread's records, records named in the subject);
+ * `recentIds` follow.
+ */
+export function pickerRecords({ suggestedIds = [], recentIds = [] } = {}) {
+  return ALL.map((base) => {
+    const r = getRecord(base.id);
+    const kind = RECORD_KINDS.find((k) => k.id === r.type) || { one: r.type };
+    let description = '';
+    if (r.type === 'drawing') description = `${r.discipline} · ${r.revision}${r.revisionStatus === 'superseded' ? ` · Superseded by ${r.supersededBy}` : ''}`;
+    else if (r.type === 'rfi') description = `${r.spec || ''}${r.ballInCourt ? ` · With ${r.ballInCourt}` : ''}`;
+    else description = `${r.spec || ''}${r.revision ? ` · ${r.revision}` : ''}`;
+    return {
+      id: r.id,
+      kind: r.type,
+      label: `${r.code} · ${r.title}`,
+      chipLabel: recordLabel(r.id),
+      description,
+      meta: kind.one,
+      keywords: [r.code.replace(/-/g, ''), r.discipline || '', r.location || '', r.sequence || ''].filter(Boolean),
+      suggested: suggestedIds.includes(r.id),
+      recent: recentIds.includes(r.id),
+    };
+  });
+}
+
+/**
+ * Records a piece of text names (D-61): a code anywhere in it ("RFI-142", "A-302", "rfi 142"), or a title it shares
+ * three or more distinct words of four letters or more with. Used to suggest what an unmatched thread links to.
+ */
+export function suggestRecordIds(text) {
+  const flat = String(text || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+  const words = new Set(String(text || '').toLowerCase().match(/[a-z]{4,}/g) || []);
+  return ALL.filter((r) => {
+    if (flat.includes(r.code.toLowerCase().replace(/[^a-z0-9]/g, ''))) return true;
+    const shared = (r.title.toLowerCase().match(/[a-z]{4,}/g) || []).filter((w, i, arr) => words.has(w) && arr.indexOf(w) === i);
+    return shared.length >= 3;
+  }).map((r) => r.id);
+}
+
 /** Short label for a linked record chip: "A-302 · Rev 3" or "RFI-142". */
 export function recordLabel(id) {
   const r = getRecord(id);

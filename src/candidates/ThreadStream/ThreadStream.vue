@@ -51,7 +51,17 @@
                 <slot name="message-actions" :entry="entry" />
               </div>
             </div>
-            <p class="m-0 whitespace-pre-line font-label text-fontsize-14 leading-lineheight-20 text-text-default">{{ entry.body }}</p>
+            <!-- A body written in the composer keeps its formatting (bold, lists, links); older entries are plain text. -->
+            <div v-if="entry.bodyHtml" class="ts-rich font-label text-fontsize-14 leading-lineheight-20 text-text-default" v-html="entry.bodyHtml" />
+            <p v-else class="m-0 whitespace-pre-line font-label text-fontsize-14 leading-lineheight-20 text-text-default">{{ entry.body }}</p>
+            <!-- Links attached in the composer: each opens in a new tab (never a dead link) -->
+            <ul v-if="entry.links && entry.links.length" class="m-0 flex list-none flex-wrap gap-x-space-16 gap-y-space-4 p-0 font-label text-fontsize-14 leading-lineheight-20" aria-label="Attached links">
+              <li v-for="l in entry.links" :key="l.url">
+                <a :href="l.url" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-space-4 text-text-primary underline underline-offset-2" :title="l.url">
+                  <LinkIcon :size="14" :stroke-width="1.75" aria-hidden="true" />{{ l.name || l.url }}
+                </a>
+              </li>
+            </ul>
             <!-- Files: a tile each (preview or file type), captioned with name and size; open steps through the message's files -->
             <ul v-if="entry.attachments && entry.attachments.length" class="m-0 flex list-none flex-wrap gap-space-12 p-0" :aria-label="`${entry.attachments.length} ${entry.attachments.length === 1 ? 'file' : 'files'}`">
               <li v-for="(a, i) in entry.attachments" :key="a.id" class="flex w-space-88 flex-col gap-space-4 font-label">
@@ -74,7 +84,9 @@
 
         <!-- Internal team note (never shown to an external role) -->
         <div v-else-if="entry.type === 'note'" class="flex flex-col gap-space-4">
-          <InlineNotice tone="warning" title="Internal team note (hidden from external recipients)" :message="entry.body" />
+          <InlineNotice tone="warning" title="Internal team note (hidden from external recipients)" :message="entry.body">
+            <span v-if="entry.bodyHtml" class="ts-rich" v-html="entry.bodyHtml" />
+          </InlineNotice>
           <span class="pl-space-12 font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">{{ entry.sender.name }} · {{ when(entry.sentAt) }}</span>
         </div>
 
@@ -95,10 +107,11 @@ import StatusChip from '@/components/StatusChip/StatusChip.vue';
 import AttachmentThumbnail from '@/componentsV2/AttachmentThumbnail/AttachmentThumbnail.vue';
 import InlineNotice from '~/candidates/InlineNotice/InlineNotice.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
+import { Link as LinkIcon } from '@development/linarc-icons';
 
 export default {
   name: 'ThreadStream',
-  components: { Avatar, Button, StatusChip, AttachmentThumbnail, InlineNotice, Skeleton },
+  components: { Avatar, Button, StatusChip, AttachmentThumbnail, InlineNotice, Skeleton, LinkIcon },
   props: {
     /**
      * Resolved entries, oldest first (README):
@@ -122,3 +135,28 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* A body written in the composer keeps the editor's paragraphs, lists and links (Tailwind's preflight unstyles lists). */
+.ts-rich ::v-deep p {
+  margin: 0;
+}
+.ts-rich ::v-deep p + p,
+.ts-rich ::v-deep ul,
+.ts-rich ::v-deep ol {
+  margin-top: var(--space-4);
+  margin-bottom: 0;
+}
+.ts-rich ::v-deep ul {
+  list-style: disc;
+  padding-left: var(--space-24);
+}
+.ts-rich ::v-deep ol {
+  list-style: decimal;
+  padding-left: var(--space-24);
+}
+.ts-rich ::v-deep a {
+  color: var(--text-primary-link);
+  text-decoration: underline;
+}
+</style>

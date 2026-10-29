@@ -30,7 +30,7 @@ try {
     if (!done) throw new Error(`no visible element with text "${text}"`);
     await sleep(350);
   };
-  const summary = async () => page.evaluate(() => { const el = [...document.querySelectorAll('span, div, p')].find((e) => /threads?$/.test(e.textContent.trim()) && e.children.length === 0); return el ? el.textContent.trim() : ''; });
+  const summary = async () => page.evaluate(() => { const el = document.querySelector('.load-status'); return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; });
   const rowActions = async () => page.evaluate(() => [...document.querySelectorAll('button')].filter((b) => b.offsetParent && ['Open', 'Link to record'].includes(b.textContent.trim())).map((b) => b.textContent.trim()));
 
   check((await summary()) === '4 threads', `initial summary: ${await summary()}`);
@@ -48,12 +48,16 @@ try {
   const modalOpen = await page.evaluate(() => !![...document.querySelectorAll('*')].find((e) => e.offsetParent && e.textContent.trim() === 'Link to record' && e.tagName !== 'BUTTON'));
   check(modalOpen, 'Link to record modal opened');
   await page.screenshot({ path: `${out}/list-link-modal.png` });
-  // Open the record select and pick SUB-088
-  await page.evaluate(() => { const inp = [...document.querySelectorAll('input')].find((i) => i.placeholder === 'Choose a record'); inp.focus(); inp.click(); });
-  await sleep(400);
-  const picked = await page.evaluate(() => { const opt = [...document.querySelectorAll('*')].filter((e) => e.offsetParent && e.children.length === 0 && e.textContent.includes('SUB-088')).pop(); if (!opt) return false; opt.click(); return true; });
-  check(picked, 'picked SUB-088 in the select');
+  // The SmartPicker (D-61): the subject names door hardware, so SUB-088 is the one Suggested row; typing "sub" ranks it first and Enter picks it
+  const suggested = await page.evaluate(() => { const d = document.querySelector('[role="dialog"] .sp-list'); if (!d) return null; const rows = [...d.children]; const i = rows.findIndex((e) => e.textContent.trim() === 'Suggested'); return i >= 0 && rows[i + 1] ? rows[i + 1].getAttribute('title') : null; });
+  check(suggested && suggested.startsWith('SUB-088'), `Suggested from the subject: ${suggested}`);
+  await page.evaluate(() => document.querySelector('[role="dialog"] input[role="combobox"]').focus());
+  await page.keyboard.type('sub');
   await sleep(300);
+  await page.keyboard.press('Enter');
+  await sleep(300);
+  const picked = await page.evaluate(() => { const r = document.querySelector('[role="dialog"] [role="option"][aria-selected="true"]'); return r ? r.getAttribute('title') : ''; });
+  check(picked.startsWith('SUB-088'), `picked SUB-088 in the picker (${picked})`);
   await clickText('Link', 'button');
   await sleep(600);
   const afterLink = await summary();

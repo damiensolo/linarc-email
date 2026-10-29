@@ -103,6 +103,9 @@
                   <TextareaField :field="replyField" :value="reply" @input="reply = $event" />
                   <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">Your reply goes to {{ senderName }} and the people on the thread, and a copy to {{ link.recipient.email }}. Replying to the email works too.</span>
                 </section>
+
+                <!-- The outbound mail footer's project line (D-42, spec §4): where a recipient sends anything new about the project. -->
+                <p class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">Something new about {{ project.name }}? Email {{ project.inboundAddress }} and it's filed in the project.</p>
               </template>
             </div>
           </template>

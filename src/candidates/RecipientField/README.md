@@ -11,10 +11,8 @@ An address field with input chips: typeahead over a directory, chips for interna
   :contacts="directory"
   :internal-domains="['vanguard-gc.com']"
   :allow-unknown="false"
-  unknown-action-label="Add {email} as a guest user…"
   group="compose"
   :move-targets="[{ id: 'cc', label: 'Cc' }, { id: 'bcc', label: 'Bcc' }]"
-  @unknown="openGuestForm"
   @move="({ recipient, to }) => addTo(to, recipient)"
 >
   <template #trailing><Button label="Bcc" variant="text" size="small" @onClick="showBcc = true" /></template>
@@ -30,7 +28,8 @@ An address field with input chips: typeahead over a directory, chips for interna
 | `organizationName` | `''` | external tooltip: *Outside {organizationName}* |
 | `showAvatar` | `true` | avatars on chips and list rows |
 | `allowUnknown` | `true` | `false` → `unknown` event instead of a chip |
-| `unknownActionLabel` | `'Add {email}'` | list row for an unknown address |
+| `unknownActionLabel` | `''` | list row offered for an unknown address when the page adds people itself (`'Add {email}'`); empty → no row |
+| `unknownMessage` | *{email} isn't in the project directory. Only people on the project can be emailed; add them in My Team › Guests first.* | shown in the list (and announced) for an unknown address when there is no action; the text stays in the field |
 | `group` | `'recipients'` | drag-and-drop group |
 | `moveTargets` | `[]` | *Move to …* menu rows |
 | `suggestOnFocus` | `true` | list on focus with an empty query |

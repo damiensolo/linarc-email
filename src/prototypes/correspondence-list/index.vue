@@ -6,8 +6,19 @@
        a meta line with LoadStatus, and the DataGrid in a LoadRegion (D-24). Role (D-41): the viewer from the sandbox
        role switcher decides which threads, notes and cost are visible; the screen remounts on change.
        Row action: Open → the thread; on an Unmatched row, Link to record → a short ModalV2 (spec §4).
-       Compose (today's primary action) opens the compose panel with no record pinned; sending opens the new thread. -->
+       Compose (today's primary action) opens the compose panel with no record pinned; sending opens the new thread.
+       The meta line names the project address (D-42): mail forwarded or Bcc'd to it from Outlook or Gmail lands on this
+       list (Unmatched until linked). Plain text, no copy button: people set it up once, so it isn't an action. -->
   <AppShell screen="email" title="Email">
+    <!-- Title Bar / Page with the project address beside the title (review 2026-10-27): the one fact a visitor needs
+         about this screen, read before the views. The title bar has a fixed height, so below 640px the line is hidden
+         rather than wrapped; the empty state and the compose footer still carry the address there. -->
+    <template #header>
+      <div class="flex min-w-0 items-baseline gap-x-space-12">
+        <span class="shrink-0 font-label font-bold text-fontsize-16 leading-lineheight-24 text-text-default">Email</span>
+        <span class="hidden min-w-0 truncate font-label text-fontsize-12 leading-lineheight-16 text-text-subtle sm:inline">Mail sent to <strong class="font-bold text-text-default">{{ project.inboundAddress }}</strong> lands here.</span>
+      </div>
+    </template>
     <template #header-actions>
       <Button label="Compose" color-scheme="primary" variant="solid" size="medium" @onClick="composing = true" />
     </template>
@@ -19,7 +30,7 @@
           <div class="max-w-full overflow-x-auto">
             <SegmentedControl :value="view" :options="viewOptions" aria-label="Email view" size="md" @input="pickView" />
           </div>
-          <LoadStatus :load="load" @retry="fetch">{{ summary }}</LoadStatus>
+          <LoadStatus :load="load" size="xs" @retry="fetch"><span><strong class="font-bold text-text-default">{{ count }}</strong>{{ noun }}</span></LoadStatus>
         </div>
 
         <LoadRegion v-slot="{ skeleton }" class="min-h-0 w-full min-w-0 flex-1" :load="load" content-loads @retry="fetch">
@@ -51,9 +62,11 @@
         </LoadRegion>
       </div>
 
-      <!-- Link to record (spec §4): a short single-step task, so a compact modal (5-ui-patterns.md §1), inside #content. -->
+      <!-- Link to record (spec §4): a short single-step task, so a compact modal (5-ui-patterns.md §1), inside #content.
+           The SmartPicker candidate (D-61): records the subject names come first as Suggested, then Recent, then by kind. -->
       <ModalV2
         :is-visible="!!linking"
+        size="md"
         title="Link to record"
         :title-description="linking ? linking.subject : ''"
         primary-label="Link"
@@ -69,7 +82,7 @@
             <p class="m-0 text-fontsize-14 leading-lineheight-20 text-text-subtle">
               This mail arrived at {{ project.inboundAddress }} and matches no thread. Linking it to a record puts it on that record's Email tab and in its history.
             </p>
-            <SelectV2 v-model="linkTarget" label="Record" placeholder="Choose a record" :options="linkOptions" :visible-item-count="8" />
+            <SmartPicker v-if="linking" v-model="linkTarget" :items="linkItems" :kinds="linkKinds" noun="records" placeholder="Search by code or title" :visible-rows="5" />
           </div>
         </template>
       </ModalV2>
@@ -83,15 +96,15 @@
 import Button from '@/components/Button/Button.vue';
 import DataGrid from '@/components/DataGrid/index.vue';
 import ModalV2 from '@/componentsV2/ModalV2/ModalV2.vue';
-import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
 import SegmentedControl from '@/componentsV2/SegmentedControl/SegmentedControl.vue';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import LoadStatus from '~/candidates/LoadStatus/LoadStatus.vue';
+import SmartPicker from '~/candidates/SmartPicker/SmartPicker.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
 import { go } from '~/modules/app/router';
-import { PROJECT, ROLES, currentRole, setRole, visibleThreads, inboundSandbox, linkableRecords, linkThreadToRecord } from '~/modules/correspondence/data';
+import { PROJECT, ROLES, currentRole, setRole, visibleThreads, inboundSandbox, linkThreadToRecord, pickerRecords, suggestRecordIds, recentRecordIds, RECORD_KINDS } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
 import { VIEWS, VIEW_FIELD, emailRows, emailColumns, emailQuickFilters } from '~/modules/correspondence/emailColumns';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
@@ -118,7 +131,7 @@ export default {
     inbound: inboundSandbox,
     events: eventsSandbox,
   },
-  components: { AppShell, Button, DataGrid, ModalV2, SelectV2, SegmentedControl, LoadRegion, LoadStatus, ComposePanel },
+  components: { AppShell, Button, DataGrid, ModalV2, SegmentedControl, LoadRegion, LoadStatus, SmartPicker, ComposePanel },
   data() {
     return {
       project: PROJECT,
@@ -133,20 +146,27 @@ export default {
       linking: null,
       linkTarget: null,
       linkBusy: false,
-      linkOptions: linkableRecords(),
+      linkKinds: RECORD_KINDS,
       composing: false,
     };
   },
   computed: {
-    summary() {
-      // Nothing until the first answer: a "0 threads" before loading would be a false result.
+    /** The count, bold (review 2026-10-28); nothing until the first answer: "0 threads" before loading would be a false result. */
+    count() {
       if (!this.load.hasData) return '';
       const n = this.filtered ? this.shown : this.rows.length;
-      const noun = this.rows.length === 1 ? 'thread' : 'threads';
-      return n === this.rows.length ? `${n} ${noun}` : `${n} of ${this.rows.length} ${noun}`;
+      return n === this.rows.length ? `${n}` : `${n} of ${this.rows.length}`;
+    },
+    noun() {
+      if (!this.load.hasData) return '';
+      return this.rows.length === 1 ? ' thread' : ' threads';
     },
     columns() {
       return emailColumns((row) => this.onAction(row), this.role);
+    },
+    /** The picker's records: those the mail's subject names are Suggested, the latest threads' records Recent. */
+    linkItems() {
+      return pickerRecords({ suggestedIds: this.linking ? suggestRecordIds(this.linking.subject) : [], recentIds: recentRecordIds() });
     },
   },
   created() {

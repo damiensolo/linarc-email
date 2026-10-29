@@ -50,7 +50,7 @@ try {
   check(thumb, 'preview thumbnail is the cropped sheet');
   const subject = await page.evaluate(() => { const i = document.querySelector('input#fv2-subject'); return i ? i.value : ''; });
   check(subject.startsWith('[RMC-04] A-302 · Rev 3'), `subject prefilled: ${subject}`);
-  check(!(await has('Attach a PDF of')), 'no record PDF option for a drawing');
+  check(!(await has('A-302.pdf')) && (await has('Nothing attached yet')), 'no record PDF attached for a drawing');
   await page.screenshot({ path: `${out}/dwg-compose.png` });
   // recipients: suggested first (Kenji, Dave, Elena)
   // RecipientField (D-47): focusing To opens the suggestions
@@ -63,8 +63,8 @@ try {
   check(await page.evaluate(() => [...document.querySelectorAll('.rf-chip')].some((c) => c.textContent.includes('Kenji'))), 'Kenji picked as a To chip');
   await page.keyboard.press('Escape');
   await sleep(300);
-  check(await has('Add a guest user'), 'Esc closed the dropdown only');
-  await page.evaluate(() => { const ed = document.querySelector('.ProseMirror, [contenteditable="true"]'); ed.focus(); });
+  check(await page.evaluate(() => !!document.querySelector('[role="dialog"] .rf')), 'Esc closed the dropdown only');
+  await page.evaluate(() => { const ed = document.querySelector('[role="dialog"] .ProseMirror, [role="dialog"] [contenteditable="true"]'); ed.focus(); });
   await page.keyboard.type('Kenji, can the cove profile shift 4" north at B-4?');
   await sleep(1500);
   await click('Send');

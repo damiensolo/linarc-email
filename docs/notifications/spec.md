@@ -162,7 +162,7 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Surface | State | Copy |
 |---|---|---|
 | Bell | no items | no badge |
-| Bell | critical unacknowledged | badge status `error`-free: strong warning count; tooltip *2 need action · 1 critical, not acknowledged* |
+| Bell | critical unacknowledged | badge status `error`-free: strong warning count; accessible label *Notifications: 2 need action, 1 critical, 1 not acknowledged (n unread)* |
 | Drawer › Needs action | empty | *Nothing needs your action.* with *Check Waiting* |
 | Drawer › Waiting | empty | *You're not waiting on anyone.* |
 | Drawer › Updates | empty | *No updates since you last looked.* |
@@ -170,21 +170,21 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Drawer | loading | skeleton rows (three) after 200ms |
 | Drawer | error | *Couldn't load notifications.* + Retry |
 | Drawer | snoozed subtotal | *3 snoozed* link under the tabs (opens the Snoozed filter on the full page) |
-| Card (Critical) | — | chip **Critical** · *Critical because the lead-lined partition answer is due today and Carlos Reyes confirmed on site that framing at Grid D-7 has stopped* · *Respond RFI-142: Level 2 Operating Room lead-lined partition termination* · RFI-142 · *Waiting on Kenji Takahashi · You asked for this · fallback Carlos Reyes* · chip **Due today** · *Acknowledge by 11:45* · evidence line · *Open step* |
-| Card (Waiting) | — | title · *Waiting on Elena Rostova, PE · due 21 Oct* · *You asked for this* |
+| Card (Critical) | — | chip **Critical** · *Critical because the lead-lined partition answer is due today and Carlos Reyes confirmed on site that framing at Grid D-7 has stopped* · *Respond RFI-142: Level 2 Operating Room lead-lined partition termination* · RFI-142 · *Waiting on Kenji Takahashi* · chip **Due today** · *Acknowledge by 11:45 · then Carlos Reyes is told* · evidence line (*Carlos Reyes, 16 Oct 07:40: "…"*) · *More · Acknowledge · Open step* |
+| Card (Waiting) | — | title · *Respond step with Elena Rostova, PE, due 21 Oct* · *Due 21 Oct* · *Waiting on Elena Rostova* (the requester's routing word *You asked for this* appears only when the item has no eligible owner: *You asked for this · no eligible owner, with Carlos Reyes*) |
 | Card | covering | *Covering for Sarah Jenkins* |
 | Card | fallback | *Project fallback: no eligible owner* with *Take ownership* |
 | Card | resolved since | *Resolved by Alex Morgan, 17 Oct* (All view) |
 | Card | automated reply | *Automated reply received 16 Oct; a response is still expected* |
 | Banner | Critical arrived | *Critical · Delivery failed: Kenji Takahashi, AIA didn't receive "RFI-142 — Level 2 OR lead-lined drywall termination". ktakahashi@studio-arch.com: 550 5.2.2 Mailbox full.* *Acknowledge* · *Open* · ✕ |
-| Override modal | — | title *Change severity of RFI-142*; outcome; *Reason (required)*; *Change severity*; the line *The RFI stays open and with Kenji Takahashi.* |
+| Override modal | — | title *Change severity of RFI-142*; outcome (Radio); *Reason (required)*; *Change severity*; the line *RFI-142 stays open and with Kenji Takahashi. The item keeps its history; only its severity changes.* |
 | Override, PE | disabled | *Only a project manager can change a Critical item.* |
 | Assign modal | — | *Assign to*; *Note to the new owner (optional)*; *Assign* |
 | Full page | empty segment | the drawer's copy for that view |
-| Full page | bulk | *Acknowledge 4* in the toolbar; rows the viewer may not acknowledge stay unselected with a tooltip |
+| Full page | bulk | *Acknowledge 4* in the title bar: every row is selectable; the count is the ticked rows the viewer may still acknowledge |
 | Preferences | locked | *Set by Vanguard Construction Group policy* |
-| Preferences › Delegation | preview | *Alex Morgan will cover 7 items from Thu 29 Oct to Wed 12 Nov. Not covered: 1 Confidential thread (Alex is not a participant).* |
-| Preferences › Delegation | active | *Alex Morgan is covering for you until 12 Nov.* with *End cover* |
+| Preferences › Delegation | preview | *Alex Morgan will cover 2 items from 16 Oct to 30 Oct. Not covered: 2 (Alex Morgan is not a participant of this Confidential thread).* then one line per item, *Covered ·* or *Stays with you ·* |
+| Preferences › Delegation | active | *Alex Morgan is covering for you until 30 Oct. New items reach you both; what Alex Morgan can't see stays with you.* with *End cover* |
 | Lost access | — | *You no longer have access to this item.* |
 
 Buttons are label-only (D-17). A card's actions end bottom-right as text buttons, the primary colour on the card's own action only (D-56). Status is text plus colour, never colour alone.

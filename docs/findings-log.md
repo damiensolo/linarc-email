@@ -236,3 +236,49 @@ Why it mattered: the banner's first action was invisible in a review.
 How it was caught: the user, in review.
 What changed: both banner buttons are secondary solid (app and Figma frame 02). For the library: a Button `colorScheme` for primary surfaces (inverse outline / text), or a Notification Bar actions slot drawn by design, is the durable fix (P-055 notes).
 Case study: N
+
+## F-029 · 2026-10-27 · A slide-over panel covered the sandbox bar, and the demo steps had not been run as written
+Tags: prototype-setup, process
+What happened: SlideOverPanel is a fixed full-viewport overlay, so an open compose panel or the Notifications drawer covered the sandbox bar: *Simulate event* could not be clicked while composing, which is exactly what the Critical-arrival demo step asks for. The step also said "type a line in the message" without naming a recipient, so *Send* stayed disabled and a presenter who closed the panel lost the draft. The three interaction scripts verify behaviour, not the demo guide's wording.
+Why it mattered: the demo could not be run from the guide; the user hit both in the first rehearsal.
+How it was caught: the user, rehearsing Part B of `docs/notifications/overview-and-demo.md`.
+What changed: App.vue publishes the bar's height as `--sandbox-offset` on `<html>` (observed, since the bar wraps on a phone) and SlideOverPanel starts under it (`top: var(--sandbox-offset, 0px)`; 0 in the product, so the candidate is unchanged there). The RFI card's *Open step* now lands on the Workflow tab (`#RFI-142/workflow`; the screen reads the tab after the slash, as spec §2 promised). `scripts/demo-notifications-walkthrough.mjs` runs every step of the guide as written and asserts each "See"; the guide, spec §12, the plan and the status model were corrected where the copy they quoted was not what the card renders (the card says *Waiting on Kenji Takahashi* and *Acknowledge by 11:45 · then Carlos Reyes is told*; *You asked for this* shows only for an item with no eligible owner; the cover preview says *Not covered: 2 (Alex Morgan is not a participant of this Confidential thread)*).
+Case study: Y. Lesson for the playbook: a demo guide is a test script; run it as written (a walkthrough script per guide) before handing it over, and quote copy from the rendered card, not from the spec.
+
+## F-030 · 2026-10-27 · A panel mounted already open never said it had opened, so the drawer stayed empty
+Tags: prototype-setup
+What happened: the Notifications drawer loads its cards on the panel's `opened` event (the end of the enter transition). When the drawer was still open while the screen remounted (the sandbox role switch, which keeps `ui.drawerOpen`), the panel rendered open at mount with no enter transition, `opened` never fired, and the drawer showed its tab counts over an empty body: no cards, no empty state, no skeleton.
+Why it mattered: a presenter who switches role with the drawer open gets a blank drawer and no hint why.
+How it was caught: `scripts/demo-notifications-walkthrough.mjs`, step 21 (Esc had closed the card's menu, not the drawer, before the role switch).
+What changed: SlideOverPanel's transition has `appear`, so a panel mounted open animates in and emits `opened` like any other open. The candidate proposal notes it.
+Case study: N
+
+## F-031 · 2026-10-27 · Cover dates showed a day early
+Tags: prototype-setup
+What happened: the preferences screen formatted the cover dates with `new Date('2026-10-16')`, which is UTC midnight and reads as 15 Oct in any time zone west of Greenwich; the default cover "from today" showed yesterday.
+Why it mattered: the preview sentence contradicted the date inputs beside it.
+How it was caught: the walkthrough printed the preview (*from 15 Oct to 29 Oct* on a 16 Oct demo clock).
+What changed: a date-only value is parsed as local midnight before formatting. The same rule applies anywhere a `YYYY-MM-DD` input value is displayed.
+Case study: N
+
+## F-032 · 2026-10-28 · A select's list closed as soon as a script opened it
+Tags: prototype-setup
+What happened: `interact-correspondence-thread.mjs` opened the sandbox's *Viewing as* select after typing into the new composer and found no options: SelectV2 closes its list on any scroll (a capture-phase listener, so a scroll inside any element counts), and `input.focus()` on an off-screen select scrolls it into view, which closed the list the same click had opened. With the old textarea the select happened to be on screen.
+Why it mattered: two passing scripts failed after the composer change with no product bug behind them.
+How it was caught: a debug copy of the script dumped the list state right after the click: focused input, no items.
+What changed: the scripts' `openSelect` scrolls the select into view, waits for that scroll to settle, then focuses and clicks. Any script that opens a SelectV2 should do the same.
+Case study: N
+
+## F-033 · 2026-10-28 · The search box of a picker could not be a combobox
+
+Symptom: the SmartPicker candidate (D-61) uses InputV2 as its search box. The list under it is a `listbox` with an active row, so the input must carry `role="combobox"`, `aria-expanded`, `aria-controls` and `aria-activedescendant`; otherwise a screen reader hears a plain text field and never the active result. InputV2 puts `$attrs` on its root `div`, so there was no way to reach the native `<input>`.
+How it was caught: the probe script asserted `input[role="combobox"]` inside the dialog.
+What changed: InputV2 gained an additive `inputAttrs` object prop, bound on the native input before the component's own bindings (P-058, `feature/proto-linarc-email`). RecipientField draws its own input and did not need it; any future typeahead on InputV2 does.
+Case study: Y (a design-system input that hides its native element from ARIA is a common gap; one object prop closes it without touching Figma).
+
+## F-034 · 2026-10-28 · ModalV2 and InputV2 had drifted from the Figma Modal and Input Field
+
+Symptom: the first SmartPicker modal looked tight at the top, had no close button, was too narrow, and its search icon floated 16px from the placeholder. The host code used ModalV2 and InputV2 as they are.
+How it was caught: design review of the screenshots; then measured in Figma with a read-only script over Modal `40011190:10219`, Modal Components Title Bar / Content Slot / Bottom Bar and Input Field Type=Search Bar.
+What changed: ModalV2's title bar padding (8 → 16 vertical), body padding (16 → 20 horizontal), Close button (now on by default, as Figma's Show Close; its aria-label was the id string `modal-v2-N-close`), and a `size` prop (sm 486 = Figma, md 640, lg 800 proposed on `_ ☉ Candidates`); InputV2's icon-to-text gap (16 → 8, Figma's Input row gap). P-059, P-060. Every existing modal gains the close button.
+Case study: Y (a component that "matches Figma" by token names can still miss its spacing; measure the frame before reviewing a screen that uses it, and keep one read-only measuring script around).

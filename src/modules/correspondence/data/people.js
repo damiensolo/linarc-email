@@ -1,6 +1,6 @@
 // PLACEHOLDER DATA — Correspondence module: the project directory. Internal team members and guest users (the
-// platform's term for external people who can be emailed; 00-plan.md §0). Guests created in the compose panel
-// (spec §5, D-36) live in the demo session and are merged here.
+// platform's term for external people who can be emailed; 00-plan.md §0), set up in Project › My Team › Guests.
+// Guests the data layer creates for unknown inbound senders (actions.js) live in the demo session and are merged here.
 import { session } from '~/modules/session';
 
 // Profile photos (AI-generated, fictional people; public/avatars/, same files as the Figma "Persona photos" frame).
@@ -18,6 +18,8 @@ export const PEOPLE = Object.freeze([
   { id: 'usr-kenji', name: 'Kenji Takahashi, AIA', email: 'ktakahashi@studio-arch.com', company: 'Studio West Architecture', role: 'Architect of Record', trade: '00 00 00 · Design Team', guest: true, avatarUrl: photo('kenji-takahashi') },
   { id: 'usr-valerie', name: 'Valerie Chen', email: 'vchen@riversidehealth.org', company: 'Riverside Health System', role: 'Owner Representative', trade: '00 00 00 · Owner', guest: true },
   { id: 'usr-ray', name: 'Ray Castellano', email: 'rcastellano@sunstate-drywall.com', company: 'SunState Drywall & Framing', role: 'Framing Foreman', trade: '09 22 16 · Non-Structural Metal Framing', guest: true, avatarUrl: photo('ray-castellano') },
+  // Set up in My Team › Guests before the demo (D-60): the acoustic consultant Flow 1 emails from the drawing
+  { id: 'usr-marcus', name: 'Marcus Vance', email: 'm.vance@acoustix.com', company: 'Acoustix Consultants', role: 'Acoustical Engineer', trade: '09 84 00 · Acoustic Room Components', guest: true },
 ]);
 
 /** Everyone, including guests added in this session. */
@@ -37,7 +39,7 @@ export function findPersonByEmail(email) {
 /** Guest users only (e.g. assignees outside the company). The compose To field lists everyone (spec §5). */
 export const getGuests = () => getPeople().filter((p) => p.guest);
 
-/** Pre-fill for the inline guest form from an address (spec §5): "m.vance@acoustix.com" → Marcus Vance / Acoustix. */
+/** A name and company guessed from an address for a guest the data layer creates: "m.vance@acoustix.com" → M Vance / Acoustix. */
 export function guessFromEmail(email) {
   const e = (email || '').trim().toLowerCase();
   const [local = '', domain = ''] = e.split('@');

@@ -104,7 +104,7 @@
           @mouseenter.native="active = i"
         />
         <div
-          v-if="unknownOption"
+          v-if="unknownOption && unknownActionLabel"
           :id="optionId(suggestions.length)"
           role="option"
           :aria-selected="active === suggestions.length ? 'true' : 'false'"
@@ -116,6 +116,10 @@
           <UserPlus :size="20" :stroke-width="1.5" class="shrink-0 text-icon-default" aria-hidden="true" />
           <span class="min-w-0 truncate">{{ unknownActionLabel.replace('{email}', unknownOption.email) }}</span>
         </div>
+        <!-- No action for an unknown address: the message says where people are added (a warning that guides) -->
+        <p v-else-if="unknownOption" class="m-0 px-space-12 py-space-8 text-fontsize-14 leading-lineheight-20 text-text-subtle">
+          {{ unknownMessage.replace('{email}', unknownOption.email) }}
+        </p>
         <p v-if="!suggestions.length && !unknownOption" class="m-0 px-space-12 py-space-8 text-fontsize-14 leading-lineheight-20 text-text-subtle">
           {{ buffer.trim() ? 'No one in the directory matches. Enter a full email address.' : 'Type a name or an email address.' }}
         </p>
@@ -180,10 +184,12 @@ export default {
     showAvatar: { type: Boolean, default: true },
     /**
      * A valid address that isn't in `contacts`: committed as a chip (true), or handed to the page through `unknown`
-     * (false), e.g. to create a guest user first. The list then offers `unknownActionLabel` for it.
+     * (false). The list then offers `unknownActionLabel` for it when the page can add people itself; with no action
+     * label it shows `unknownMessage` instead, and the text stays in the field (nothing is created, D-60).
      */
     allowUnknown: { type: Boolean, default: true },
-    unknownActionLabel: { type: String, default: 'Add {email}' },
+    unknownActionLabel: { type: String, default: '' },
+    unknownMessage: { type: String, default: "{email} isn't in the project directory. Only people on the project can be emailed; add them in My Team › Guests first." },
     /** Fields sharing a group accept each other's chips by drag and drop. */
     group: { type: String, default: 'recipients' },
     /** "Move to…" entries in the chip menu (keyboard and touch alternative to dragging): [{ id, label }]. */
@@ -239,7 +245,7 @@ export default {
       return t;
     },
     optionCount() {
-      return this.suggestions.length + (this.unknownOption ? 1 : 0);
+      return this.suggestions.length + (this.unknownOption && this.unknownActionLabel ? 1 : 0);
     },
     listOpen() {
       return this.focused && this.listWanted && !this.disabled && this.selected < 0 && (this.optionCount > 0 || !!this.buffer.trim());
@@ -364,6 +370,12 @@ export default {
       if (contact) return this.add(contact, quiet);
       if (!this.allowUnknown) {
         this.$emit('unknown', { email: t.email, name: t.name });
+        if (!this.unknownActionLabel) {
+          // Nothing to add them with: keep the text so it can be fixed, and say why it didn't become a chip.
+          this.buffer = text.trim();
+          this.listWanted = true;
+          if (!quiet) this.say(this.unknownMessage.replace('{email}', t.email));
+        }
         return false;
       }
       return this.add({ email: t.email, name: t.name }, quiet);

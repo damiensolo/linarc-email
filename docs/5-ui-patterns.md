@@ -66,7 +66,7 @@
 ## 5. Open design flags (don't "fix" in code without a decision)
 
 - Figma Number Badge `Status=Disabled` loses its number in Dark mode; code renders it readably (needs-figma).
-- Figma Modal has no wide size; Title Bar / Workflow has no module-neutral Create variant (needs-figma).
+- Figma Modal has no wide size (ModalV2 `size` md 640 / lg 800 since 2026-10-28, P-059; proposal drawn on `_ ☉ Candidates` › Modal / Size, needs-figma); Title Bar / Workflow has no module-neutral Create variant (needs-figma).
 - No content-width token: the form columns use Tailwind `max-w-4xl` / `max-w-3xl` (needs-token: `layout/form-wide`, `layout/form`).
 - ProgressStepper active label is bold in code, Regular in Figma (P-025); no narrow mode in Figma (F-070).
 - No motion tokens (duration, easing) exist in Figma or `tokens.css`; the loading timings in §6 are CSS custom properties and JS constants until they do (needs-token).

@@ -44,11 +44,11 @@
 |---|---|
 | Linked record | Pinned and read-only: `RFI-142` and its title. When the RFI links a drawing, the drawing and revision go with it |
 | From | Read-only: the sender's name and address |
-| To / Cc / Bcc | RecipientField (D-47). Suggestions start with the **current workflow step's parties**, then the **Distribution List**, then the rest of the directory. To is prefilled with the ball-in-court party. Amber chips mark people outside the company and red chips mark invalid addresses. Add a guest user stays inline |
+| To / Cc / Bcc | RecipientField (D-47). Suggestions start with the **current workflow step's parties**, then the **Distribution List**, then the rest of the directory. To is prefilled with the ball-in-court party. Amber chips mark people outside the company and red chips mark invalid addresses. An address not on the project is refused with a line naming My Team › Guests (D-60) |
 | Subject | Text, prefilled `[RMC-04] RFI-142 — <RFI name>` |
 | Response due | Short date. On an RFI it defaults to the **current step's due date** (otherwise three working days) |
 | Message | Rich text |
-| Attachments | Device or project files as tiles. Files over 20 MB go by secure link. *Attach a PDF of RFI-142* is on by default |
+| Attachments | From the footer's tool row: a device file, a link, a cloud-drive file or a record, as chips (D-58). Files over 20 MB go by secure link. The RFI's PDF is attached by default, removable |
 
 ### C. Email → Q&A: *Add to Q&A* (D-49)
 The most useful change. On the Email tab, every inbound message has **Add to Q&A**. It opens a panel beside the thread, with the message highlighted, prefilled with:

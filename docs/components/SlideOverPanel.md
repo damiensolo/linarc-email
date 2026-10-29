@@ -15,7 +15,7 @@ A right-anchored overlay panel for contextual creation and on-demand supporting 
 - **Figma V3.2:** no drawer or side-sheet component found (Modal Components set, Documentation file). If design adds one, this becomes that component.
 
 ## Anatomy
-Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (title, optional context chip such as `A-302 · Rev 3`, close icon button) → scrollable body with padding inside the scroller → fixed footer with a top hairline (secondary action left, primary label-only action right).
+Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (title, optional context chip such as `A-302 · Rev 3`, optional full-screen toggle, close icon button) → scrollable body with padding inside the scroller → fixed footer with a top hairline (secondary action left, primary label-only action right).
 
 ## API
 | Prop | Type | Default | Notes |
@@ -25,8 +25,9 @@ Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (titl
 | `badge` | String | `''` | context chip next to the title |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 420 / 560 / 720px; full width below 640px |
 | `closeOnBackdrop` | Boolean | `true` | |
+| `expandable` | Boolean | `false` | a full-screen toggle next to Close (Maximize2 / Minimize2, *Full screen* / *Exit full screen*, `aria-pressed`); the panel takes the whole viewport; resets on close |
 
-Slots: `default` (body), `header-meta`, `footer`. Events: `close` (Esc, backdrop, close button), `opened`, `closed`.
+Slots: `default` (body), `header-meta`, `footer` (wraps when it holds a tool row: `min-height` 64px, not a fixed height). Events: `close` (Esc, backdrop, close button), `opened`, `closed`, `expand` (Boolean).
 
 ## States and variants
 Sizes sm / md / lg; open / closing; with and without footer; body loading (the consumer renders a LoadRegion). Both themes.
@@ -35,7 +36,7 @@ Sizes sm / md / lg; open / closing; with and without footer; body loading (the c
 `surface/container`, `surface/overlay`, `border/subtle` (header and footer hairlines), `space-20` (body padding), `space-16` (header and footer gap), `space-64` (header and footer height, matching the comfortable title bar), `radius-0`. Motion: 160ms translate and opacity, none under `prefers-reduced-motion` (no motion tokens exist; needs-token, patterns §5).
 
 ## Behaviour
-Below 640px the panel takes the full width and the footer stays fixed. Focus moves to the title on open and returns to the trigger on close; Esc closes; `role="dialog"`, `aria-modal`, `aria-labelledby` the title. The page behind does not scroll while open. One panel at a time; a second request replaces the first (no stacking, D-36). Layer `z-index: 40`: above the page, below dialogs that fields inside the panel open (the rich text editor's emoji, link and table pickers, legacy Modal z-50), below ModalV2, dropdowns, tooltips and the FileViewer (F-017).
+Below 640px the panel takes the full width and the footer stays fixed. The panel and its backdrop start under any band the host reserves with the CSS variable `--sandbox-offset` (the prototype sandbox bar sets it to its own height, so the bar's controls stay usable while a panel is open, F-029); unset, the panel is full height. The transition has `appear`, so a panel that mounts already open still animates in and emits `opened` (F-030). Focus moves to the title on open and returns to the trigger on close; Esc closes; `role="dialog"`, `aria-modal`, `aria-labelledby` the title. The page behind does not scroll while open. One panel at a time; a second request replaces the first (no stacking, D-36). Layer `z-index: 40`: above the page, below dialogs that fields inside the panel open (the rich text editor's emoji, link and table pickers, legacy Modal z-50), below ModalV2, dropdowns, tooltips and the FileViewer (F-017).
 
 ## Content
 The title names the task (*Message stakeholder*, *Promote to record*); the primary button is label-only and names the outcome (*Send message*, *Create RFI*).

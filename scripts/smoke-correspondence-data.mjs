@@ -46,10 +46,10 @@ try {
   if (data.getLink('tk-expired').state !== 'expired') fail('tk-expired not expired');
   if (data.getLink('tk-marcus-a302').state !== 'valid') fail('marcus link not valid');
 
-  // 4. Mutations through actions.js (session in memory).
-  const guest = data.addGuest({ email: 'm.vance@acoustix.com' });
-  if (guest.name !== 'M Vance' && guest.name !== 'M. Vance') console.log('guest guess:', guest.name, '/', guest.company);
-  if (!data.findPersonByEmail('m.vance@acoustix.com')) fail('guest not findable');
+  // 4. Mutations through actions.js (session in memory). addGuest is data-layer only (unknown inbound senders, D-60).
+  const guest = data.addGuest({ email: 'p.ortiz@acme-glazing.com' });
+  if (guest.name !== 'P Ortiz') console.log('guest guess:', guest.name, '/', guest.company);
+  if (!data.findPersonByEmail('p.ortiz@acme-glazing.com')) fail('guest not findable');
   data.sendMessage('THR-1042', { senderId: 'usr-alex', body: 'Test', recipients: [{ personId: guest.id, kind: 'to' }], responseDueAt: data.defaultResponseDue() });
   if (data.getThread('THR-1042').triage !== 'waiting') fail('send did not set waiting');
   data.postNote('THR-1042', { senderId: 'usr-sarah', body: 'note' });

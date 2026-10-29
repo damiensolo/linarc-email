@@ -19,13 +19,14 @@ const empty = () => ({
   bookmarks: {}, // mega-menu item id → bookmarked, where the user changed it (nav.js MEGA_MENU holds the default)
   // Correspondence
   settings: {}, // sandbox settings that belong to the demo: `role` (the viewer, D-41)
-  guests: [], // guest users created with Add a guest user (D-36, D-46)
+  guests: [], // guest users the data layer creates for unknown inbound senders (actions.js addGuest; the compose row was removed, D-60)
   newThreads: [], // threads started in the demo (compose from a record or the Email screen)
   threadEntries: {}, // threadId → entries appended (messages, notes, events)
   threadPatches: {}, // threadId → fields changed (triage, promotion, addLinkedRecordIds, resolvedBounces, …)
   threadAudit: {}, // threadId → Delivery rows appended
   revokedLinks: {}, // token → true
   linkReplies: {}, // token → true once the recipient replied from the page
+  drafts: {}, // threadId → a saved reply { mode, html, text, attachments, savedAt } (Save draft in the composer)
   // Notifications (src/modules/notifications/data/, docs/notifications/spec.md). Items are derived (D-55); only what a person did
   // is stored, keyed `<itemKey>|<personId>` where it is personal.
   ntfEngagement: {}, // item|person → { seenAt, acknowledgedAt }
@@ -107,6 +108,13 @@ export function patchThread(threadId, fields) {
 
 export function revokeLink(token) {
   Vue.set(session.revokedLinks, token, true);
+  persistSession();
+}
+
+/** Keep (or with `null`, forget) the reply being written on a thread. */
+export function setDraft(threadId, draft) {
+  if (draft) Vue.set(session.drafts, threadId, draft);
+  else Vue.delete(session.drafts, threadId);
   persistSession();
 }
 
