@@ -105,7 +105,8 @@ try {
   check(await has('RFI-143.pdf'), 'record chip added');
   await click('Choose from cloud drive');
   await sleep(300);
-  check((await has('Google Drive')) && (await has('by secure link')), 'cloud picker lists the drives, a big file marked by secure link');
+  const drives = await page.evaluate(() => [...document.querySelectorAll('[role="dialog"] [role="group"] label')].map((l) => l.textContent.trim().split(' · ')[0]));
+  check(drives[0] === 'Linarc Drive' && drives.includes('Google Drive') && (await has('by secure link')), `cloud picker lists Linarc Drive first, then the connected drives (${drives.join(', ')}); a big file marked by secure link`);
   await page.evaluate(() => { const l = [...document.querySelectorAll('label, span')].find((e) => e.offsetParent && e.textContent.trim().startsWith('Imaging suite equipment cut sheets.pdf')); l.click(); });
   await sleep(200);
   await click('Attach');

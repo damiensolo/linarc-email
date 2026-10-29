@@ -37,7 +37,7 @@
     <AttachPickerModal
       :visible="picker === 'cloud'"
       title="Choose from cloud drive"
-      description="Files from the project's connected drives. A pick is sent as a copy."
+      description="Files in Linarc Drive and the project's connected drives. A pick is sent as a copy."
       :items="cloudItems"
       :kinds="cloudKinds"
       noun="files"
