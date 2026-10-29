@@ -1,7 +1,7 @@
 # Communication › Email (`correspondence-list`)
 
 - **Date:** 2026-10-16
-- **Figma:** [01 · Email](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4090-93) on the Documentation file's Email page (https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4084-9896)
+- **Figma:** [01 · Email](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4090-93) on the Documentation file's Email page (https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4084-9896); **2026-10-28:** Compose from this screen drawn on [Level 4 · Compose](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4237-4926) as [15](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-3853) (the lg panel over 01, no record pinned) and [16](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-4196) (full screen), with Full screen → 16 and Send → 02 arrows
 - **URL:** `/?p=correspondence-list`
 - **Status:** done (Compose button arrives with the compose panel, step 5; *Open* leads to the thread once step 3 exists)
 

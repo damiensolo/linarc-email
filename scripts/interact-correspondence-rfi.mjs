@@ -142,18 +142,15 @@ try {
   check(url.includes('p=correspondence-thread') && /THR-105\d/.test(url), `sending from the Email screen opens the new thread (${url.split('?')[1]})`);
   check(await has('Beam sleeve detail'), 'new thread shows its subject');
 
-  // --- RFI-142: Kenji answers by email → Add to Q&A → Route → Revise (email) → Route → Approve → Close
+  // --- RFI-142: Kenji's emailed answer (seed data since 2026-10-28, Documentation screen 09) → Add to Q&A → Route →
+  // Revise (email) → Route → Approve → Close
   await page.goto(`http://localhost:${port}/?p=correspondence-context-rfi&theme=light#RFI-142`, { waitUntil: 'networkidle0' });
-  await page.evaluate(async () => {
-    const { receiveMail } = await import('/src/modules/correspondence/data/actions.js');
-    receiveMail({ fromId: 'usr-kenji', to: 'THR-1039', file: 'pdf', body: 'Alex,\n\nConfirmed: run the lead-lined board full height to the underside of the deck at all OR 2.14 partitions, with lead-backed sealant at the deck flutes per 13 49 00 §3.2. Detail 4 will be revised in ASI-07.\n\nBest regards,\nKenji' });
-  });
-  await page.reload({ waitUntil: 'networkidle0' });
   await sleep(300);
   const emailTab = await page.evaluate(() => { const t = [...document.querySelectorAll('[role="tab"]')].find((x) => x.offsetParent && x.textContent.trim().startsWith('Email')); return t ? t.textContent.trim() : ''; });
   check(/Email\s*1/.test(emailTab), `Email tab counts the thread that needs action (${emailTab})`);
   await tab('Email');
   check(await has('Confirmed: run the lead-lined board'), "Kenji's emailed answer is on the Email tab");
+  check((await buttons()).includes('Add to Q&A') && await has('Reply received'), "Add to Q&A offered on Kenji's message; Activity shows Reply received");
   await click('Add to Q&A');
   await sleep(500);
   const qaKind = await page.evaluate(() => { const i = [...document.querySelectorAll('input')].find((x) => x.offsetParent && x.value === 'Response'); return !!i || document.body.innerText.includes('Response'); });

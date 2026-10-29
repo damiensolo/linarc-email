@@ -39,6 +39,10 @@ Each check below has caught a real bug that the previous check missed. Run them 
 
 When a result looks wrong, check the tool before the UI. F-010: headless Edge quietly ignored the requested window width.
 
+## Figma follows the change (added 2026-10-28, F-036)
+
+Before calling a change done, the module's app-map page shows it: a new state, panel, modal, copy change, reordered option or seeded record is drawn on (or added to) its frame, cloned frames that carried the old state are updated too (search the page for the old copy, e.g. a button label), and the hotspots, arrows and pills that pointed at a moved control move with it. The prototype record's **Figma** line says what changed and when. A prototype that is ahead of its map reads as undocumented in design review.
+
 ## Scrollbars (added 2026-10-09, F-051)
 Headless Chrome hides scrollbars unless told not to; `yarn shot` now keeps them. When reviewing captures, check every scroll area at a height that makes it scroll (e.g. `yarn shot <slug> <out> 5173 1440 900`): thin rounded thumb, no arrow buttons, and content ending ≥ 16px before the bar. To measure: `el.offsetWidth - el.clientWidth` is the bar width; the gap is the scrollport's inner right edge minus the rightmost child's right edge.
 

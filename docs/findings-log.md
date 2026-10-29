@@ -282,3 +282,48 @@ Symptom: the first SmartPicker modal looked tight at the top, had no close butto
 How it was caught: design review of the screenshots; then measured in Figma with a read-only script over Modal `40011190:10219`, Modal Components Title Bar / Content Slot / Bottom Bar and Input Field Type=Search Bar.
 What changed: ModalV2's title bar padding (8 → 16 vertical), body padding (16 → 20 horizontal), Close button (now on by default, as Figma's Show Close; its aria-label was the id string `modal-v2-N-close`), and a `size` prop (sm 486 = Figma, md 640, lg 800 proposed on `_ ☉ Candidates`); InputV2's icon-to-text gap (16 → 8, Figma's Input row gap). P-059, P-060. Every existing modal gains the close button.
 Case study: Y (a component that "matches Figma" by token names can still miss its spacing; measure the frame before reviewing a screen that uses it, and keep one read-only measuring script around).
+
+## F-035 · 2026-10-28 · A hidden file input gave the RFI and thread screens a second, page-level scrollbar
+
+Symptom: on the RFI's Email tab (and the thread screen) the page itself scrolled by about 400px on top of the content and Activity scrollports: the top nav slid away, and three scrollbars showed at once.
+How it was caught: design review (screenshot); then a probe that hid body children one by one and compared `documentElement.scrollHeight`: the only element below the viewport that escaped every `overflow` box was the composer's `<input type="file" class="sr-only">`.
+Why: `sr-only` is `position: absolute`. With no positioned ancestor its containing block is the document, so no scroll box between it and the page clips it; it sat at its static position below the composer, 400px past the viewport, and stretched the document. Same mechanism as the sr-only label that widened a page earlier (F-064).
+What changed: `MessageTools`' tool row is `relative`, so the input is positioned inside the composer and scrolls with it. Rule added to `5-ui-patterns.md` §2: anything `absolute` inside a scroll area needs a positioned wrapper. AppLayout's scrollport is unchanged (making it `relative` would move the containing block of every consumer's absolute descendants; a library change for later, if it recurs).
+Case study: Y (a screen can own three scrollports and still scroll the page; check `documentElement.scrollHeight === innerHeight` in the probes).
+
+## F-036 · 2026-10-28 · The compose UI and flow were built and revised without being drawn in Figma
+
+Symptom: the user found the compose email UI and flow (the thread composer's tool row and chips, the Attach link / cloud drive / record pickers, Discard, Save draft, the lg compose panel with its full-screen toggle) missing from the Documentation file: the Email page still drew the 2026-10-16 composer (Textarea, *Attach files*, Send) on 02, 04, 06 and 09, and no frame showed a picker or the panel from the Email screen or an RFI.
+How it was caught: design review of the Figma file against the running prototype.
+Why: D-58 to D-62 (2026-10-28) changed the composer four times in one day (tool row, SmartPicker, modal sizes, Linarc Drive first) and each change was verified in the browser and the scripts, with the Figma update treated as a later step; frames cloned from 02 (04, 09) kept the old composer because nobody searched the page for it.
+What changed: the composers on 02, 04, 06 and 09 redrawn as the D-58 composition; a fourth section, Level 4 · Compose (15 Email › Compose, 16 full screen, 22 RFI › Email tab › Compose, 17 composer states, 18 Attach link, 19 Choose from cloud drive, 20 Attach a record, 21 Discard this draft?), with hotspots, leaders and pills; the Level 2 Send hotspot moved with the button. Rule: the Figma update is part of the change, not a follow-up (`CLAUDE.md`, `3-verification.md` § Figma follows the change); when a frame changes, search the page for clones of the old state. Two library gaps flagged for design: the Text Editor has no one-line / trimmed variant (P-056, P-057; drawn by hiding tools inside the instance), and ☉ Icons has no `file-box` (the record tool and chip use `file-text`).
+Case study: Y (four code revisions in a day with a Figma step "later" is how an app map falls behind; a search for the old copy across the page catches the clones).
+
+
+## F-037 · 2026-10-29 · The Input Field and Select Menu drifted by state, size and type, and production disabled Select icons were invisible
+
+Symptom: the user saw spacing and icon inconsistencies in the Figma Input Field (33113:20532) and Select Menu (33214:3536) and asked for a normalised, documented form-control system.
+How it was caught: a read-only measuring script over every variant (geometry, bindings, property refs), not screenshots.
+- Icons changed size with state (lg Default 16, Filled 24), so text moved 40 → 48.
+- Every sm shell was 32 with 8 + 24 + 8 inside.
+- Currency had a gap −40 wrapper and 36px shells inside 32.
+- Show Icon L and Show Currency Icon were bound to whole frames.
+- Swap refs existed only in some states.
+- A hidden label left a gap.
+- Disabled Select icons used `border/inactive` on `surface/input/disabled`, both zinc-100, so they could not be seen.
+- The Select description held escaped markup and two contradictory Tags specs.
+What changed:
+- Both sets were cloned to `_ ☉ Proposal — Form Controls (2026-10-29)` and normalised: shells 32 / 40 with content centred, inset 12 (the user's choice on the comparison board, for fields and option rows), icons 16 / 20, gap 8, focus ring 3, helper rows that wrap, and every binding restored.
+- Five boards: inset comparison, before/after, QA matrix, proposed additions, acceptance.
+- An assertion script passes every check.
+- Production is untouched until Phase 2.
+- Dev spec: `linarc-design-components/PRPs/figma/form-controls-spec.2026-10-29.md`, which also covers code drift: SelectV2 40 / 48 against Figma's 32 / 40, InputV2 sm text 12/16, 2px error border, and SelectV2's disabled class `border-border-border-input-disabled`.
+Case study: Y (on a library component, measure every variant with a script and assert on the result; the same node can be right in one state and wrong in four others, and an invisible-icon defect looks like "no icon" in a screenshot).
+Follow-up (same day): applied in place to the production Input Field, Select Menu and Select Menu Item after the user saved a named version. Decisions:
+- Multi-Select grows to 4 rows, then scrolls.
+- Disabled border is code's `border/input/disabled`.
+- Option rows get inset 12 and sm icons 16.
+- New states: Select Error / Read-only / Show Required / helper row, Input Read-only, and Phone Focused / Success / Disabled.
+Code Connect updated (P-061); the library is not published yet. Two new lessons:
+- Variants cloned inside a set lost their property bindings, so copy the refs back by layer path and assert on them.
+- Paints built with `setBoundVariableForPaint` on a placeholder colour keep that colour as the stored fallback, which screenshots render. Set the base colour to the resolved value.

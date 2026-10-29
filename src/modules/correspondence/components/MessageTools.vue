@@ -5,8 +5,10 @@
        there is something to lose; Save draft; the one primary button. The pickers are compact ModalV2s around the
        SmartPicker candidate (search, quick filters, Suggested / Recent; D-61); the chips
        live in AttachmentChips, wherever the host puts them. Attachments are owned by the host (`attachments` in,
-       `add` / `remove` out), so a draft can keep them. -->
-  <div class="flex w-full flex-wrap items-center gap-x-space-16 gap-y-space-8">
+       `add` / `remove` out), so a draft can keep them.
+       `relative`: the hidden file input is `sr-only` (absolute); without a positioned ancestor it escaped every scroll
+       box, sat 400px below the composer and gave the page a second, document-level scrollbar (F-035). -->
+  <div class="relative flex w-full flex-wrap items-center gap-x-space-16 gap-y-space-8">
     <div class="flex items-center gap-space-2" role="toolbar" aria-label="Attach and format">
       <Tooltip v-for="t in tools" :key="t.id" :label="t.label" placement="top">
         <Button v-bind="toolProps" :aria-label="t.label" @onClick="t.run">

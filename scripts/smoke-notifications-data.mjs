@@ -29,10 +29,11 @@ try {
     ok(!it.responsibleId || c.getPerson(it.responsibleId), `${it.key} responsible ${it.responsibleId}`);
   }
   console.log('items', all.map((it) => `${it.key}:${it.severity}${it.open ? '' : '/resolved'}`).join('  '));
-  // Two obligations on one record (THR-1031: delivery + response), one Critical (RFI-142), no thread item that
-  // duplicates RFI-142's step (THR-1039's waiting is subsumed).
+  // Two obligations on one record (THR-1031: delivery + response), one Critical (RFI-142); Kenji's emailed answer on
+  // THR-1039 (the party in hand) is a filing item for Alex, not a reply (Add to Q&A, D-49 / Q-A8).
   ok(byKey(all, 'thread:THR-1031:delivery:msg-1031-1') && byKey(all, 'thread:THR-1031:response:msg-1031-1'), 'THR-1031 should carry two obligations');
-  ok(!keys.some((k) => k.startsWith('thread:THR-1039:response')), 'THR-1039 waiting duplicates the RFI-142 step');
+  const filing = byKey(all, 'thread:THR-1039:response:msg-1039-3');
+  ok(filing && filing.action.label === 'Add to Q&A' && filing.action.screen === 'rfi' && filing.action.id === 'RFI-142/email' && filing.title.startsWith("File Kenji Takahashi, AIA's answer"), `THR-1039: Kenji's answer should be a filing item (${filing && filing.title})`);
   const crit = all.filter((it) => it.severity === 'critical');
   ok(crit.length === 1 && crit[0].key === 'rfi:RFI-142:respond:wf-142-2', `expected one Critical (RFI-142), got ${crit.map((x) => x.key)}`);
   ok(crit[0].reason && crit[0].evidence && crit[0].ackDueAt, 'the Critical lacks reason, evidence or ack deadline');

@@ -91,7 +91,7 @@ try {
   check(await has('Alex Morgan is covering for you until'), 'cover active');
   await setRole('GC project engineer');
   const bell = await page.evaluate(() => (document.querySelector('[aria-label^="Notifications:"]') || {}).getAttribute?.('aria-label') || '');
-  check(bell.startsWith('Notifications: 3 need action'), `Alex now carries Sarah's items: ${bell}`);
+  check(bell.startsWith('Notifications: 4 need action'), `Alex now carries Sarah's items: ${bell}`);
   await setRole('GC project manager');
   await clickText('End cover', 'button');
   await sleep(400);

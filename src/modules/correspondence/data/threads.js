@@ -14,6 +14,8 @@ const FILES = {
   'att-site-video': { id: 'att-site-video', name: 'Site_Walk_Corridor3E_Grid_B4.mp4', sizeMb: 45.2, byLink: true, url: sample('Site_Walk_Corridor3E_Grid_B4.mp4'), thumbnailUrl: sample('Site_Walk_Corridor3E_Grid_B4.poster.jpg'), posterUrl: sample('Site_Walk_Corridor3E_Grid_B4.poster.jpg'), sha256: '3a1f9c8e7d6b5a4f3e2d1c0b9a8f7e6d5c4b3a2f1e0d9c8b7a6f5e4d3c2b1a09' },
   'att-beam-sketch': { id: 'att-beam-sketch', name: 'Apex_W24_Beam_Penetration_Sketch_B4.pdf', sizeMb: 3.4, byLink: false, url: sample('Apex_W24_Beam_Penetration_Sketch_B4.pdf'), sha256: 'e7c9d1a2b3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2e3d4c5b6a7f8e9d0' },
   'att-sub088-psu': { id: 'att-sub088-psu', name: 'SUB-088_24V_Power_Supply_Rev1.pdf', sizeMb: 2.1, byLink: false, url: sample('SUB-088_24V_Power_Supply_Rev1.pdf'), sha256: '5d2c4b6a8f0e1d3c5b7a9f1e3d5c7b9a1f3e5d7c9b1a3f5e7d9c1b3a5f7e9d1c' },
+  // Kenji's shop-drawing markup, attached to his emailed answer on RFI-142 (Documentation screen 09).
+  'att-kenji-markup': { id: 'att-kenji-markup', name: 'Shop_Drawing_Markup.pdf', sizeMb: 2.4, byLink: false, url: sample('Shop_Drawing_Markup.pdf'), sha256: '9c2e4a6b8d0f1e3a5c7b9d1f3e5a7c9b1d3f5e7a9c1b3d5f7e9a1c3b5d7f9e1a' },
   'att-ray-photo': { id: 'att-ray-photo', name: 'IMG_4471_Level2_Door_Frame.jpg', sizeMb: 4.6, byLink: false, url: sample('IMG_4471_Level2_Door_Frame.jpg'), thumbnailUrl: sample('IMG_4471_Level2_Door_Frame.jpg'), sha256: '1b3d5f7a9c1e3f5b7d9a1c3e5f7b9d1a3c5e7f9b1d3a5c7e9f1b3d5a7c9e1f3b' },
 };
 export const getFile = (id) => FILES[id] || null;
@@ -90,19 +92,29 @@ export const THREADS = Object.freeze([
   {
     id: 'THR-1039',
     subject: '[RMC-04] RFI-142 — Level 2 OR lead-lined drywall termination',
-    triage: 'waiting',
+    // Needs action: Kenji's answer came back by email this morning and waits for *Add to Q&A* (D-49). Seed data since
+    // 2026-10-28, as the Documentation file's screen 09 draws it, so the flow needs no simulated mail.
+    triage: 'needs_action',
     visibility: 'project_public',
     promotion: 'promoted_rfi',
     promotedRecordId: 'RFI-142',
     responseDueAt: relDate(0),
-    lastActivityAt: relDate(-1, '16:20:00'),
+    lastActivityAt: relDate(0, '09:40:00'),
     participantIds: ['usr-alex', 'usr-kenji', 'usr-ray'],
     primaryCompany: 'Studio West Architecture',
     trade: '09 29 00 · Gypsum Board',
     estimatedCostImpact: 0,
     linkedRecordIds: ['RFI-142', 'S-201-Rev1'],
     pinId: null,
-    aiSummary: null, // two messages: below the threshold (spec §6.2)
+    aiSummary: {
+      generatedAt: relDate(0, '09:41:00'),
+      evidence: 'Summarised from 3 messages and 1 file in THR-1039.',
+      groups: [
+        { label: 'Decisions', items: [{ text: 'Lead-lined board runs full height to the underside of the deck at all OR 2.14 partitions, with lead-backed sealant at the deck flutes per 13 49 00 §3.2.', sourceIds: ['msg-1039-3'] }] },
+        { label: 'Open questions', items: [{ text: "Kenji's answer is on this thread but not yet on RFI-142's Q&A; the Respond step is still with him.", sourceIds: ['msg-1039-3'] }] },
+        { label: 'Commitments', items: [{ text: 'Studio West to revise Detail 4 in ASI-07.', sourceIds: ['msg-1039-3'] }] },
+      ],
+    },
     entries: [
       {
         id: 'msg-1039-1', type: 'message', direction: 'inbound', senderId: 'usr-ray', sentAt: relDate(-5, '07:50:00'),
@@ -116,11 +128,19 @@ export const THREADS = Object.freeze([
         attachmentIds: [],
         recipients: [{ personId: 'usr-kenji', kind: 'to', delivery: 'link_viewed' }, { personId: 'usr-ray', kind: 'cc', delivery: 'delivered' }],
       },
+      {
+        // The answer, from Outlook to the thread's reply address: offered *Add to Q&A* on the RFI's Email tab (D-49).
+        id: 'msg-1039-3', type: 'message', direction: 'inbound', senderId: 'usr-kenji', sentAt: relDate(0, '09:40:00'),
+        toAddress: 'reply+thr_1039@mail.linarc.io',
+        body: 'Alex,\n\nConfirmed: run the lead-lined board full height to the underside of the deck at all OR 2.14 partitions, with lead-backed sealant at the deck flutes per 13 49 00 §3.2. Detail 4 will be revised in ASI-07.\n\nBest regards,\nKenji',
+        attachmentIds: ['att-kenji-markup'], recipients: [],
+      },
     ],
     audit: [
       { id: 'aud-1039-1', at: relDate(-5, '09:15:00'), event: 'RECORD_PROMOTED', actorId: 'usr-alex', detail: 'Message promoted to RFI-142' },
       { id: 'aud-1039-2', at: relDate(-5, '09:20:03'), event: 'SMTP_DISPATCHED', actorId: 'usr-alex', detail: 'Message sent via the Linarc relay (250 2.0.0 OK)' },
       { id: 'aud-1039-3', at: relDate(-1, '16:20:00'), event: 'MAGIC_LINK_ACCESSED', actorId: 'usr-kenji', detail: 'Opened the RFI-142 package', ip: '203.0.113.88', agent: 'macOS Chrome' },
+      { id: 'aud-1039-4', at: relDate(0, '09:40:06'), event: 'INBOUND_REPLY_INGESTED', actorId: 'usr-kenji', detail: 'Reply received via reply+thr_1039@mail.linarc.io · 1 PDF scanned' },
     ],
   },
 

@@ -62,9 +62,9 @@ try {
   await clickSegment('View', 'All');
   check((await summary()) === '4 notifications', `All view: ${await summary()}`);
 
-  // 2. Team scope: Alex's and Carlos's obligations with a Person column.
+  // 2. Team scope: Alex's and Carlos's obligations with a Person column (five since 2026-10-28: Kenji's answer to file).
   await clickSegment('Scope', 'My team');
-  check(await has('PERSON') && await has('Alex Morgan') && (await summary()).startsWith('4 notifications'), `Team scope: ${await summary()}`);
+  check(await has('PERSON') && await has('Alex Morgan') && (await summary()).startsWith('5 notifications'), `Team scope: ${await summary()}`);
   await page.screenshot({ path: `${out}/list-pm-team.png` });
   await clickSegment('Scope', 'My responsibilities');
   check((await summary()) === '4 notifications', `back to My responsibilities: ${await summary()}`);

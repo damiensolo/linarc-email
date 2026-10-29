@@ -175,18 +175,21 @@ function threadItems(thread) {
     if (!subsumed) {
       const responder = inbound ? owner : toIds[0] || null;
       const requester = inbound ? lastMsg.senderId : lastMsg.senderId;
+      // The party in hand answered the RFI by email: the obligation is to file it (*Add to Q&A*, D-49), not to reply.
+      const filed = inbound && rfiStep && rfiStep.partyIds.includes(lastMsg.senderId);
+      const when = daysBetween(lastMsg.sentAt, TODAY) === 0 ? 'today' : `${daysBetween(lastMsg.sentAt, TODAY)} days ago`;
       items.push(base(`thread:${thread.id}:response:${lastMsg.id}`, 'thread_response', {
         ...common,
-        title: inbound ? `Reply to ${name(lastMsg.senderId)}: ${short(thread.subject)}` : `Response from ${responder ? name(responder) : 'the recipient'}: ${short(thread.subject)}`,
-        detail: inbound ? `${name(lastMsg.senderId)} wrote ${daysBetween(lastMsg.sentAt, TODAY) === 0 ? 'today' : `${daysBetween(lastMsg.sentAt, TODAY)} days ago`} and is waiting on ${name(owner)}` : `${name(lastMsg.senderId)} asked ${responder ? name(responder) : 'the recipient'} to respond${thread.responseDueAt ? ` by ${fmtDay(thread.responseDueAt)}` : ''}`,
-        impact: thread.estimatedCostImpact ? 'Cost impact raised in the thread' : rfi ? `${rfi.code} depends on it` : '',
+        title: filed ? `File ${name(lastMsg.senderId)}'s answer: ${short(thread.subject)}` : inbound ? `Reply to ${name(lastMsg.senderId)}: ${short(thread.subject)}` : `Response from ${responder ? name(responder) : 'the recipient'}: ${short(thread.subject)}`,
+        detail: filed ? `${name(lastMsg.senderId)} answered by email ${when}; add it to the Q&A, then route ${rfi.code}` : inbound ? `${name(lastMsg.senderId)} wrote ${when} and is waiting on ${name(owner)}` : `${name(lastMsg.senderId)} asked ${responder ? name(responder) : 'the recipient'} to respond${thread.responseDueAt ? ` by ${fmtDay(thread.responseDueAt)}` : ''}`,
+        impact: filed ? `${rfi.code} stays open until the answer is on its Q&A` : thread.estimatedCostImpact ? 'Cost impact raised in the thread' : rfi ? `${rfi.code} depends on it` : '',
         responsibleId: responder,
         requesterId: inbound ? requester : lastMsg.senderId,
         fallbackRouted: !responder,
         dueAt: thread.responseDueAt,
         createdAt: lastMsg.sentAt,
-        action: { label: inbound ? 'Reply' : 'Open thread', screen: 'thread', id: thread.id },
-        history: [{ id: `${lastMsg.id}-h`, at: lastMsg.sentAt, event: 'ITEM_CREATED', actorId: lastMsg.senderId, detail: inbound ? 'Reply received; a response is expected' : 'Message sent with a response due' }],
+        action: filed ? { label: 'Add to Q&A', screen: 'rfi', id: `${rfi.id}/email` } : { label: inbound ? 'Reply' : 'Open thread', screen: 'thread', id: thread.id },
+        history: [{ id: `${lastMsg.id}-h`, at: lastMsg.sentAt, event: 'ITEM_CREATED', actorId: lastMsg.senderId, detail: filed ? 'Answer received by email; to be added to the Q&A' : inbound ? 'Reply received; a response is expected' : 'Message sent with a response due' }],
       }));
     }
   }

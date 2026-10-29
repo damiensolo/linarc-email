@@ -35,7 +35,7 @@
 ## Verification
 - `yarn verify` passes (conventions + build).
 - `yarn shot notifications-list` at 1440 / 1024 / 390, light and dark: no console errors, no overflow (the segments scroll in their own box at 390).
-- `node scripts/interact-notifications-list.mjs 5177 <out>`: 16/16. Sarah's default view is 3 of 4 (Needs action in My responsibilities); Waiting 1 of 4; All 4; Team scope lists Alex's four obligations with a Person column; Watching lists the oversight Critical and the Updates (5); selecting the three acknowledgeable rows shows *Acknowledge 3*, acknowledging clears it and the card shows *Acknowledged 10:30* while the bell count is unchanged; the guest has no scope switch and one Waiting item; Reset restores.
+- `node scripts/interact-notifications-list.mjs 5177 <out>`: 16/16. Sarah's default view is 3 of 4 (Needs action in My responsibilities); Waiting 1 of 4; All 4; Team scope lists Alex's five obligations (Kenji's answer to file since 2026-10-28) with a Person column; Watching lists the oversight Critical and the Updates (5); selecting the three acknowledgeable rows shows *Acknowledge 3*, acknowledging clears it and the card shows *Acknowledged 10:30* while the bell count is unchanged; the guest has no scope switch and one Waiting item; Reset restores.
 - The override (Task 5) is verified from this page in `scripts/interact-notifications-prefs.mjs`: Watching › RFI-142 › More › Change severity… needs a reason, writes *Was Critical · Condition resolved* and a *Severity changed* history row; the PE then sees it as Important.
 
 ## Design flags (for the Figma review, not fixed in code)

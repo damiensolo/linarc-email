@@ -23,7 +23,7 @@ Checklist:
 - Click **Reset demo data** so every thread is in its starting state (it also clears files attached in earlier runs).
 - Have one small photo or PDF on the desktop to drop into Compose in step 5.
 - Have a phone ready for Act 1, or use the browser's device mode at 390 wide. The secure link page URL is `/?p=correspondence-portal#tk-marcus-a302`.
-- Know the four threads: `THR-1042` (the clash, needs action, due today), `THR-1039` (promoted to RFI-142, waiting), `THR-1031` (overdue, bounced, Confidential), `THR-1050` (mail to the project address, unmatched).
+- Know the four threads: `THR-1042` (the clash, needs action, due today), `THR-1039` (promoted to RFI-142; Kenji's emailed answer arrived this morning and waits for *Add to Q&A*, so it needs action), `THR-1031` (overdue, bounced, Confidential), `THR-1050` (mail to the project address, unmatched).
 - Know the three roles in **Viewing as**: GC project manager (sees everything, including cost), GC project engineer (no cost, no Confidential thread they are not on), Subcontractor guest (own threads only, no notes, no Delivery, no Promote).
 - Decide what to skip. The full script is about 25 minutes. Act 2 alone is 10 and carries the strongest moments.
 
@@ -61,7 +61,7 @@ Format per step: **Do** (the click), **Say** (the talk track), **Point at** (wha
 
 ### Act 2b · The architect answers by email; the RFI closes (6 min, optional)
 
-A. **Do.** Open RFI-142 in the record picker (`#RFI-142`). Click **Simulate inbound email**: *Kenji Takahashi, AIA*, destination *Reply to THR-1039*, body "Alex, Confirmed: run the lead-lined board full height to the underside of the deck… Best regards, Kenji", the PDF attachment. **Receive**. **Point at** the Email tab's count. **Say.** "Kenji answered from Outlook, like he always does."
+A. **Do.** Open RFI-142 in the record picker (`#RFI-142`). **Point at** the **Email** tab's count, then open it: Kenji's reply from this morning, sent from Outlook to the thread's reply address with his PDF, **Add to Q&A** in its header, and *Reply received* at the top of Activity. **Say.** "Kenji answered from Outlook, like he always does." (To land a reply live instead, **Simulate inbound email** sends one as Kenji to *Reply to THR-1039*.)
 B. **Do.** On the **Email** tab, click **Add to Q&A** on Kenji's message. **Point at** the panel beside the thread: *Response* (he has the ball), the text without "Best regards, Kenji" and the line saying what was left out, his PDF ticked. Click **Add as Step 3**. **Point at** the thread's event *Added to RFI-142 Q&A as Step 3* and the message now *In Q&A · Step 3*. Open **Q&A**: Step 3 with *From email · View message*. **Say.** "Today someone retypes this. Here the answer is on the record in one click, linked to the email it came from, and nothing was sent to anyone." **Why.** D-49: email reaches the formal record without retyping.
 C. **Do.** Click **Route**. **Point at** the dialog: *Review · Sarah Jenkins · due …*. Route. **Point at** the status *Answered* and the tab bar now offering **Reject · Revise · Approve**.
 D. **Do.** Click **Revise**. **Point at** *Notify them by email* already ticked (Kenji is outside Vanguard). Revise. **Point at** *Returned for revision to Kenji…, by email* and **Open in Email**; on **Workflow**, Respond is *Returned*; in **Activity**, *Returned for revision · emailed* next to the email rows. **Say.** "Sending it back is also the email to the architect. One action, and the record says it happened."
@@ -131,7 +131,7 @@ To add a screen: a row in `screens.md`; a pattern from `5-ui-patterns.md`; data 
 - Send enables about half a second after you stop typing in the rich-text editor (the product's editor debounces its value).
 - The editor's text-style select offers Normal Text and headings; Figma also draws a font and size picker, which the editor doesn't have yet (P-049).
 - The sample files are placeholders: the two site photos are the design system's sample photo, so the "door frame" photo doesn't show a door frame. Files you attach stay in this browser until **Reset demo data**.
-- The FileViewer is a candidate not yet drawn in Figma; the Compose frame in Figma shows the tiles' drop area and the guest row, not an open viewer.
+- The FileViewer is a candidate not yet drawn in Figma. The Compose and composer frames match the prototype's tool row and pickers since 2026-10-28 (Email page, Level 4).
 - In Figma, the Project module's side nav has no Email rail and its top nav has no Drawings or RFIs tools, so those frames select the nearest item or none. Those are design-system gaps logged for the team (F-010).
 - The modal variant of Promote, the proof-pack export and the portal's quick-response buttons were cut from the MVP on purpose. They are listed as follow-ups in the spec.
 
@@ -149,7 +149,7 @@ Useful URL switches: `?theme=dark`, `?latency=slow|fail|fail-once`, `?chrome=0`.
 
 Scripts: `yarn verify`, `yarn shot <slug>`, `node scripts/smoke-correspondence-data.mjs`, `node scripts/interact-correspondence-<list|thread|rfi|dwg|portal>.mjs <port> <out-dir>`.
 
-Figma: Documentation file, page Email (`4084:9896`); library `_ ☉ Candidates` page for the first four candidates (FileViewer not drawn yet).
+Figma: Documentation file, page Email (`4084:9896`): Levels 1–3 plus **Level 4 · Compose** (`4237:4926`: the compose panel from the Email screen and from an RFI, full screen, the thread composer's states, the Attach link, cloud drive, record and Discard modals); library `_ ☉ Candidates` page for the candidates (FileViewer not drawn yet).
 
 Docs: `docs/correspondence/` (plan, spec, status model, screens), `docs/prototypes/` (one record per screen), `docs/components/` (candidate backlog), `docs/4-decisions.md` (D-34 to D-47), `docs/findings-log.md` (F-003 to F-018).
 

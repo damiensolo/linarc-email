@@ -70,7 +70,7 @@ Three levels, `status-model.md`. Critical requires credible material impact and 
 | `drawing_revision_published` (seed) | Update | — (internal roles watch) | — | *View revision* | seen |
 | `manual_critical` | Critical | the item's responsible | — | the item's action | the source resolves, or an override |
 
-Kenji's emailed answer on RFI-142 arrives as an inbound reply on THR-1039: a `thread_response` for Alex (*Reply to Kenji*) that *Add to Q&A* resolves (Q-A8; `addToQa` sets the thread Resolved) while the RFI's step stays until Route.
+Kenji's emailed answer on RFI-142 is in the seed data (since 2026-10-28: THR-1039 at 09:40, as the Documentation file's screen 09 draws it). An inbound reply from the party in hand is a filing item for the thread's owner, not a reply: `thread_response` titled *File Kenji Takahashi, AIA's answer*, action *Add to Q&A* (the RFI's Email tab), which *Add to Q&A* resolves (Q-A8; `addToQa` sets the thread Resolved) while the RFI's step stays until Route.
 
 **The seeded Critical** (`seed.js`): RFI-142's Respond step is due today; Carlos Reyes confirmed on site at 07:40 that framing at Grid D-7 has stopped. Responsible Kenji Takahashi (the step's party, external), requester Alex Morgan (Waiting, accountable for the follow-up), fallback Carlos, the PM sees it under *Project oversight*. Marked 07:45; acknowledgment due 11:45 (Q-A7). Evidence on the card: *Carlos Reyes, 16 Oct 07:40: "OR 2.14 top track is stopped until the termination height is answered. The crew moves to the corridors today and runs out of work Monday."*
 

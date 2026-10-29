@@ -73,13 +73,15 @@ try {
   await sleep(500);
   check(!(await drawerOpen()), 'Esc closes the drawer');
 
-  // 2. Alex (PE): one Needs action, the Critical in Waiting; acknowledge changes engagement only.
+  // 2. Alex (PE): two Needs action (reply to Dave; file Kenji's emailed answer, 2026-10-28), the Critical in Waiting;
+  // acknowledge changes engagement only.
   await setRole('GC project engineer');
-  check((await bell()).startsWith('Notifications: 1 need action, 1 critical, 1 not acknowledged'), `PE bell: ${await bell()}`);
+  check((await bell()).startsWith('Notifications: 2 need action, 1 critical, 1 not acknowledged'), `PE bell: ${await bell()}`);
   await openDrawer();
   check(await has('Critical because the lead-lined partition answer is due today'), 'Critical reason shown');
   check(await has('Acknowledge by 11:45') && await has('Waiting on Kenji Takahashi'), 'ack deadline and Waiting on Kenji');
   check(await has('Reply to Dave Miller'), 'PE Needs action: reply to Dave');
+  check(await has("File Kenji Takahashi, AIA's answer") && await has('Add to Q&A'), "PE Needs action: file Kenji's emailed answer, action Add to Q&A");
   await page.screenshot({ path: `${out}/drawer-pe-critical.png` });
   await clickIn('Respond RFI-142', 'Acknowledge');
   check(await has('Acknowledged 10:30') && await has('1 critical, acknowledged') && await has('Due today') && !(await has('Acknowledge by')), 'acknowledge: engagement changed, Critical and Due today stayed, deadline line gone');
@@ -89,13 +91,13 @@ try {
   check(list.some((t) => t.includes('Respond RFI-143')) && list.some((t) => t.includes('Review RFI-139')) && await has('Waiting on Elena Rostova'), `PE Waiting: ${list.join(' | ')}`);
   await page.screenshot({ path: `${out}/drawer-pe-waiting.png` });
 
-  // 3. Snooze keeps the count: Needs action empties, the snoozed subtotal appears, the bell stays at 1.
+  // 3. Snooze keeps the count: the snoozed card leaves Needs action, the subtotal appears, the bell stays at 2.
   await clickText('Needs action');
   await clickIn('Reply to Dave Miller', 'More');
   await clickText('Snooze until next monday', '[role="menuitem"]');
   await sleep(400);
-  check(await has('Nothing needs your action.') && await has('1 snoozed'), 'snoozed: empty Needs action with the subtotal');
-  check((await bell()).startsWith('Notifications: 1 need action'), `bell keeps the snoozed item in its total: ${await bell()}`);
+  check(!(await has('Reply to Dave Miller')) && await has("File Kenji Takahashi, AIA's answer") && await has('1 snoozed'), 'snoozed: the card left Needs action, the subtotal shows');
+  check((await bell()).startsWith('Notifications: 2 need action'), `bell keeps the snoozed item in its total: ${await bell()}`);
   await page.screenshot({ path: `${out}/drawer-pe-snoozed.png` });
   await page.keyboard.press('Escape');
   await sleep(400);

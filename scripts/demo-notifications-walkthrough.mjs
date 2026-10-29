@@ -126,7 +126,7 @@ try {
   await setRole('GC project engineer');
 
   // --- Part A, 1: the bell.
-  check((await bell()).startsWith('Notifications: 1 need action, 1 critical, 1 not acknowledged'), `A1 bell: ${await bell()}`);
+  check((await bell()).startsWith('Notifications: 2 need action, 1 critical, 1 not acknowledged'), `A1 bell: ${await bell()}`);
 
   // 2: the drawer.
   await openDrawer();
@@ -174,7 +174,7 @@ try {
   await clickIn('Reply to Dave Miller', 'More');
   await clickText('Snooze until next monday', '[role="menuitem"]');
   await sleep(400);
-  check(await has('1 snoozed · still in your count') && (await bell()).startsWith('Notifications: 1 need action'), `A7 snoozed subtotal, bell still 1: ${await bell()}`);
+  check(await has('1 snoozed · still in your count') && (await bell()).startsWith('Notifications: 2 need action'), `A7 snoozed subtotal, bell still 2: ${await bell()}`);
   await closeDrawer();
 
   // 8: Sarah.

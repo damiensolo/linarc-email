@@ -1,8 +1,8 @@
 # Communication › Email thread (`correspondence-thread`)
 
 - **Date:** 2026-10-16
-- **Figma:** [02 · Email thread](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4093-741), [03 · Promote to record](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4099-984) on the Email page
-- **URL:** `/?p=correspondence-thread#THR-1042` (also `#THR-1039` promoted, `#THR-1031` bounced and Confidential, `#THR-1050` unmatched)
+- **Figma:** [02 · Email thread](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4093-741), [03 · Promote to record](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4099-984) on the Email page. **2026-10-28:** 02's composer redrawn as the D-58 composition (Text Box, chips, the tool row of Icon Buttons, Discard · Save draft · Send); the compose UI and flow added as [Level 4 · Compose](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4237-4926): [17](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-5973) composer states (Formatting on, four chips, Draft saved; Internal team note), [18](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7461) Attach link, [19](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7737) Choose from cloud drive and [20](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7949) Attach a record (ModalV2 md around the SmartPicker), [21](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7676) Discard this draft?, with hotspots and leaders from the tool row. Drawn from library instances; the Text Editor instance is trimmed by hiding its tools (the library has no one-line variant, P-056 / P-057)
+- **URL:** `/?p=correspondence-thread#THR-1042` (also `#THR-1039` promoted, with an emailed answer to file, `#THR-1031` bounced and Confidential, `#THR-1050` unmatched)
 - **Status:** done
 
 ## Scope
