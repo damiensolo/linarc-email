@@ -327,3 +327,19 @@ Follow-up (same day): applied in place to the production Input Field, Select Men
 Code Connect updated (P-061); the library is not published yet. Two new lessons:
 - Variants cloned inside a set lost their property bindings, so copy the refs back by layer path and assert on them.
 - Paints built with `setBoundVariableForPaint` on a placeholder colour keep that colour as the stored fallback, which screenshots render. Set the base colour to the resolved value.
+
+## F-038 · 2026-10-29 · Text buttons gave no hover feedback, and the Figma Notification Item still drew the old action
+
+Symptom: the user saw no hover feedback on the notification cards' text buttons (More, Acknowledge, Open step) and found the Figma Notification Item and its documentation unlike the app.
+How it was caught:
+- Design review.
+- A puppeteer probe hovered each card button and read the computed style. The background stayed transparent, and the secondary label went from #2b2e33 to #202226, a change no one can see.
+- The Figma Notification Item (40021136:37768) still drew one medium solid primary View Item, indented 32px, and its description said it had no code counterpart.
+- The app has drawn card actions as small text buttons, right-aligned under the content, since D-56 (2026-10-26). The library's default action was also still the solid button.
+What changed (D-63, library P-062):
+- Button `variant="text"` shows `surface/subtle` on hover and press, and the Figma Button Type=Text Hover / Active variants draw it.
+- The Figma Notification Item has an Actions row matching the app (Secondary Actions slot, then an exposed Primary Action text button, right-aligned), plus a Meta slot and a rewritten description.
+- NotificationItem's default action is a small primary text button, right-aligned. Its README, stories and Code Connect are updated.
+- The NotificationBar Code Connect waiver now parses.
+- The drawer's *snoozed* line is described as the *Show* text button it is.
+Case study: Y (a pattern decided in the app, D-56, stays half done until the library default and the Figma component follow; and a hover state that only changes text colour needs measuring, since a screenshot can't show it).

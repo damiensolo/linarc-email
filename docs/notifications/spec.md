@@ -169,7 +169,7 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Drawer › All | empty | *No notifications yet.* |
 | Drawer | loading | skeleton rows (three) after 200ms |
 | Drawer | error | *Couldn't load notifications.* + Retry |
-| Drawer | snoozed subtotal | *3 snoozed* link under the tabs (opens the Snoozed filter on the full page) |
+| Drawer | snoozed subtotal | *3 snoozed* line under the tabs with a *Show* text button (switches the drawer to All, where snoozed cards are listed) |
 | Card (Critical) | — | chip **Critical** · *Critical because the lead-lined partition answer is due today and Carlos Reyes confirmed on site that framing at Grid D-7 has stopped* · *Respond RFI-142: Level 2 Operating Room lead-lined partition termination* · RFI-142 · *Waiting on Kenji Takahashi* · chip **Due today** · *Acknowledge by 11:45 · then Carlos Reyes is told* · evidence line (*Carlos Reyes, 16 Oct 07:40: "…"*) · *More · Acknowledge · Open step* |
 | Card (Waiting) | — | title · *Respond step with Elena Rostova, PE, due 21 Oct* · *Due 21 Oct* · *Waiting on Elena Rostova* (the requester's routing word *You asked for this* appears only when the item has no eligible owner: *You asked for this · no eligible owner, with Carlos Reyes*) |
 | Card | covering | *Covering for Sarah Jenkins* |
@@ -187,7 +187,7 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Preferences › Delegation | active | *Alex Morgan is covering for you until 30 Oct. New items reach you both; what Alex Morgan can't see stays with you.* with *End cover* |
 | Lost access | — | *You no longer have access to this item.* |
 
-Buttons are label-only (D-17). A card's actions end bottom-right as text buttons, the primary colour on the card's own action only (D-56). Status is text plus colour, never colour alone.
+Buttons are label-only (D-17). A card's actions end bottom-right as text buttons, the primary colour on the card's own action only (D-56); text buttons show a subtle `surface/subtle` container on hover and press (D-63). The Figma Notification Item draws this row (Secondary Actions slot + Primary Action) and a Meta slot, so a card is one instance. Status is text plus colour, never colour alone.
 
 ## 13. Assumed platform behaviour, not shown
 
