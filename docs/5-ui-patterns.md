@@ -163,6 +163,7 @@ save: createLoad({ label: 'changes', action: { busy: 'Saving', done: 'Saved', er
 | **Read-only numbers in a table** | **Right-aligned**, `tabular-nums`, header right over them: values are compared down a column |
 | **Editing in a data-grid cell** | Right-aligned, matching the read-only column |
 
+- **Field sizes (D-64).** Form fields are 40 high: InputV2 (large by default) and SelectV2 `size="large"`, so a select lines up with the input next to it. Compact selects are SelectV2 `small` (32): the sandbox bar, a table cell (the preferences matrix), a toolbar or composer control. Every field has a 12px inset, its label 4 above and its helper 4 below. Don't override these with padding or height classes (library P-067, Figma P-061).
 - Don't right-align to "line up" inputs of different widths in a form; line them up on the left edge with the labels.
 - Check: at 1440 / 1024 / 390, every value sits under or next to its own label; no table input wider than its value needs; no horizontal page overflow.
 

@@ -14,7 +14,7 @@
   >
     <template #modal-body>
       <div class="flex flex-col gap-space-16 font-label">
-        <SelectV2 v-model="toId" label="Assign to" size="small" :options="people" :visible-item-count="8" />
+        <SelectV2 v-model="toId" label="Assign to" size="large" :options="people" :visible-item-count="8" />
         <div class="flex flex-col">
           <label :for="`fv2-${id}-note`" class="pb-space-8 font-medium text-fontsize-14 leading-lineheight-20 text-text-default">Note to the new owner (optional)</label>
           <TextareaField :field="noteField" :value="note" @input="note = $event" />

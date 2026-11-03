@@ -15,7 +15,7 @@
   >
     <template #modal-body>
       <div class="flex flex-col gap-space-16 font-label">
-        <SelectV2 v-model="event" label="Event" size="small" :options="config.events" :visible-item-count="8" :allow-search="false" />
+        <SelectV2 v-model="event" label="Event" size="large" :options="config.events" :visible-item-count="8" :allow-search="false" />
       </div>
     </template>
   </ModalV2>

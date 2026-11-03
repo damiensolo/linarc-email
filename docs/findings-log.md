@@ -328,6 +328,14 @@ Code Connect updated (P-061); the library is not published yet. Two new lessons:
 - Variants cloned inside a set lost their property bindings, so copy the refs back by layer path and assert on them.
 - Paints built with `setBoundVariableForPaint` on a placeholder colour keep that colour as the stored fallback, which screenshots render. Set the base colour to the resolved value.
 
+Follow-up (2026-10-31): the Vue components now follow Figma too (library P-067, linarc-email D-64).
+- InputV2, SelectV2, SelectV2ListItem and FormV2 SelectField / DateField draw the new geometry.
+- The app's form selects are `large`.
+- Measured in the running app:
+  - Fields: InputV2 40, SelectV2 large 40 and small 32; inset 12; text starts at 13 (12 + the 1px border); value 14/20; trigger icons 16 / 20; 1px border.
+  - The Simulate inbound modal's selects line up with its Subject input.
+- PhoneInput and DatePicker (legacy V1) are still to do. The app doesn't use either.
+
 ## F-038 · 2026-10-29 · Text buttons gave no hover feedback, and the Figma Notification Item still drew the old action
 
 Symptom: the user saw no hover feedback on the notification cards' text buttons (More, Acknowledge, Open step) and found the Figma Notification Item and its documentation unlike the app.

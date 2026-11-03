@@ -68,7 +68,7 @@
           <div class="flex flex-wrap items-end gap-space-16">
             <InputV2 v-model="prefs.quiet.from" label="From" type="time" class="w-space-124" />
             <InputV2 v-model="prefs.quiet.to" label="To" type="time" class="w-space-124" />
-            <SelectV2 v-model="prefs.quiet.tz" label="Time zone" size="small" :options="timezones" :allow-search="false" />
+            <SelectV2 v-model="prefs.quiet.tz" label="Time zone" size="large" :options="timezones" :allow-search="false" />
           </div>
           <p class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">Optional deliveries pause. Delivery failures and any Critical you own still reach your mailbox ({{ company }} policy).</p>
         </section>
@@ -85,7 +85,7 @@
           <template v-else>
             <p class="m-0 text-fontsize-14 leading-lineheight-20 text-text-subtle">Someone takes your open items while you are away. Temporary: it never transfers formal ownership, and what they can't see stays with you and the project fallback.</p>
             <div class="flex flex-wrap items-end gap-space-16">
-              <SelectV2 v-model="delegate" label="Delegate" size="small" :options="delegates" :allow-search="false" placeholder="Choose a team member" />
+              <SelectV2 v-model="delegate" label="Delegate" size="large" :options="delegates" :allow-search="false" placeholder="Choose a team member" />
               <InputV2 v-model="coverFrom" label="From" type="date" class="w-space-124" />
               <InputV2 v-model="coverTo" label="To" type="date" class="w-space-124" />
             </div>

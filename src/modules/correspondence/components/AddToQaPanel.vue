@@ -17,7 +17,7 @@
         <span class="text-fontsize-14 leading-lineheight-20 text-text-default">{{ senderName }}<span class="text-text-subtle"> · {{ senderCompany }}</span></span>
       </div>
 
-      <SelectV2 v-model="kind" label="Step type" class="w-full sm:w-1/2" :options="kindOptions" :allow-search="false" />
+      <SelectV2 v-model="kind" label="Step type" size="large" class="w-full sm:w-1/2" :options="kindOptions" :allow-search="false" />
 
       <div class="flex flex-col gap-space-4">
         <label for="fv2-qa-text" class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Text</label>

@@ -15,7 +15,7 @@
   >
     <template #modal-body>
       <div class="flex flex-col gap-space-16 font-label">
-        <SelectV2 v-model="from" label="From" size="small" :options="senderOptions" :visible-item-count="8" />
+        <SelectV2 v-model="from" label="From" size="large" :options="senderOptions" :visible-item-count="8" />
         <InputV2
           v-if="from === NEW"
           v-model="fromEmail"
@@ -25,13 +25,13 @@
           :state="fromEmail && !emailValid ? 'error' : 'default'"
           :error-message="fromEmail && !emailValid ? 'Enter a valid email address' : ''"
         />
-        <SelectV2 v-model="to" label="Sent to" size="small" :options="config.destinations" :visible-item-count="8" />
+        <SelectV2 v-model="to" label="Sent to" size="large" :options="config.destinations" :visible-item-count="8" />
         <InputV2 v-if="to === 'project'" v-model="subject" label="Subject" placeholder="What the mail is about" />
         <div class="flex flex-col">
           <label for="fv2-simulate-inbound-body" class="pb-space-8 font-medium text-fontsize-14 leading-lineheight-20 text-text-default">Message</label>
           <TextareaField :field="bodyField" :value="body" @input="body = $event" />
         </div>
-        <SelectV2 v-model="file" label="Attachment" size="small" :options="config.files" :allow-search="false" />
+        <SelectV2 v-model="file" label="Attachment" size="large" :options="config.files" :allow-search="false" />
       </div>
     </template>
   </ModalV2>
