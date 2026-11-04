@@ -33,14 +33,14 @@ try {
   const summary = async () => page.evaluate(() => { const el = document.querySelector('.load-status'); return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; });
   const rowActions = async () => page.evaluate(() => [...document.querySelectorAll('button')].filter((b) => b.offsetParent && ['Open', 'Link to record'].includes(b.textContent.trim())).map((b) => b.textContent.trim()));
 
-  check((await summary()) === '4 threads', `initial summary: ${await summary()}`);
-  check((await rowActions()).length === 4, `4 row actions (${(await rowActions()).join(', ')})`);
+  check((await summary()) === '12 threads', `initial summary: ${await summary()}`);
+  check((await rowActions()).length === 12, `12 row actions (${(await rowActions()).join(', ')})`);
   await page.screenshot({ path: `${out}/list-with-chrome.png` });
 
   await clickText('Overdue');
-  check((await summary()) === '1 of 4 threads', `Overdue segment → ${await summary()}`);
+  check((await summary()) === '1 of 12 threads', `Overdue segment → ${await summary()}`);
   await clickText('Unmatched');
-  check((await summary()) === '1 of 4 threads' && (await rowActions())[0] === 'Link to record', `Unmatched segment → ${await summary()}, action ${(await rowActions())[0]}`);
+  check((await summary()) === '1 of 12 threads' && (await rowActions())[0] === 'Link to record', `Unmatched segment → ${await summary()}, action ${(await rowActions())[0]}`);
   await page.screenshot({ path: `${out}/list-unmatched.png` });
 
   await clickText('Link to record', 'button');
@@ -61,7 +61,7 @@ try {
   await clickText('Link', 'button');
   await sleep(600);
   const afterLink = await summary();
-  check(afterLink === '0 of 4 threads', `after linking, Unmatched view → ${afterLink}`);
+  check(afterLink === '0 of 12 threads', `after linking, Unmatched view → ${afterLink}`);
   await clickText('All');
   const linkedCell = await page.evaluate(() => document.body.innerText.includes('[RMC-04] SUB-088 — Level 2 door frames'));
   check(linkedCell, 'subject gained the record prefix after linking');
@@ -81,7 +81,7 @@ try {
   await clickText('Reset demo data', 'button');
   await page.waitForNavigation({ waitUntil: 'networkidle0' }).catch(() => {});
   await sleep(500);
-  check((await summary()) === '4 threads', `after reset → ${await summary()}`);
+  check((await summary()) === '12 threads', `after reset → ${await summary()}`);
 } finally {
   await browser.close();
 }

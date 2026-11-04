@@ -8,7 +8,14 @@
        Row action: Open → the thread; on an Unmatched row, Link to record → a short ModalV2 (spec §4).
        Compose (today's primary action) opens the compose panel with no record pinned; sending opens the new thread.
        The meta line names the project address (D-42): mail forwarded or Bcc'd to it from Outlook or Gmail lands on this
-       list (Unmatched until linked). Plain text, no copy button: people set it up once, so it isn't an action. -->
+       list (Unmatched until linked). Plain text, no copy button: people set it up once, so it isn't an action.
+       Reading view (D-65, 2026-11-04): the second view in the grid toolbar's switcher (List · Reading pane; the Grid view
+       was removed in review on 2026-11-04, the list view is the table) renders
+       ReadingView inside the grid's frame: the ViewsPane (views with counts, object type, record, company, date; every
+       choice a condition in the grid's Filter panel), the ThreadList in the grid's display order, and the ReadingPane
+       behind a draggable divider. The segments and the meta line hide there (the pane lists the same views with counts,
+       so the panes start under the toolbar); the mode is kept in the demo
+       session and in the hash (`#reading`, `#reading=THR-1042`) so Back from a thread returns to the pane. -->
   <AppShell screen="email" title="Email">
     <!-- Title Bar / Page with the project address beside the title (review 2026-10-27): the one fact a visitor needs
          about this screen, read before the views. The title bar has a fixed height, so below 640px the line is hidden
@@ -25,7 +32,10 @@
 
     <template #content>
       <div class="flex h-full min-h-0 flex-col gap-space-16">
-        <div class="flex flex-wrap items-center gap-x-space-16 gap-y-space-8" aria-label="Views">
+        <!-- The Reading view has no meta line (review 2026-11-04): the pane carries the views and their counts, and the
+             row would only hold the thread count, so it goes and the panes start under the toolbar. First-load errors
+             still show in the LoadRegion; a refresh error has no "Couldn't update." line there. -->
+        <div v-if="mode !== 'reading'" class="flex flex-wrap items-center gap-x-space-16 gap-y-space-8" aria-label="Views">
           <!-- Five segments overflow a 390px screen: the strip scrolls in its own box (as the stepper, F-070). -->
           <div class="max-w-full overflow-x-auto">
             <SegmentedControl :value="view" :options="viewOptions" aria-label="Email view" size="md" @input="pickView" />
@@ -47,8 +57,9 @@
             :header="columns"
             :quick-filters="quickFilters"
             id-field="id"
-            :views="['grid', 'list']"
-            default-view="list"
+            :views="['list', 'reading']"
+            :custom-views="customViews"
+            :default-view="mode"
             :views-feature-enabled="true"
             :view-tabs="[]"
             :show-print="true"
@@ -57,6 +68,7 @@
             :row-height="40"
             height="100%"
             @filter-change="onFilterChange"
+            @view-change="onViewChange"
             @row-click="openRow"
           />
         </LoadRegion>
@@ -93,6 +105,7 @@
 </template>
 
 <script>
+import { PanelRight } from '@development/linarc-icons';
 import Button from '@/components/Button/Button.vue';
 import DataGrid from '@/components/DataGrid/index.vue';
 import ModalV2 from '@/componentsV2/ModalV2/ModalV2.vue';
@@ -103,11 +116,13 @@ import SmartPicker from '~/candidates/SmartPicker/SmartPicker.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
-import { go } from '~/modules/app/router';
+import { currentRoute, go } from '~/modules/app/router';
+import { session, setSetting } from '~/modules/session';
 import { PROJECT, ROLES, currentRole, setRole, visibleThreads, inboundSandbox, linkThreadToRecord, pickerRecords, suggestRecordIds, recentRecordIds, RECORD_KINDS } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
 import { VIEWS, VIEW_FIELD, emailRows, emailColumns, emailQuickFilters } from '~/modules/correspondence/emailColumns';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
+import ReadingView from '~/modules/correspondence/components/ReadingView.vue';
 
 /** The single view a filter config expresses ('all' when it has no view condition), or null when it is more. */
 function viewOf(config) {
@@ -122,6 +137,13 @@ function viewOf(config) {
   return null;
 }
 
+/** `#reading` or `#reading=THR-1042` asks for the Reading view (and a thread) on arrival; `yarn shot` uses it too. */
+function readingFromHash() {
+  const id = currentRoute().id || '';
+  if (!id.startsWith('reading')) return null;
+  return { selectedId: id.includes('=') ? id.slice(id.indexOf('=') + 1) : '' };
+}
+
 export default {
   name: 'CorrespondenceList',
   prototype: {
@@ -132,7 +154,12 @@ export default {
     events: eventsSandbox,
   },
   components: { AppShell, Button, DataGrid, ModalV2, SegmentedControl, LoadRegion, LoadStatus, SmartPicker, ComposePanel },
+  provide() {
+    return { readingContext: this.readingCtx };
+  },
   data() {
+    const asked = readingFromHash();
+    const mode = asked || session.settings.emailView === 'reading' ? 'reading' : 'list';
     return {
       project: PROJECT,
       role: currentRole(),
@@ -148,6 +175,21 @@ export default {
       linkBusy: false,
       linkKinds: RECORD_KINDS,
       composing: false,
+      // Reading view (D-65): the grid's second view, beside List (the Grid view was removed in review, 2026-11-04).
+      mode,
+      customViews: [{ id: 'reading', label: 'Reading pane', icon: PanelRight, component: ReadingView }],
+      // What ReadingView and its panes need from the screen (provide / inject: the grid passes a view only its services).
+      readingCtx: {
+        rows: [],
+        role: currentRole(),
+        selectedId: asked ? asked.selectedId : '',
+        paneWidth: session.settings.readingPaneWidth || null,
+        select: (id) => this.selectThread(id),
+        open: (id) => go('thread', id),
+        setFilters: (next) => this.$refs.grid && this.$refs.grid.setFilters(next),
+        setPaneWidth: (px) => this.setPaneWidth(px),
+        changed: () => this.fetch(),
+      },
     };
   },
   computed: {
@@ -171,6 +213,7 @@ export default {
   },
   created() {
     this.fetch();
+    this.syncHash();
   },
   beforeDestroy() {
     this.load.destroy();
@@ -181,6 +224,8 @@ export default {
         (signal) => mockRequest(() => emailRows(visibleThreads(this.role), this.$moment), { signal }),
         (rows) => {
           this.rows = rows;
+          this.readingCtx.rows = rows;
+          if (this.readingCtx.selectedId && !rows.some((r) => r.id === this.readingCtx.selectedId)) this.selectThread('');
           this.$nextTick(() => {
             this.syncCount();
             // A view chosen before the answer arrived (or kept across a refresh) is re-applied to the grid.
@@ -217,6 +262,29 @@ export default {
     syncCount() {
       const grid = this.$refs.grid;
       this.shown = grid ? grid.getDisplayRowCount() : this.rows.length;
+    },
+    /** The toolbar's view switcher: the mode is remembered for the session and written to the hash (D-65). */
+    onViewChange({ view }) {
+      this.mode = view;
+      setSetting('emailView', view);
+      this.syncHash();
+    },
+    selectThread(id) {
+      this.readingCtx.selectedId = id;
+      this.syncHash();
+    },
+    setPaneWidth(px) {
+      this.readingCtx.paneWidth = px;
+      setSetting('readingPaneWidth', px);
+    },
+    /** `#reading=THR-1042` while the pane is open, no hash otherwise; replaced in place so Back still leaves the screen. */
+    syncHash() {
+      const url = new URL(window.location.href);
+      const { selectedId } = this.readingCtx;
+      const next = this.mode === 'reading' ? `#reading${selectedId ? `=${encodeURIComponent(selectedId)}` : ''}` : '';
+      if (url.hash === next) return;
+      url.hash = next;
+      window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
     },
     onAction(row) {
       if (!row) return;

@@ -22,7 +22,7 @@ try {
   await sleep(4200);
   check(await has(page, 'Still loading'), 'slow: "Still loading…" after 5s');
   await sleep(2000);
-  check(await has(page, '4 threads'), 'slow: rows arrive (4 threads)');
+  check(await has(page, '12 threads'), 'slow: rows arrive (12 threads)');
   // fail: error + Retry
   await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=fail`, { waitUntil: 'networkidle0' });
   await sleep(1800);
@@ -33,7 +33,7 @@ try {
   check(await has(page, 'Retry'), 'fail-once: first request fails');
   await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Retry').click());
   await sleep(1800);
-  check(await has(page, '4 threads'), 'fail-once: Retry recovers (4 threads)');
+  check(await has(page, '12 threads'), 'fail-once: Retry recovers (12 threads)');
 } finally { await browser.close(); }
 console.log(failed ? 'LATENCY FAILED' : 'LATENCY OK');
 process.exit(failed ? 1 : 0);

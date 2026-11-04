@@ -3,6 +3,7 @@
 // promotions, resends) is merged from the session by `getThread()` (D-29). Statuses are keys into status.js.
 import { session } from '~/modules/session';
 import { TODAY, relDate, dayOf } from './project';
+import { ARCHIVE_THREADS } from './threads-archive';
 
 // Attachment: { id, name, sizeMb, byLink, url, thumbnailUrl?, posterUrl? } — over MAIL_SIZE_LIMIT_MB goes by secure link
 // (spec §5). `url` is the file in public/files/ (scripts/make-sample-files.mjs writes the PDFs); files attached in the
@@ -208,7 +209,7 @@ export const THREADS = Object.freeze([
 
 /** A thread with the session's changes merged: patched fields, appended entries and audit rows. */
 /** Static threads plus the ones started in this demo session (compose). */
-const allBase = () => [...THREADS, ...session.newThreads];
+const allBase = () => [...THREADS, ...ARCHIVE_THREADS, ...session.newThreads];
 
 export function getThread(id) {
   const base = allBase().find((t) => t.id === id);

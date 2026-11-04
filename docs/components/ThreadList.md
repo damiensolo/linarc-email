@@ -1,0 +1,59 @@
+# ThreadList
+
+- **Stage:** figma
+- **Proposed:** 2026-11-04 · **Used on:** `correspondence-list` (Reading view, D-65)
+- **Candidate code:** `src/candidates/ThreadList/ThreadList.vue`
+- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04, variables bound, unpublished) · **Library:** — · **Log:** —
+
+## Purpose
+The compact list of conversations beside a reading pane: one row per thread with who wrote last, when, the subject, the first line of the last message, a paperclip when files are attached and one status signal. It is the column a reader scans while the pane shows the selected thread; the table (grid / list views) stays the place to sort and compare columns.
+
+## Why not an existing component
+- **DataGrid ListView** draws table rows: one line, fixed columns, horizontal scroll at 400px. A conversation row is three lines (sender and time, subject, snippet) that truncate to the pane's width.
+- **NotificationItem** (P-054) is a card with a module icon, time, description and actions for an obligation; it has no sender / subject / snippet shape and ends with actions (D-56), which a list row must not.
+- **SelectV2ListItem detailed** is a two-line option for a menu, not a selectable list with a time column and a status.
+- Figma V3.2: no message row (`search_design_system` 2026-11-04: ThreadStream, mail icons).
+
+## Anatomy
+Rows divided by 1px `border/subtle` hairlines (D-17), 16px inset, 10px vertical:
+1. Line 1: **sender** (14/20 medium, `text/default`, truncates) · **time** (12/16 `text/subtle`, right).
+2. Line 2: **subject** (14/20 `text/default`, truncates).
+3. Line 3: **snippet** (12/16 `text/subtle`, truncates) · paperclip 14px `icon/inactive` when the thread has files · the `status` slot (one chip or nothing).
+Selected row: `surface/datatable/row-active` (the grid's active row), `aria-selected`. Hover: `surface/datatable/row-hover`. Loading: Skeleton lines in the same three-line layout. Empty: plain text (§3).
+
+## API
+| Prop | Type | Default | Notes |
+|---|---|---|---|
+| `items` | Array | `[]` | `{ id, from, time, subject, snippet, hasAttachments }` in display order (the grid's: search, filter, sort applied) |
+| `selectedId` | String | `''` | |
+| `loading` | Boolean | `false` | Skeleton rows |
+| `loadingRowCount` | Number | `8` | |
+| `emptyText` | String | `'No email matches.'` | |
+| `label` | String | `'Conversations'` | listbox name |
+
+Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter).
+
+## States and variants
+One size. Row: default, hover, selected, focused list (ring on the listbox). List: loading, empty, rows. No unread state: the module has no read receipts per person (status-model.md); a row's signal says whether it needs action. Both themes.
+
+## Tokens
+`surface/container`, `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16`, `label/sm/regular`, `label/sm/medium`, `label/xs/regular`.
+
+## Behaviour
+- Entries arrive resolved (names, labels, times); the component holds no module data.
+- Keyboard: the list is a `listbox` with `aria-activedescendant`; arrows move the selection and scroll it into view; Enter opens.
+- Scrolls inside itself; the host decides the width (the SplitPane's start pane).
+- Responsive: the host shows the list alone below 1024px and opens the thread screen on select.
+
+## Content
+Time as a mail client: the clock today (*10:14*), the day otherwise (*28 Oct*). The snippet is the first 140 characters of the last message, one line, no markup. Sender is the last message's author (*Dave Miller*), company omitted (the pane header carries it).
+
+## Open questions for design
+- An avatar at the left (as RecipientField's rows) or none (as Gmail)? Built without one to keep the row to three lines at 320px.
+- Should resolved threads read lighter (muted subject) rather than carrying no signal?
+
+## Acceptance (for promotion to the library)
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
+- [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
+- [ ] Used by at least one prototype through the library path; candidate folder deleted

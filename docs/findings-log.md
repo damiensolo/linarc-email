@@ -351,3 +351,18 @@ What changed (D-63, library P-062):
 - The NotificationBar Code Connect waiver now parses.
 - The drawer's *snoozed* line is described as the *Show* text button it is.
 Case study: Y (a pattern decided in the app, D-56, stays half done until the library default and the Figma component follow; and a hover state that only changes text colour needs measuring, since a screenshot can't show it).
+
+## F-039 · 2026-11-04 · A DataGrid custom view wiped the hidden filter columns, and the first pane tokens were the wrong blue
+
+Tags: design-system | tooling
+What happened:
+- The Email screen's Reading view is registered through DataGrid `customViews`. Switching to it from List, then back, showed every hidden filter-only column (View, Object type, Record, Company, Last activity within) in the grid: `onStandardViewClick` calls `columnModel.resetVisibility()` for any switch that is not grid ⇆ list or gantt / lookahead, and `resetVisibility` turns every `invisible` column on.
+- The selected row of the new list and the chosen view in the pane were first painted with `surface/primary/subtle`, which is #60a5fa (a mid blue), not a tint: the row read as a pressed button.
+- `yarn shot` and the interaction scripts failed to launch Edge again (F-041 pattern); Chrome through `EDGE_PATH` worked.
+Why it mattered: a view that leaks hidden columns breaks the screen it was added to; a saturated selection colour contradicts "colour means act here" (D-17).
+How it was caught: the view's interaction script (`scripts/interact-correspondence-reading.mjs`) asserts the list header after a round trip; the 1440 screenshot showed the blue row.
+What changed:
+- Library P-068: a switch to or from a `customViews` entry gets the gantt / lookahead exception (same ColumnModel, no visibility reset).
+- The selected row and the chosen view use `surface/datatable/row-active` (the grid's active-row tint, #eff6ff / #282e38) and hover `surface/datatable/row-hover`; the candidate docs and the pane follow.
+- The reading-view script runs with `EDGE_PATH` pointing at Chrome; nothing to change in the scripts.
+Case study: Y: a token's name says "subtle" but its value decides; check the value in `tokens.css` before using a tint, and give every custom DataGrid view a round-trip assertion.
