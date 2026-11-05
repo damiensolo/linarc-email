@@ -366,3 +366,26 @@ What changed:
 - The selected row and the chosen view use `surface/datatable/row-active` (the grid's active-row tint, #eff6ff / #282e38) and hover `surface/datatable/row-hover`; the candidate docs and the pane follow.
 - The reading-view script runs with `EDGE_PATH` pointing at Chrome; nothing to change in the scripts.
 Case study: Y: a token's name says "subtle" but its value decides; check the value in `tokens.css` before using a tint, and give every custom DataGrid view a round-trip assertion.
+
+## F-040 · 2026-11-04 · `vercel link --yes` appended duplicate ignore rules that would re-hide `.env.example`
+
+Tags: tooling | hosting
+What happened:
+- First deploy of this repo (D-09): no `.vercel/` link existed, so `vercel link --yes` created the project `linarc-email` under the team non-interactively. It also appended `.vercel` and `.env*` to `.gitignore` (already covered by `.vercel/`, `.env` and `.env.*` at the top) and wrote `.env.local` with a `VERCEL_OIDC_TOKEN`.
+- The appended `.env*` comes after `!.env.example`, so it would have ignored the example file again.
+Why it mattered: a template file silently dropping out of the repo on the next add; the token file must never be committed (F-001).
+How it was caught: `git status` after the link showed `.gitignore` modified; the diff was read before `yarn deploy`.
+What changed: the `.gitignore` edit was reverted (`git checkout -- .gitignore`); `.env.local` stays, ignored by the existing `.env.*` rule. Production URL: https://linarc-email.vercel.app (200 anonymously; the new build's Reading view is in the bundle).
+Case study: Y: after any CLI "link" or "init", diff `.gitignore` before trusting it.
+
+## F-041 · 2026-11-04 · The Email demo guide drifted because nothing ran it as written
+
+Tags: process | docs
+What happened:
+- The Email guide (`docs/correspondence/demo-guide.md`) had no walkthrough script, unlike the Notifications guide (80/80). Writing one (`scripts/demo-correspondence-walkthrough.mjs`) found six stale or wrong steps: step 9 quoted reset counts (All 12) although Act 1 has already sent a thread (All 13); "Dave Miller's row" is Marcus Vance's row once his portal reply lands (the list shows the last sender); step 5 promised an RFI-143.pdf chip and "a line under the chips" that exist only on the RFI compose and as the ⓘ tooltip; step 10 said *Open* (a table action) where the default Reading pane offers *Open thread*; step 16's *Link to record* is a table row action the Reading pane does not have; §9's bell count was 1, not 2 (Kenji's answer, 2026-10-28).
+- Three selector facts the script needed and the per-screen scripts never did: *Reset demo data* renders only once the session changed; the receipt's *Open* is an `<a>` in the sandbox bar, not a button; the inbound modal's SelectV2 labels are not `<label>` elements (found by current value), and typing into one appends to the shown value instead of filtering.
+- The thread of Act 1 and Act 2b's revision email both count in the table total (15 threads at step 16), so the guide states where totals come from.
+Why it mattered: a presenter reading counts and button names that the screen does not show loses the room.
+How it was caught: the review question "is the guide up to date?"; the script then failed exactly on the stale steps.
+What changed: the guide's steps 2, 5, 8, 9, 10, 12, 14, 15, 16, 17, §5, §8 and §9; the walkthrough (87 checks, exit 0) listed in §2 and §8.
+Case study: Y: a demo guide is a test script (memory note); write the walkthrough with the guide, and quote counts at the step's point in the flow, never at reset.
