@@ -114,9 +114,9 @@ try {
   await page.screenshot({ path: `${out}/rfi-after-send.png` });
 
   // --- Compose from the Email screen → lands on the new thread
-  await page.goto(`http://localhost:${port}/?p=correspondence-list&theme=light`, { waitUntil: 'networkidle0' });
+  await page.goto(`http://localhost:${port}/?p=correspondence-list&theme=light#list`, { waitUntil: 'networkidle0' });
   await sleep(300);
-  check(await has('5 threads') || await has('6 threads'), `list now includes the new thread (${await page.evaluate(() => (document.body.innerText.match(/\d+ threads/) || [''])[0])})`);
+  check(await has('13 threads') || await has('14 threads'), `list now includes the new thread (${await page.evaluate(() => (document.body.innerText.match(/\d+ threads/) || [''])[0])})`);
   await click('Compose');
   await sleep(700);
   check(await page.evaluate(() => { const d = document.querySelector('[role="dialog"]'); return !!(d && d.querySelector('.rf')) && !d.textContent.includes('Linked record'); }), 'compose panel open from the Email screen (no record pinned)');

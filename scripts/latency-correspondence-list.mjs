@@ -15,7 +15,7 @@ try {
   const page = await browser.newPage();
   await page.setViewport({ width: 1440, height: 900 });
   // slow: skeleton, then "Still loading…" after 5s, then rows
-  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=slow`, { waitUntil: 'domcontentloaded' });
+  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=slow#list`, { waitUntil: 'domcontentloaded' });
   await sleep(1500);
   const skeleton = await page.evaluate(() => !!document.querySelector('[aria-busy="true"]'));
   check(skeleton, 'slow: region is aria-busy after 1.5s');
@@ -24,11 +24,11 @@ try {
   await sleep(2000);
   check(await has(page, '12 threads'), 'slow: rows arrive (12 threads)');
   // fail: error + Retry
-  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=fail`, { waitUntil: 'networkidle0' });
+  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=fail#list`, { waitUntil: 'networkidle0' });
   await sleep(1800);
   check((await has(page, "Couldn't load the email")) && (await has(page, 'Retry')), 'fail: "Couldn\'t load email." with Retry');
   // fail-once: Retry recovers
-  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=fail-once`, { waitUntil: 'networkidle0' });
+  await page.goto(`http://localhost:${port}/?p=correspondence-list&chrome=0&latency=fail-once#list`, { waitUntil: 'networkidle0' });
   await sleep(1800);
   check(await has(page, 'Retry'), 'fail-once: first request fails');
   await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Retry').click());

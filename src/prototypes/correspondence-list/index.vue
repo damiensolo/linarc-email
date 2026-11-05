@@ -14,8 +14,9 @@
        ReadingView inside the grid's frame: the ViewsPane (views with counts, object type, record, company, date; every
        choice a condition in the grid's Filter panel), the ThreadList in the grid's display order, and the ReadingPane
        behind a draggable divider. The segments and the meta line hide there (the pane lists the same views with counts,
-       so the panes start under the toolbar); the mode is kept in the demo
-       session and in the hash (`#reading`, `#reading=THR-1042`) so Back from a thread returns to the pane. -->
+       so the panes start under the toolbar). The Reading pane is the default view (review 2026-11-04); a switch to List
+       is kept in the demo session, and the hash (`#reading=THR-1042`, `#list`) asks for a view on arrival, so Back from a
+       thread returns to the pane with its thread. -->
   <AppShell screen="email" title="Email">
     <!-- Title Bar / Page with the project address beside the title (review 2026-10-27): the one fact a visitor needs
          about this screen, read before the views. The title bar has a fixed height, so below 640px the line is hidden
@@ -137,11 +138,15 @@ function viewOf(config) {
   return null;
 }
 
-/** `#reading` or `#reading=THR-1042` asks for the Reading view (and a thread) on arrival; `yarn shot` uses it too. */
-function readingFromHash() {
+/**
+ * The hash can ask for a view on arrival: `#reading=THR-1042` opens a thread in the Reading pane (the default view since
+ * 2026-11-04), `#list` opens the table (the interaction scripts and `yarn shot correspondence-list#list` use it).
+ */
+function modeFromHash() {
   const id = currentRoute().id || '';
+  if (id === 'list') return { mode: 'list', selectedId: '' };
   if (!id.startsWith('reading')) return null;
-  return { selectedId: id.includes('=') ? id.slice(id.indexOf('=') + 1) : '' };
+  return { mode: 'reading', selectedId: id.includes('=') ? id.slice(id.indexOf('=') + 1) : '' };
 }
 
 export default {
@@ -158,8 +163,9 @@ export default {
     return { readingContext: this.readingCtx };
   },
   data() {
-    const asked = readingFromHash();
-    const mode = asked || session.settings.emailView === 'reading' ? 'reading' : 'list';
+    const asked = modeFromHash();
+    // Reading pane is the default (review 2026-11-04); the session remembers a switch to List.
+    const mode = asked ? asked.mode : session.settings.emailView === 'list' ? 'list' : 'reading';
     return {
       project: PROJECT,
       role: currentRole(),
@@ -213,6 +219,8 @@ export default {
   },
   created() {
     this.fetch();
+    // A view asked for in the hash is remembered like a switch, so a role change (remount) keeps it.
+    if (modeFromHash()) setSetting('emailView', this.mode);
     this.syncHash();
   },
   beforeDestroy() {
@@ -277,11 +285,12 @@ export default {
       this.readingCtx.paneWidth = px;
       setSetting('readingPaneWidth', px);
     },
-    /** `#reading=THR-1042` while the pane is open, no hash otherwise; replaced in place so Back still leaves the screen. */
+    /** `#reading=THR-1042` while a thread is open in the pane, `#list` for the table, no hash otherwise; replaced in place so Back still leaves the screen. */
     syncHash() {
       const url = new URL(window.location.href);
       const { selectedId } = this.readingCtx;
-      const next = this.mode === 'reading' ? `#reading${selectedId ? `=${encodeURIComponent(selectedId)}` : ''}` : '';
+      // `#list` stays in the URL while the table is shown, so a reload or Reset demo data keeps the table (the scripts rely on it).
+      const next = this.mode === 'list' ? '#list' : selectedId ? `#reading=${encodeURIComponent(selectedId)}` : '';
       if (url.hash === next) return;
       url.hash = next;
       window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);

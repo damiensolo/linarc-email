@@ -92,8 +92,18 @@ try {
   const headers = await page.evaluate(() => [...document.querySelectorAll('.dg-list-header-cell')].map((h) => h.textContent.trim()).filter(Boolean));
   check(!headers.some((h) => ['OBJECT TYPE', 'RECORD', 'COMPANY', 'LAST ACTIVITY WITHIN', 'VIEW'].includes(h.toUpperCase())), `hidden filter columns stay hidden (${headers.join(', ')})`);
   check((await summary()) === '3 of 12 threads', `the RFI filter is still applied in the list: ${await summary()}`);
-  check((await page.evaluate(() => location.hash)) === '', 'hash cleared outside the Reading view');
+  check((await page.evaluate(() => location.hash)) === '#list', `hash says #list in the table view (${await page.evaluate(() => location.hash)})`);
   await page.screenshot({ path: `${out}/reading-back-to-list.png` });
+
+  // A fresh tab with no hash lands in the Reading pane (the default since 2026-11-04)
+  const fresh = await browser.createBrowserContext();
+  const p2 = await fresh.newPage();
+  await p2.setViewport({ width: 1440, height: 900 });
+  await p2.goto(`http://localhost:${port}/?p=correspondence-list&theme=light&chrome=0`, { waitUntil: 'networkidle0' });
+  await sleep(400);
+  check(await p2.evaluate(() => !!document.querySelector('.rv-root') && !document.querySelector('[aria-label="Email view"]') && location.hash === ''), 'a plain load opens the Reading pane with nothing selected and no hash');
+  await p2.screenshot({ path: `${out}/reading-default.png` });
+  await fresh.close();
 
   // Narrow: the list alone
   await page.click('button[title="Reading pane"]');

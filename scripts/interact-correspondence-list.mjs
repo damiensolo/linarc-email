@@ -17,7 +17,7 @@ try {
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
   page.on('console', (m) => { if (m.type() === 'error' || m.text().includes('[Vue warn]')) errors.push(`${m.type()}: ${m.text()}`); });
   await page.setViewport({ width: 1440, height: 900 });
-  await page.goto(`http://localhost:${port}/?p=correspondence-list&theme=light`, { waitUntil: 'networkidle0' });
+  await page.goto(`http://localhost:${port}/?p=correspondence-list&theme=light#list`, { waitUntil: 'networkidle0' });
   await page.evaluate(() => document.fonts.ready);
   const clickText = async (text, tags = 'button, [role="option"], li, span, div, label') => {
     const done = await page.evaluate((text, tags) => {
