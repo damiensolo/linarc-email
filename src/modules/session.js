@@ -27,6 +27,7 @@ const empty = () => ({
   revokedLinks: {}, // token → true
   linkReplies: {}, // token → true once the recipient replied from the page
   drafts: {}, // threadId → a saved reply { mode, html, text, attachments, savedAt } (Save draft in the composer)
+  removedDrafts: {}, // draft key → true once a seeded draft (data/drafts.js) was sent or discarded (D-67)
   // Notifications (src/modules/notifications/data/, docs/notifications/spec.md). Items are derived (D-55); only what a person did
   // is stored, keyed `<itemKey>|<personId>` where it is personal.
   ntfEngagement: {}, // item|person → { seenAt, acknowledgedAt }
@@ -115,6 +116,12 @@ export function revokeLink(token) {
 export function setDraft(threadId, draft) {
   if (draft) Vue.set(session.drafts, threadId, draft);
   else Vue.delete(session.drafts, threadId);
+  persistSession();
+}
+
+/** A seeded draft that was sent or discarded stays gone for the session (D-67). */
+export function markDraftRemoved(key) {
+  Vue.set(session.removedDrafts, key, true);
   persistSession();
 }
 

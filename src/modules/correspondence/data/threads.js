@@ -92,6 +92,7 @@ export const THREADS = Object.freeze([
 
   {
     id: 'THR-1039',
+    unreadBy: ['usr-sarah', 'usr-alex'], // Kenji's answer this morning, not opened yet (D-67)
     subject: '[RMC-04] RFI-142 — Level 2 OR lead-lined drywall termination',
     // Needs action: Kenji's answer came back by email this morning and waits for *Add to Q&A* (D-49). Seed data since
     // 2026-10-28, as the Documentation file's screen 09 draws it, so the flow needs no simulated mail.
@@ -179,6 +180,7 @@ export const THREADS = Object.freeze([
   // Mail sent straight to the project address with no thread to join: the Unmatched view (spec §4, Q-06).
   {
     id: 'THR-1050',
+    unreadBy: ['usr-sarah', 'usr-alex', 'usr-carlos'], // arrived at 07:58, nobody has opened it (D-67)
     subject: 'Level 2 door frames — card reader rough-in holding us up',
     triage: 'needs_action',
     visibility: 'project_public',
@@ -207,10 +209,16 @@ export const THREADS = Object.freeze([
   },
 ]);
 
-/** A thread with the session's changes merged: patched fields, appended entries and audit rows. */
 /** Static threads plus the ones started in this demo session (compose). */
 const allBase = () => [...THREADS, ...ARCHIVE_THREADS, ...session.newThreads];
 
+/** Deleted (D-67): soft, in the Deleted view until restored; out of the inbox, the record Email tabs and the counts. */
+export const isDeleted = (thread) => !!thread.deletedAt;
+
+/** Unread (D-67): `unreadBy` lists who has not opened the thread since its last message; opening it removes the viewer. */
+export const isUnreadFor = (thread, personId) => (thread.unreadBy || []).includes(personId);
+
+/** A thread with the session's changes merged: patched fields, appended entries and audit rows. */
 export function getThread(id) {
   const base = allBase().find((t) => t.id === id);
   if (!base) return null;
@@ -218,10 +226,14 @@ export function getThread(id) {
   const entries = [...base.entries, ...(session.threadEntries[id] || [])].sort((a, b) => a.sentAt.localeCompare(b.sentAt));
   const audit = [...base.audit, ...(session.threadAudit[id] || [])].sort((a, b) => a.at.localeCompare(b.at));
   const linkedRecordIds = [...base.linkedRecordIds, ...(patch.addLinkedRecordIds || [])];
-  return { ...base, ...patch, entries, audit, linkedRecordIds };
+  return { unreadBy: [], deletedAt: null, ...base, ...patch, entries, audit, linkedRecordIds };
 }
 
-export const getThreads = () => allBase().map((t) => getThread(t.id));
+/** Every thread that is not deleted (the inbox, the record tabs, Notifications, the sandbox's reply destinations). */
+export const getThreads = () => allBase().map((t) => getThread(t.id)).filter((t) => !isDeleted(t));
+
+/** The deleted threads (the Email screen's Deleted view, D-67). */
+export const getDeletedThreads = () => allBase().map((t) => getThread(t.id)).filter(isDeleted);
 
 /** The next thread id for a thread started in the demo. */
 export const nextThreadId = () => `THR-${1051 + session.newThreads.length}`;
@@ -279,6 +291,9 @@ export function viewFor(thread, role) {
 }
 
 export const visibleThreads = (role) => getThreads().map((t) => viewFor(t, role)).filter(Boolean);
+
+/** The deleted threads a role may see (D-67). */
+export const deletedThreads = (role) => getDeletedThreads().map((t) => viewFor(t, role)).filter(Boolean);
 
 /** Threads linked to a record, for its Email tab. */
 export const threadsForRecord = (recordId, role) => visibleThreads(role).filter((t) => t.linkedRecordIds.includes(recordId) || t.promotedRecordId === recordId);

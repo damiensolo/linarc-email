@@ -34,4 +34,28 @@ const SlaDue = {
 
 registerSlotType('sla-due', SlaDue);
 
-export const CORRESPONDENCE_SLOT_TYPES = ['sla-due'];
+//   'emph-text'  A text value whose weight follows the row (D-67): bold while the thread is unread for the viewer,
+//                as a mail client's Subject and From; the plain label text otherwise.
+const EmphText = {
+  name: 'EmphTextSlot',
+  props: {
+    row: { type: Object, default: () => ({}) },
+    value: { type: null, default: null },
+    column: { type: Object, default: () => ({}) },
+    slotProps: { type: Object, default: () => ({}) },
+  },
+  computed: {
+    cp() {
+      // componentProps: { value: (row) => string, bold: (row) => boolean }
+      return resolveComponentProps(this.slotProps.componentProps, this.row);
+    },
+  },
+  render(h) {
+    const text = this.cp.value == null ? '' : String(this.cp.value);
+    return h('span', { class: ['block min-w-0 truncate font-label text-fontsize-14 leading-lineheight-20 text-text-default', this.cp.bold ? 'font-bold' : ''], attrs: { title: text, 'data-unread': this.cp.bold ? 'true' : null } }, text);
+  },
+};
+
+registerSlotType('emph-text', EmphText);
+
+export const CORRESPONDENCE_SLOT_TYPES = ['sla-due', 'emph-text'];

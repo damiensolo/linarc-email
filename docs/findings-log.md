@@ -389,3 +389,23 @@ Why it mattered: a presenter reading counts and button names that the screen doe
 How it was caught: the review question "is the guide up to date?"; the script then failed exactly on the stale steps.
 What changed: the guide's steps 2, 5, 8, 9, 10, 12, 14, 15, 16, 17, §5, §8 and §9; the walkthrough (87 checks, exit 0) listed in §2 and §8.
 Case study: Y: a demo guide is a test script (memory note); write the walkthrough with the guide, and quote counts at the step's point in the flow, never at reset.
+
+## F-042 · 2026-11-06 · Cost impact was a list-only, seed-only field; the thread never showed it
+Tags: docs | figma
+What happened: Explaining the status model showed that `estimatedCostImpact` appeared only as the Email screen's column. The thread screen (where the PM reads the message that raised the cost) had nowhere for it, the RFI's cost is a separate record field seeded by hand to agree, and no decision had placed cost on the thread; `spec.md` §3 only said who may see it. While drawing the change, the 02 · Email thread frame still carried the forward-address line removed from the screen on 2026-10-27.
+Why it mattered: A number on the list that the detail does not repeat reads as a bug in review, and a field with no placement decision gets dropped quietly in the next redesign.
+How it was caught: The question "where does cost impact come from and why isn't it on the details?".
+What changed: Code: `costImpactText` in `view.js` shared by the list column, the thread title bar and the Reading pane header (D-66). Docs: `spec.md` §3, §6.0, Q-15; `screens.md`; the thread record. Figma: the text group after the Status chip on 02 · Email thread and 05 · Email — Reading pane. The stale forward-address line is left for design to remove.
+Case study: Y: when a field is role-gated in the visibility table, record where it shows on each screen, not only who sees it.
+
+## F-043 · 2026-11-06 · A sticky reply footer: Chrome keeps it inside the scroller's content box, and a component root hides it
+
+Tags: css | tooling
+What happened:
+- The composer's chips and tool row were made `position: sticky; bottom: 0` so Send and the attachments stay in view (D-67). First try: nothing stuck. A sticky element sticks within its parent box, and the composer's root (a short flex column) was that parent: it was never taller than the viewport, so there was nothing to stick against.
+- Second try: the composer's root became `display: contents` (Tailwind `contents`), so its two parts are children of the host's tall column. Now the footer stuck, 20px short of the scroller's bottom edge, with the thread showing through the gap: Chrome keeps a sticky element inside the scroll container's *content* box, so the scroller's 20px padding stayed visible under it. Negative margins did nothing (sticky ignores the margin box here).
+- The DataGrid's row checkboxes render only on hover or when checked (`showCheckbox`): a script checks a row by clicking its sequence cell (`.dg-list-cell--seq`), not an `input`. Every deleted row also carries a *Restore* action, so a script that clicks "the last visible Restore" restores the wrong thread; the toolbar's button has to be addressed through `.dg-toolbar--selection`.
+Why it mattered: the whole point of the footer is that it sits on the edge; a 20px band of scrolling text under it looks broken.
+How it was caught: `getBoundingClientRect()` of the footer against its scroll container in a puppeteer check (now `interact-correspondence-mail.mjs`, "sticks flush").
+What changed: Composer.vue's root is `contents`; hosts pass `footerClass` with `-bottom-space-20 pb-space-20` (the scroller's padding as the sticky offset) and their side bleed; `scripts/interact-correspondence-mail.mjs` asserts the footer's bottom equals the scroller's.
+Case study: Y: a sticky element needs a tall parent and an offset equal to the scroller's padding; measure it, don't eyeball it.

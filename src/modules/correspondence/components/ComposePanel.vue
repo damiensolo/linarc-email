@@ -90,9 +90,16 @@
         <template #footer><span /></template>
       </FormV2>
 
-      <!-- 7. Attachments (today, upgraded; D-58): added from the tool row below, shown as chips; the record's PDF is on
-           by default (today's checkbox) and can be removed; over the mail limit goes by secure link instead of being refused -->
-      <div class="flex flex-col gap-space-8">
+      <!-- The project address where mail is composed (D-42, spec §4): replies thread by themselves; other mail is forwarded or Bcc'd. -->
+      <p class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">Replies from any mail client come back to this thread. To file other mail in this project, forward or Bcc it to {{ PROJECT.inboundAddress }}.</p>
+    </div>
+
+    <!-- 7. Attachments and the tool row live in the panel's fixed footer (D-67, 2026-11-06): the chips, Send and the
+         attach tools stay in view however long the message is. Attachments (today, upgraded; D-58): added from the
+         tool row, shown as chips; the record's PDF is on by default (today's checkbox) and can be removed; over the
+         mail limit goes by secure link instead of being refused. -->
+    <template #footer>
+      <div class="flex w-full flex-col gap-space-8 font-label">
         <div class="flex items-center gap-space-4">
           <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Attachments</span>
           <!-- The how and the limit live in a tooltip on a help icon (keyboard: focus it), not in a line of body text -->
@@ -101,16 +108,10 @@
               <CircleHelp :size="16" :stroke-width="1.75" aria-hidden="true" />
             </span>
           </Tooltip>
+          <span v-if="!attachments.length" class="ml-space-4 text-fontsize-12 leading-lineheight-16 text-text-subtle">Nothing attached yet.</span>
         </div>
-        <AttachmentChips :attachments="attachments" :disabled="busy" @remove="removeAttachment" />
-        <span v-if="!attachments.length" class="text-fontsize-12 leading-lineheight-16 text-text-subtle">Nothing attached yet.</span>
+        <AttachmentChips v-if="attachments.length" :attachments="attachments" :disabled="busy" @remove="removeAttachment" />
       </div>
-
-      <!-- The project address where mail is composed (D-42, spec §4): replies thread by themselves; other mail is forwarded or Bcc'd. -->
-      <p class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">Replies from any mail client come back to this thread. To file other mail in this project, forward or Bcc it to {{ PROJECT.inboundAddress }}.</p>
-    </div>
-
-    <template #footer>
       <MessageTools
         :attachments="attachments"
         send-label="Send"
@@ -144,7 +145,8 @@ import { getPerson, getPeople } from '../data/people';
 import { getRecord, recordLabel } from '../data/records';
 import { createThread, defaultResponseDue, recordAttachment } from '../data/actions';
 import { rfiRecipients } from '../data/rfi';
-import { session, setDraft } from '~/modules/session';
+import { setDraft } from '~/modules/session';
+import { draftFor, clearDraft } from '../data/drafts';
 import AttachmentChips from './AttachmentChips.vue';
 import MessageTools from './MessageTools.vue';
 import { textOf } from '../text';
@@ -244,7 +246,7 @@ export default {
       return `compose:${this.recordId || 'email'}${this.pinId ? `:${this.pinId}` : ''}`;
     },
     hasSavedDraft() {
-      return !!session.drafts[this.draftKey];
+      return !!draftFor(this.draftKey);
     },
     /** Everything the draft is made of, as one comparable string. */
     snapshotKey() {
@@ -292,7 +294,7 @@ export default {
     },
     /** The draft kept for this context comes back as it was left; false when there is none. */
     restore() {
-      const d = session.drafts[this.draftKey];
+      const d = draftFor(this.draftKey);
       if (!d) return false;
       this.reset();
       this.to = d.to || [];
@@ -317,7 +319,7 @@ export default {
       this.$emit('close');
     },
     discard() {
-      setDraft(this.draftKey, null);
+      clearDraft(this.draftKey);
       this.reset();
     },
     addTo(row, recipient) {
@@ -356,7 +358,7 @@ export default {
         pinId: this.pinId,
         responseDueAt: this.values.dueOn ? `${this.values.dueOn}T17:00:00` : null,
       });
-      setDraft(this.draftKey, null);
+      clearDraft(this.draftKey);
       this.$emit('sent', thread);
     },
   },

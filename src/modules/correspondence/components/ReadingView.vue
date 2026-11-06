@@ -1,24 +1,43 @@
 <template>
   <!-- The Email screen's Reading view (D-65): a DataGrid view registered through `customViews`, chosen from the grid
-       toolbar's view switcher beside List (the Grid view was removed in review, 2026-11-04). Three panes inside the grid's frame: the ViewsPane candidate at the
-       left (views with counts, object type, record, company, date: each a condition in the grid's Filter panel, D-30),
-       the ThreadList candidate in the middle (the grid's display order: the toolbar's search, sort and filters apply),
-       and the ReadingPane at the right behind the SplitPane candidate's divider (width kept per demo session).
-       The grid passes its services as props; the screen passes everything else through `readingContext` (provide /
-       inject), since the grid forwards no other props to a view. Below 1024px the list is the whole view: the pane and
-       the divider hide and a row opens the thread screen. -->
+       toolbar's view switcher beside List (the Grid view was removed in review, 2026-11-04). Three panes inside the
+       grid's frame: the ViewsPane candidate at the left (views with counts, object type, record, company, date: each a
+       condition in the grid's Filter panel, D-30; Drafts and Deleted are folders, D-67: a different row set), the
+       ThreadList candidate in the middle (the grid's display order: the toolbar's search, sort and filters apply) under
+       a slim bar whose segmented control picks the list's layout (Preview: three lines · List: one line; D-67, kept
+       per demo session), and the ReadingPane at the right behind the SplitPane candidate's divider (width kept per
+       demo session). The grid passes its services as props; the screen passes everything else through
+       `readingContext` (provide / inject), since the grid forwards no other props to a view. Below 1024px the list is
+       the whole view: the pane and the divider hide and a row opens the thread screen. -->
   <div ref="root" class="rv-root flex min-h-0 w-full flex-1 overflow-hidden rounded-radius-6 border border-border-subtle bg-surface-container">
     <ViewsPane v-if="wide" class="rv-views shrink-0 border-r border-border-subtle" :sections="sections" @change="onPaneChange" />
     <SplitPane :value="ctx.paneWidth" :default-value="640" :min="360" :min-start="280" :stacked="!wide" label="Resize the reading pane" class="min-w-0 flex-1" @input="ctx.setPaneWidth($event)">
       <template #start>
-        <ThreadList :items="items" :selected-id="ctx.selectedId" :loading="loading" :loading-row-count="loadingRowCount" empty-text="No email matches." @select="select" @open="ctx.open($event)">
-          <template #status="{ item }">
-            <StatusChip v-if="item.signal" :label="item.signal.label" :status="item.signal.status" fill-style="outline" type="default" :removable="false" class="shrink-0" />
-          </template>
-        </ThreadList>
+        <div class="flex h-full min-h-0 w-full flex-col">
+          <div class="rv-listbar flex shrink-0 items-center justify-between gap-space-8 border-b border-border-subtle px-space-12 py-space-4">
+            <SegmentedControl :value="ctx.listLayout" :options="layouts" aria-label="Conversation layout" size="md" @input="ctx.setListLayout($event)" />
+          </div>
+          <ThreadList :items="items" :layout="ctx.listLayout" :selected-id="ctx.selectedId" :loading="loading" :loading-row-count="loadingRowCount" :empty-text="ctx.emptyText || 'No email matches.'" @select="select" @open="open">
+            <template #status="{ item }">
+              <StatusChip v-if="item.signal" :label="item.signal.label" :status="item.signal.status" fill-style="outline" type="default" :removable="false" class="shrink-0" />
+            </template>
+          </ThreadList>
+        </div>
       </template>
       <template #end>
-        <ReadingPane :thread-id="ctx.selectedId" :role="ctx.role" class="border-l border-border-subtle" @open="ctx.open($event)" @changed="ctx.changed($event)" />
+        <ReadingPane
+          :thread-id="ctx.selectedId"
+          :role="ctx.role"
+          :deleted="ctx.folder === 'deleted'"
+          :empty-text="ctx.folder === 'drafts' ? 'A draft opens in the compose panel. Pick one from the list.' : 'Select an email to read it here.'"
+          class="border-l border-border-subtle"
+          @open="ctx.open($event)"
+          @changed="ctx.changed($event)"
+          @read="ctx.read($event)"
+          @unread="ctx.markUnread($event)"
+          @delete="ctx.remove($event)"
+          @restore="ctx.restore($event)"
+        />
       </template>
     </SplitPane>
   </div>
@@ -26,12 +45,13 @@
 
 <script>
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
+import SegmentedControl from '@/componentsV2/SegmentedControl/SegmentedControl.vue';
 import ViewsPane from '~/candidates/ViewsPane/ViewsPane.vue';
 import ThreadList from '~/candidates/ThreadList/ThreadList.vue';
 import SplitPane from '~/candidates/SplitPane/SplitPane.vue';
 import { TRIAGE, SLA, toneToChipStatus } from '~/modules/app/status';
 import { recordLabel, linkableRecords } from '~/modules/correspondence/data';
-import { VIEWS, VIEW_FIELD, KIND_FIELD, RECORD_FIELD, COMPANY_FIELD, ACTIVITY_FIELD, KIND_OPTIONS, ACTIVITY_OPTIONS } from '~/modules/correspondence/emailColumns';
+import { VIEWS, VIEW_FIELD, KIND_FIELD, RECORD_FIELD, COMPANY_FIELD, ACTIVITY_FIELD, KIND_OPTIONS, ACTIVITY_OPTIONS, isFolderView } from '~/modules/correspondence/emailColumns';
 import ReadingPane from './ReadingPane.vue';
 
 const WIDE = 1024;
@@ -47,7 +67,7 @@ function conditionValue(config, field) {
 
 export default {
   name: 'ReadingView',
-  components: { StatusChip, ViewsPane, ThreadList, SplitPane, ReadingPane },
+  components: { StatusChip, SegmentedControl, ViewsPane, ThreadList, SplitPane, ReadingPane },
   inject: ['readingContext'],
   props: {
     // What DataGrid passes to every view (index.vue activeViewProps); the rest is ignored here.
@@ -62,11 +82,16 @@ export default {
       displayIds: [],
       filterConfig: { conditions: [], groups: [] },
       wide: window.innerWidth >= WIDE,
+      layouts: [
+        { label: 'Preview', value: 'preview' },
+        { label: 'List', value: 'list' },
+      ],
     };
   },
   computed: {
-    rows() {
-      return this.ctx.rows || [];
+    /** The inbox rows: the counts and the facets are always the inbox's, whichever folder is shown (D-67). */
+    inboxRows() {
+      return this.ctx.inboxRows || [];
     },
     /** The list's rows in the grid's display order (search, filter and sort applied). */
     items() {
@@ -77,6 +102,7 @@ export default {
         subject: r.subject,
         snippet: r.snippet,
         hasAttachments: r.hasAttachments,
+        unread: !!r.unread,
         signal: this.signalFor(r),
       }));
     },
@@ -85,7 +111,8 @@ export default {
       return Array.isArray(v) ? v : v ? [v] : [];
     },
     sections() {
-      const rows = this.rows;
+      const rows = this.inboxRows;
+      const counts = this.ctx.counts || {};
       const count = (test) => rows.filter(test).length;
       const kinds = this.kindsValue;
       const kindWord = kinds.length === 1 ? (KIND_OPTIONS.find((k) => k.value === kinds[0]) || {}).label : 'record';
@@ -99,8 +126,8 @@ export default {
           id: VIEW_FIELD,
           label: 'Views',
           type: 'list',
-          value: this.viewValue(),
-          items: VIEWS.map((v) => ({ id: v.id, label: v.label, count: count(v.test), tone: v.tone })),
+          value: this.ctx.folder && this.ctx.folder !== 'inbox' ? this.ctx.folder : this.viewValue(),
+          items: VIEWS.map((v) => ({ id: v.id, label: v.label, count: v.folder ? counts[v.id] || 0 : count(v.test), tone: v.tone })),
         },
         {
           id: KIND_FIELD,
@@ -158,7 +185,7 @@ export default {
     syncFilter() {
       this.filterConfig = this.filterService.getFilterConfig();
     },
-    /** One signal per row (D-17): Overdue (red) wins, then Needs action; waiting and resolved rows show nothing. */
+    /** One signal per row (D-17): Overdue (red) wins, then Needs action; waiting, resolved and draft rows show nothing. */
     signalFor(r) {
       if (r.sla === 'overdue') return { label: SLA.overdue.label, status: toneToChipStatus(SLA.overdue.tone, { strong: true }) };
       if (r.triage === 'needs_action') return { label: TRIAGE.needs_action.label, status: toneToChipStatus(TRIAGE.needs_action.tone) };
@@ -176,8 +203,16 @@ export default {
       if (operator === 'isAnyOf' && Array.isArray(value) && value.length === 1) return value[0];
       return null;
     },
-    /** A pane change becomes one condition on its field (none when cleared), the other conditions kept (D-30). */
+    /**
+     * A pane change becomes one condition on its field (none when cleared), the other conditions kept (D-30). A folder
+     * (Drafts, Deleted) is not a condition: the screen swaps the rows and drops the view condition (D-67).
+     */
     onPaneChange({ id, value }) {
+      if (id === VIEW_FIELD && isFolderView(value)) {
+        this.ctx.setFolder(value);
+        return;
+      }
+      if (id === VIEW_FIELD && this.ctx.folder !== 'inbox') this.ctx.setFolder('inbox');
       const config = this.filterConfig;
       const others = (config.conditions || []).filter((c) => c.field !== id);
       let next = others;
@@ -193,6 +228,9 @@ export default {
     select(id) {
       if (this.wide) this.ctx.select(id);
       else this.ctx.open(id);
+    },
+    open(id) {
+      this.ctx.open(id);
     },
   },
 };

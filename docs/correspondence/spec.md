@@ -23,7 +23,7 @@ Module **Project** (the template's). Only rails with a built screen are shown:
 |---|---|---|---|---|---|
 | Threads and messages | all project threads | all | own threads | none | the one thread the link is for |
 | Internal team note | yes | yes | never | never | never |
-| Estimated cost impact | yes | no (`canSeeCost`) | never | never | never |
+| Estimated cost impact (Email screen column, thread title bar; D-66) | yes | no (`canSeeCost`) | never | never | never |
 | Confidential thread | yes | if a participant | own | never | own |
 | Delivery evidence | all rows | all rows | own row | never | own state only |
 | Promote, Link to record | yes | yes | no | no | no |
@@ -53,6 +53,8 @@ Fields, in order. Items marked **today** exist in the current Compose and keep t
 Footer: the tool row (§6.3): the attach tools left; *Discard draft* (confirms), *Save draft* (*Draft saved.*) and *Send* right; the buttons disable while sending. A draft is kept per context (the Email screen, or the record and pin composed from): Save draft keeps it, and so does closing the panel with unsaved changes; reopening restores it, Send or Discard drops it. Success closes the panel and shows the new thread (or the tab) with the message and per-recipient delivery. Failure keeps the panel open with an InlineNotice and *Retry*. Closed records can't send (today's rule): the trigger is disabled with a tooltip.
 
 ## 6. The thread
+
+**6.0 Title bar** (Title Bar / Workflow, Comfortable): back, the subject, the thread id chip, *Status:* with the `triage` chip and the *Confidential* chip when restricted, then *Cost impact: $4,200* (or *None*) as a muted word for `canSeeCost` roles (D-66, 2026-11-06). It is the thread's own estimate, the same value as the Email screen's column; a record's own cost field stays on the record (Q-15). The Reading pane's header shows the same. No chip and no colour: cost is information here, not a call to act.
 
 **6.1 ThreadStream** (candidate; the entry list): one container level, hairlines (D-17). Entries:
 - **Message** (inbound or outbound): sender, company, time, one delivery signal (`status-model.md` › delivery), body, files with a file glyph (*by link* when streamed), *Promote to record* on inbound messages (internal roles).
@@ -106,7 +108,7 @@ Button *Create RFI*. The number is assigned on creation and shown in the confirm
 
 ## 9. Email screen and the thread's right panel
 
-- **Email screen** (`correspondence-list`): segments All / Needs action / Waiting / Overdue / Unmatched cross-linked with the grid's Filter panel (D-30); quick filters for the segments, Has attachments, Confidential. Columns: `screens.md` §1. Loads through LoadRegion.
+- **Email screen** (`correspondence-list`): segments All / Needs action / Waiting / Overdue / Unmatched cross-linked with the grid's Filter panel (D-30), then the folders Drafts and Deleted (D-67: a different row set, not a condition); quick filters for the segments, Unread, Has attachments, Confidential. Columns: `screens.md` §1; Subject and From bold while the thread is unread for the viewer. The table's selection toolbar: Delete, Mark as unread, Mark as read (Restore in Deleted); no cut / copy / paste. Loads through LoadRegion.
 - **Right panel** on the thread: TabNavigation with *Linked items* (records with revision pins, files) and *Delivery* (per recipient, today's statuses plus Link opened and Files downloaded, and the event rows). Rows show event, actor, time (D-17); IP and checksum are in a row's expand only (Q-09). No export in the MVP.
 
 ## 10. Secure link page (`correspondence-portal`)

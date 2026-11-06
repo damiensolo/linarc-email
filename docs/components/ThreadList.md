@@ -24,8 +24,9 @@ Selected row: `surface/datatable/row-active` (the grid's active row), `aria-sele
 ## API
 | Prop | Type | Default | Notes |
 |---|---|---|---|
-| `items` | Array | `[]` | `{ id, from, time, subject, snippet, hasAttachments }` in display order (the grid's: search, filter, sort applied) |
+| `items` | Array | `[]` | `{ id, from, time, subject, snippet, hasAttachments, unread? }` in display order (the grid's: search, filter, sort applied); `unread` sets sender and subject bold (D-67) |
 | `selectedId` | String | `''` | |
+| `layout` | String | `'preview'` | `preview` (sender + time, subject, snippet + signal: three lines) or `list` (one line: sender, subject, signal, paperclip, time); D-67 |
 | `loading` | Boolean | `false` | Skeleton rows |
 | `loadingRowCount` | Number | `8` | |
 | `emptyText` | String | `'No email matches.'` | |
@@ -34,10 +35,10 @@ Selected row: `surface/datatable/row-active` (the grid's active row), `aria-sele
 Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter).
 
 ## States and variants
-One size. Row: default, hover, selected, focused list (ring on the listbox). List: loading, empty, rows. No unread state: the module has no read receipts per person (status-model.md); a row's signal says whether it needs action. Both themes.
+Two layouts (`preview`, `list`). Row: default, hover, selected, unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
 
 ## Tokens
-`surface/container`, `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16`, `label/sm/regular`, `label/sm/medium`, `label/xs/regular`.
+`surface/container`, `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16 / 40 / 48`, `label/sm/regular`, `label/sm/medium`, `label/sm/bold` (unread), `label/xs/regular`.
 
 ## Behaviour
 - Entries arrive resolved (names, labels, times); the component holds no module data.
@@ -51,6 +52,7 @@ Time as a mail client: the clock today (*10:14*), the day otherwise (*28 Oct*). 
 ## Open questions for design
 - An avatar at the left (as RecipientField's rows) or none (as Gmail)? Built without one to keep the row to three lines at 320px.
 - Should resolved threads read lighter (muted subject) rather than carrying no signal?
+- Unread is bold text only (as Gmail); a dot at the left (as Outlook) would also show at a glance in the List layout. Built without one.
 
 ## Acceptance (for promotion to the library)
 - [ ] Figma component with the same props as variants/properties, variables bound, both modes

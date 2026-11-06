@@ -9,6 +9,7 @@ import { relDate } from './project';
 export const ARCHIVE_THREADS = Object.freeze([
   {
     id: 'THR-1028',
+    unreadBy: ['usr-sarah'], // cc'd on the answer, not opened yet (D-67)
     subject: '[RMC-04] RFI-139 — Imaging suite chiller pad anchor bolt embedment',
     triage: 'resolved',
     visibility: 'project_public',
@@ -269,6 +270,37 @@ export const ARCHIVE_THREADS = Object.freeze([
     audit: [
       { id: 'aud-1003-1', at: relDate(-72, '11:15:04'), event: 'SMTP_DISPATCHED', actorId: 'usr-alex', detail: 'Message sent via the Linarc relay (250 2.0.0 OK · mx.studio-arch.com)' },
       { id: 'aud-1003-2', at: relDate(-70, '10:30:05'), event: 'INBOUND_REPLY_INGESTED', actorId: 'usr-kenji', detail: 'Reply received via reply+thr_1003@mail.linarc.io' },
+    ],
+  },
+  // Deleted (D-67): a circular that belongs to nobody's record, deleted by the PM; the Deleted view's seed. Never
+  // in the inbox or the counts (threads.js getThreads filters it), so the asserted numbers hold.
+  {
+    id: 'THR-1001',
+    subject: 'Level 2 crane pick window — Saturday 7 am to 11 am',
+    triage: 'resolved',
+    visibility: 'project_public',
+    promotion: 'unpromoted',
+    promotedRecordId: null,
+    responseDueAt: null,
+    lastActivityAt: relDate(-3, '12:05:00'),
+    deletedAt: relDate(-2, '08:12:00'),
+    deletedById: 'usr-sarah',
+    participantIds: ['usr-sarah', 'usr-dave', 'usr-ray'],
+    primaryCompany: 'Vanguard Construction Group',
+    trade: '',
+    estimatedCostImpact: 0,
+    linkedRecordIds: [],
+    pinId: null,
+    aiSummary: null,
+    entries: [
+      {
+        id: 'msg-1001-1', type: 'message', direction: 'outbound', senderId: 'usr-sarah', sentAt: relDate(-3, '12:05:00'),
+        body: 'All — the Level 2 mechanical units pick is confirmed for Saturday 7 to 11 am. Corridor 3E and the east stair are closed during the pick; please plan deliveries around it.',
+        attachmentIds: [], recipients: [{ personId: 'usr-dave', kind: 'to', delivery: 'delivered' }, { personId: 'usr-ray', kind: 'to', delivery: 'delivered' }],
+      },
+    ],
+    audit: [
+      { id: 'aud-1001-1', at: relDate(-3, '12:05:04'), event: 'SMTP_DISPATCHED', actorId: 'usr-sarah', detail: 'Message sent via the Linarc relay (250 2.0.0 OK)' },
     ],
   },
 ]);

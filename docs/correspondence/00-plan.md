@@ -104,6 +104,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 | Q-12 | AI: failure state, wording beyond §9, is AI-drafted RFI text ever sent unedited? | thread, promote | Product + legal reviewer | **Resolved 2026-10-16: industry practice** (labelled, editable, human-confirmed, sourced, fails gracefully, no autonomous sending) → D-44; rules in `spec.md` §6.2 |
 | Q-13 | Is there a drawing or markup thumbnail in Figma or the Drawings tool? | `correspondence-context-dwg` | Design | **Resolved 2026-10-16: no.** DrawingPinPreview is a confirmed candidate; design draws it in the candidate flow |
 | Q-14 | Does today's Email tab show the thread to guest users in-app? | portal | Product | **Resolved 2026-10-16: yes.** The secure link page is for recipients without an account and for files over 20 MB; a recipient with an account also gets *Open in Linarc* (`spec.md` §10) |
+| Q-15 | Is a thread's estimated cost impact the same fact as the promoted record's cost field (one stored, the other derived), or two facts (informal estimate in the mail, formal amount on the record)? Today both are seeded by hand to agree (THR-1042 / RFI-142: $4,200; THR-1031 / PCO-019: $18,450) and Promote does not copy it. Raised 2026-11-06 (D-66, F-042) | thread, RFI | Product | Proposed: two facts; the thread shows its own estimate, the record its own amount |
 
 ## 7. Decisions (in `../4-decisions.md`)
 

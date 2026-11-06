@@ -69,6 +69,12 @@ export function threadEntries(thread) {
   });
 }
 
+/**
+ * Estimated cost impact as the screens show it (D-41: null for roles that may not see it, so '' hides the field):
+ * "None" when the thread says there is none, otherwise the amount.
+ */
+export const costImpactText = (amount) => (amount == null ? '' : amount === 0 ? 'None' : `$${amount.toLocaleString('en-US')}`);
+
 /** AiSummary props from a thread's summary (null when there is none). */
 export const summaryView = (thread) => (thread.aiSummary ? { groups: thread.aiSummary.groups, evidence: thread.aiSummary.evidence } : null);
 

@@ -1,7 +1,8 @@
 <template>
   <!-- Communication › Email thread (docs/correspondence/spec.md §6, §8, §9; screens.md §1). Detail-without-decision
        pattern (5-ui-patterns.md §1, D-25): Title Bar / Workflow Size=Comfortable with the back button, the subject,
-       the thread id chip and the Status: chip (Confidential chip when restricted); the thread on the left as the
+       the thread id chip, the Status: chip (Confidential chip when restricted) and, for roles that may see cost,
+       Cost impact: as a muted word (D-66, 2026-11-06; the same value as the Email screen's column); the thread on the left as the
        AiSummary + ThreadStream candidates + the composer; Linked items and Delivery in the right panel (inline at the
        end below 1024px). Promote to record opens the SlideOverPanel beside the thread with the source message
        highlighted (D-37); a bounce's guided fix is a compact ModalV2 (§3). Role (D-41) from the sandbox role switcher:
@@ -17,6 +18,11 @@
           Status:
           <StatusChip :label="triage.label" :status="chip(triage.tone)" fill-style="outline" type="default" :removable="false" />
           <StatusChip v-if="thread.visibility === 'restricted'" :label="VISIBILITY.restricted.label" :status="chip(VISIBILITY.restricted.tone)" fill-style="outline" type="default" :removable="false" />
+          <!-- Internal only (D-41): the data layer blanks the amount for every other role, so the field simply isn't there. -->
+          <template v-if="costText">
+            <span aria-hidden="true">·</span>
+            <span>Cost impact: <span class="text-text-default">{{ costText }}</span></span>
+          </template>
         </span>
       </span>
     </template>
@@ -31,6 +37,11 @@
             <span>{{ notice.text }}</span>
             <Button v-if="notice.recordId" :label="`Open ${notice.recordId}`" variant="text" color-scheme="primary" size="small" @onClick="openRecord(notice.recordId)" />
           </p>
+
+          <!-- Deleted (D-67): the thread reads as it was, with the way back; replies wait for the restore -->
+          <InlineNotice v-if="thread && thread.deletedAt" tone="info" message="This email is in Deleted. Restore it to reply or to see it in the Email list.">
+            <template #actions><Button label="Restore" color-scheme="primary" variant="text" size="small" @onClick="restore" /></template>
+          </InlineNotice>
 
           <AiSummary v-if="summary" :groups="summary.groups" :evidence="summary.evidence" :status="summaryStatus" @retry="summaryStatus = 'ready'" @trace="trace" @feedback="feedback" />
 
@@ -50,7 +61,8 @@
             </template>
           </ThreadStream>
 
-          <Composer ref="composer" :draft-key="id" :allow-note="role.internal" :busy="write.status === 'loading'" @send="send" @open-attachment="openFiles" />
+          <!-- The reply footer sticks to the bottom of the page while the thread scrolls (D-67) -->
+          <Composer v-if="!(thread && thread.deletedAt)" ref="composer" :draft-key="id" :allow-note="role.internal" :busy="write.status === 'loading'" footer-class="-bottom-space-20 pb-space-20" @send="send" @open-attachment="openFiles" />
 
           <!-- Below 1024px the right panel's content moves inline at the end (§1). -->
           <section v-if="!isWide" class="flex flex-col gap-space-12">
@@ -105,17 +117,18 @@ import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 import AiSummary from '~/candidates/AiSummary/AiSummary.vue';
 import ThreadStream from '~/candidates/ThreadStream/ThreadStream.vue';
 import FileViewer from '~/candidates/FileViewer/FileViewer.vue';
+import InlineNotice from '~/candidates/InlineNotice/InlineNotice.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
 import { currentRoute, go, isBuilt } from '~/modules/app/router';
 import { TRIAGE, VISIBILITY, toneToChipStatus } from '~/modules/app/status';
 import {
-  ROLES, THREADS, currentRole, setRole, getThread, getThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
-  sendMessage, postNote, promoteToRfi, updateContactAndResend,
+  ROLES, THREADS, currentRole, setRole, getThread, getThreads, getDeletedThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
+  sendMessage, postNote, promoteToRfi, updateContactAndResend, markRead, isUnreadFor, restoreThreads,
 } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
-import { threadEntries, summaryView, linkedItems, deliveryRows } from '~/modules/correspondence/view';
+import { threadEntries, summaryView, linkedItems, deliveryRows, costImpactText } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
 import { fileViewing } from '~/modules/correspondence/fileViewing';
 import PromotePanel from '~/modules/correspondence/components/PromotePanel.vue';
@@ -193,7 +206,7 @@ export default {
     inbound: inboundSandbox,
     events: eventsSandbox,
   },
-  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
+  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, InlineNotice, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
   mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
@@ -222,6 +235,9 @@ export default {
     },
     summary() {
       return this.thread ? summaryView(this.thread) : null;
+    },
+    costText() {
+      return this.thread ? costImpactText(this.thread.estimatedCostImpact) : '';
     },
     linked() {
       return this.thread ? linkedItems(this.thread) : [];
@@ -258,11 +274,19 @@ export default {
     },
     fetch() {
       this.load.run(
-        (signal) => mockRequest(() => viewFor(getThread(this.id), this.role), { signal }),
+        (signal) => mockRequest(() => viewFor(getThread(this.id) || getDeletedThreads().find((t) => t.id === this.id) || null, this.role), { signal }),
         (thread) => {
           this.thread = thread;
+          // Opening reads it for the viewer (D-67): the Email list's row loses its bold
+          if (thread && isUnreadFor(thread, this.role.personId)) markRead(this.id, this.role.personId);
         },
       );
+    },
+    /** Back from Deleted (D-67): the thread returns to the inbox as it was. */
+    restore() {
+      restoreThreads([this.id]);
+      this.notice = { text: 'Restored. The email is back in the list.' };
+      this.fetch();
     },
     /** A write goes through the session, then the thread re-reads (content kept, "Updating…" if slow; D-24). */
     writeThen(fn, after) {

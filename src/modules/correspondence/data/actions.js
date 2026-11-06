@@ -16,7 +16,7 @@ import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, MAIL_SIZE_LIMIT_MB,
 import { findPersonByEmail, getPeople, getPerson, guessFromEmail } from './people';
 import { getRecord, recordLabel } from './records';
 import { cloudFile } from './cloud';
-import { getThread, getThreads, nextThreadId, sampleFileUrl } from './threads';
+import { getThread, getThreads, nextThreadId, sampleFileUrl, getDeletedThreads, isUnreadFor } from './threads';
 import { go } from '~/modules/app/router';
 import { storeFile } from '~/modules/fileStore';
 import { recordPdf, pdfBlob } from '~/modules/mock/pdf';
@@ -127,7 +127,7 @@ export function sendMessage(threadId, { senderId, body, bodyHtml = '', links = [
     recipients: outbound ? recipients.map((r) => ({ ...r, delivery: 'delivered' })) : [],
   };
   appendThreadEntry(threadId, entry);
-  const patch = { triage: outbound ? 'waiting' : 'needs_action', lastActivityAt: entry.sentAt };
+  const patch = { triage: outbound ? 'waiting' : 'needs_action', lastActivityAt: entry.sentAt, unreadBy: unreadAfter(threadId, senderId) };
   if (responseDueAt) patch.responseDueAt = responseDueAt;
   patchThread(threadId, patch);
   appendThreadAudit(threadId, {
@@ -162,6 +162,7 @@ export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc
     responseDueAt,
     lastActivityAt: at,
     participantIds: [senderId, ...toIds, ...ccIds, ...bccIds],
+    unreadBy: [...toIds, ...ccIds, ...bccIds], // the recipients have not opened it (D-67)
     primaryCompany: first ? first.company : ccList[0] || '',
     trade: record ? record.spec : '',
     estimatedCostImpact: null,
@@ -193,8 +194,41 @@ export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc
 export function postNote(threadId, { senderId, body, bodyHtml = '', links = [] }) {
   const entry = { id: uid('note'), type: 'note', senderId, sentAt: nowIso(), body, ...(bodyHtml ? { bodyHtml } : {}), ...(links.length ? { links } : {}) };
   appendThreadEntry(threadId, entry);
-  patchThread(threadId, { lastActivityAt: entry.sentAt });
+  // Only the team sees notes, so only the team's participants have it unread
+  patchThread(threadId, { lastActivityAt: entry.sentAt, unreadBy: unreadAfter(threadId, senderId).filter((id) => !(getPerson(id) || {}).guest) });
   return entry;
+}
+
+/** Everyone on the thread but the writer has not read what was just written (D-67). */
+function unreadAfter(threadId, senderId) {
+  const thread = getThread(threadId);
+  const team = getPeople().filter((p) => !p.guest).map((p) => p.id);
+  return [...new Set([...(thread ? thread.participantIds : []), ...team])].filter((id) => id !== senderId);
+}
+
+/** Opening a thread reads it for the viewer (the list's bold rows, D-67). */
+export function markRead(threadId, personId) {
+  const thread = getThread(threadId) || getDeletedThreads().find((t) => t.id === threadId);
+  if (!thread || !isUnreadFor(thread, personId)) return;
+  patchThread(threadId, { unreadBy: thread.unreadBy.filter((id) => id !== personId) });
+}
+
+/** Mark as unread: the row is bold again for the viewer until it is opened (D-67). */
+export function markUnread(threadId, personId) {
+  const thread = getThread(threadId) || getDeletedThreads().find((t) => t.id === threadId);
+  if (!thread || isUnreadFor(thread, personId)) return;
+  patchThread(threadId, { unreadBy: [...thread.unreadBy, personId] });
+}
+
+/** Delete (soft, D-67): the thread moves to the Deleted view; nothing is sent, nothing leaves the record. */
+export function deleteThreads(ids, { actorId }) {
+  const at = nowIso();
+  ids.forEach((id) => patchThread(id, { deletedAt: at, deletedById: actorId }));
+}
+
+/** Restore from Deleted: back to the inbox as it was. */
+export function restoreThreads(ids) {
+  ids.forEach((id) => patchThread(id, { deletedAt: null, deletedById: null }));
 }
 
 /** Link to record (spec §4): an unmatched thread joins a record; triage follows the direction of its last message. */
@@ -294,6 +328,7 @@ export function receiveMail({ fromId = null, fromEmail = '', to, subject = '', b
       responseDueAt: null,
       lastActivityAt: at,
       participantIds: [sender.id],
+      unreadBy: getPeople().filter((p) => !p.guest).map((p) => p.id), // new mail to the project: the team has not read it (D-67)
       primaryCompany: sender.company,
       trade: sender.guest ? sender.trade : '',
       estimatedCostImpact: null,
@@ -315,7 +350,7 @@ export function receiveMail({ fromId = null, fromEmail = '', to, subject = '', b
     id: uid('msg'), type: 'message', direction: internal ? 'outbound' : 'inbound', senderId: sender.id, sentAt: at, body, attachments,
     toAddress: replyAddress(to), recipients: relayTo.map((personId) => ({ personId, kind: 'to', delivery: 'delivered' })),
   });
-  const patch = { triage: internal ? 'waiting' : 'needs_action', lastActivityAt: at };
+  const patch = { triage: internal ? 'waiting' : 'needs_action', lastActivityAt: at, unreadBy: unreadAfter(to, sender.id) };
   if (!thread.participantIds.includes(sender.id)) patch.participantIds = [...thread.participantIds, sender.id];
   patchThread(to, patch);
   appendThreadAudit(to, { id: uid('aud'), at, event: 'INBOUND_REPLY_INGESTED', actorId: sender.id, detail: `Reply received via ${replyAddress(to)}${internal ? " from the sender's own mailbox" : ''}${scanned}` });
