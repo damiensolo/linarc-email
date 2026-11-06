@@ -29,6 +29,8 @@ Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (titl
 
 Slots: `default` (body), `header-meta`, `footer` (wraps when it holds a tool row: `min-height` 64px, not a fixed height). Events: `close` (Esc, backdrop, close button), `opened`, `closed`, `expand` (Boolean).
 
+The compose panel no longer fills the `footer` slot (D-70): its attachments and tool row sit under the message in the body and stick when the content overflows; the fixed footer stays for panels whose actions are not tied to a field.
+
 Slot `title-aside` (2026-11-06): something small beside the title, e.g. a help icon with a Tooltip (the compose panel's project-address note, D-69).
 
 ## States and variants

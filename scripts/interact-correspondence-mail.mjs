@@ -154,7 +154,8 @@ try {
   await clickRow('Imaging suite');
   await sleep(700);
   check(await page.evaluate(() => !!document.querySelector('[role="dialog"]')) && await has('Linked record') && await has('S-201 · Rev 1') && (await page.evaluate(() => document.querySelector('input#fv2-subject').value)).includes('Imaging suite ceiling access panel'), 'the compose draft opens with S-201 pinned and its subject');
-  check(await page.evaluate(() => { const fs = document.querySelectorAll('[role="dialog"] footer'); const f = fs[fs.length - 1]; /* FormV2 renders an empty footer of its own first */ return !!f && f.textContent.includes('Attachments') && [...f.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Send'); }), 'the compose footer holds Attachments and Send');
+  // D-70: the attachments and the tool row sit under the message in the body (sticky once the content overflows), not in a fixed footer
+  check(await page.evaluate(() => { const f = document.querySelector('[role="dialog"] [data-compose-footer]'); return !!f && f.textContent.includes('Attachments') && [...f.querySelectorAll('button')].some((b) => b.textContent.trim() === 'Send') && getComputedStyle(f).position === 'sticky' && !document.querySelector('[role="dialog"] > footer'); }), "the compose panel's Attachments and Send sit under the message as a sticky block, no fixed footer");
   await page.screenshot({ path: `${out}/mail-draft-compose.png` });
   await page.evaluate(() => { const b = [...document.querySelectorAll('[role="dialog"] [aria-label="Close"]')].find((x) => x.offsetParent); b.click(); });
   await sleep(600);

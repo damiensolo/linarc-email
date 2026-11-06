@@ -17,7 +17,8 @@
     :class="[mode === 'note' ? 'bg-surface-warning-low-subtle' : 'bg-surface-container', footerClass || 'bottom-0']"
   >
     <div v-if="allowNote" class="flex flex-wrap items-center gap-x-space-16 gap-y-space-8">
-      <SelectV2 v-model="mode" class="w-full sm:w-1/3 lg:w-1/4" size="small" :options="modes" :allow-search="false" aria-label="Message type" />
+      <!-- Sized to its longest option (D-70: a select is as wide as its content, and never jumps when the value changes) -->
+      <SelectV2 v-model="mode" class="mode-select" size="small" :options="modes" :allow-search="false" aria-label="Message type" />
       <span class="font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
         {{ mode === 'note' ? 'Only your team sees notes.' : 'Everyone on the thread gets this; they can answer from their own mail.' }}
       </span>
@@ -206,3 +207,16 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* The mode select hugs its longest option, "Internal team note" (D-70); full width on a phone. No width token fits a
+   select sized to a string (needs-token, as the Reading view's pane width). */
+.mode-select {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .mode-select {
+    width: 168px;
+  }
+}
+</style>

@@ -156,6 +156,8 @@ save: createLoad({ label: 'changes', action: { busy: 'Saving', done: 'Saved', er
 
 ## 7. Data entry: alignment and width (D-26)
 
+**Selects are as wide as their content (D-70, 2026-11-06).** A select whose options are short words (a message mode, a unit, a status) is sized to its longest option, not to a column fraction or the row: the thread composer's *Reply to all / Internal team note* is 168px from 640px up and full width on a phone. Size to the longest option, not the selected one, so the control never jumps when the value changes. Selects that are filters in a pane (the Views pane) keep the pane's width.
+
 | Where | Rule |
 |---|---|
 | **Form inputs** (text, number, currency, year, phone, date) | **Left-aligned**, always. Width fits the expected value: short values (year, count, rate, percent) use a short input (FormV2 `props: { width: 'short' }`, 124px) under the label; names, addresses and money keep the column width. Money is formatted (`$1,000,000`), still left-aligned |

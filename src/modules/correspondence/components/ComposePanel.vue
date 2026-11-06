@@ -99,13 +99,13 @@
         <template #footer><span /></template>
       </FormV2>
 
-    </div>
-
-    <!-- 7. Attachments and the tool row live in the panel's fixed footer (D-67, 2026-11-06): the chips, Send and the
-         attach tools stay in view however long the message is. Attachments (today, upgraded; D-58): added from the
-         tool row, shown as chips; the record's PDF is on by default (today's checkbox) and can be removed; over the
-         mail limit goes by secure link instead of being refused. -->
-    <template #footer>
+      <!-- 7. Attachments and the tool row sit right under the message (D-70, 2026-11-06), as the reading pane's
+           composer: anchored to the input while the panel is short, and a sticky footer once the content overflows
+           (the sticky offset equals the body's 20px padding, F-043), with room under the row so Send never feels
+           cramped. Attachments (today, upgraded; D-58): added from the tool row, shown as chips; the record's PDF is on
+           by default (today's checkbox) and can be removed; over the mail limit goes by secure link instead of being
+           refused. -->
+      <div class="sticky -bottom-space-20 z-10 -mx-space-20 flex flex-col gap-space-12 border-t border-border-subtle bg-surface-container px-space-20 pb-space-32 pt-space-16" data-compose-footer>
       <div class="flex w-full flex-col gap-space-8 font-label">
         <div class="flex items-center gap-space-4">
           <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">Attachments</span>
@@ -133,7 +133,8 @@
         @discard="discard"
         @send="send"
       />
-    </template>
+      </div>
+    </div>
   </SlideOverPanel>
 </template>
 
