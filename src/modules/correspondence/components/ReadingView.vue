@@ -3,10 +3,12 @@
        toolbar's view switcher beside List (the Grid view was removed in review, 2026-11-04). Three panes inside the
        grid's frame: the ViewsPane candidate at the left (views with counts, object type, record, company, date: each a
        condition in the grid's Filter panel, D-30; Drafts and Deleted are folders, D-67: a different row set), the
-       ThreadList candidate in the middle (the grid's display order: the toolbar's search, sort and filters apply) under
-       a slim bar whose segmented control picks the list's layout (Preview: three lines · List: one line; D-67, kept
-       per demo session), and the ReadingPane at the right behind the SplitPane candidate's divider (width kept per
-       demo session). The grid passes its services as props; the screen passes everything else through
+       ThreadList candidate in the middle under the list bar (D-68: at its left the actions for the ticked rows as icon
+       buttons with the design system's Tooltip, Delete · Mark as unread · Mark as read, Restore in Deleted, with the
+       count; at its right the segmented control that picks the list's layout, Preview: three lines · List: one line,
+       kept per demo session), and the ReadingPane at the right behind the SplitPane candidate's divider (width kept
+       per demo session). Every row carries a Checkbox (D-68): ticking never selects, so a thread can be read while
+       others are ticked. The grid passes its services as props; the screen passes everything else through
        `readingContext` (provide / inject), since the grid forwards no other props to a view. Below 1024px the list is
        the whole view: the pane and the divider hide and a row opens the thread screen. -->
   <div ref="root" class="rv-root flex min-h-0 w-full flex-1 overflow-hidden rounded-radius-6 border border-border-subtle bg-surface-container">
@@ -15,9 +17,32 @@
       <template #start>
         <div class="flex h-full min-h-0 w-full flex-col">
           <div class="rv-listbar flex shrink-0 items-center justify-between gap-space-8 border-b border-border-subtle px-space-12 py-space-4">
-            <SegmentedControl :value="ctx.listLayout" :options="layouts" aria-label="Conversation layout" size="md" @input="ctx.setListLayout($event)" />
+            <!-- the ticked rows' actions (D-68): icon-only, each with the Tooltip; nothing until a row is ticked -->
+            <div class="flex min-w-0 items-center gap-space-2" role="toolbar" aria-label="Actions for the ticked conversations">
+              <template v-if="checked.length">
+                <span class="mr-space-8 whitespace-nowrap font-label text-fontsize-12 leading-lineheight-16 text-text-subtle" role="status">{{ checked.length }} selected</span>
+                <Tooltip v-for="a in bulkActions" :key="a.key" :label="a.label" placement="bottom">
+                  <Button v-bind="toolProps" :aria-label="a.label" @onClick="bulk(a.key)">
+                    <template #leftIcon><component :is="a.icon" aria-hidden="true" /></template>
+                  </Button>
+                </Tooltip>
+              </template>
+            </div>
+            <SegmentedControl :value="ctx.listLayout" :options="layouts" aria-label="Conversation layout" size="md" class="shrink-0" @input="ctx.setListLayout($event)" />
           </div>
-          <ThreadList :items="items" :layout="ctx.listLayout" :selected-id="ctx.selectedId" :loading="loading" :loading-row-count="loadingRowCount" :empty-text="ctx.emptyText || 'No email matches.'" @select="select" @open="open">
+          <ThreadList
+            :items="items"
+            :layout="ctx.listLayout"
+            :selected-id="ctx.selectedId"
+            selectable
+            :checked-ids="checked"
+            :loading="loading"
+            :loading-row-count="loadingRowCount"
+            :empty-text="ctx.emptyText || 'No email matches.'"
+            @select="select"
+            @open="open"
+            @check="onCheck"
+          >
             <template #status="{ item }">
               <StatusChip v-if="item.signal" :label="item.signal.label" :status="item.signal.status" fill-style="outline" type="default" :removable="false" class="shrink-0" />
             </template>
@@ -44,8 +69,11 @@
 </template>
 
 <script>
+import { Mail, MailOpen, Trash2, ArchiveRestore } from '@development/linarc-icons';
+import Button from '@/components/Button/Button.vue';
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
 import SegmentedControl from '@/componentsV2/SegmentedControl/SegmentedControl.vue';
+import Tooltip from '@/componentsV2/Tooltip/index.vue';
 import ViewsPane from '~/candidates/ViewsPane/ViewsPane.vue';
 import ThreadList from '~/candidates/ThreadList/ThreadList.vue';
 import SplitPane from '~/candidates/SplitPane/SplitPane.vue';
@@ -67,7 +95,7 @@ function conditionValue(config, field) {
 
 export default {
   name: 'ReadingView',
-  components: { StatusChip, SegmentedControl, ViewsPane, ThreadList, SplitPane, ReadingPane },
+  components: { Button, StatusChip, SegmentedControl, Tooltip, ViewsPane, ThreadList, SplitPane, ReadingPane },
   inject: ['readingContext'],
   props: {
     // What DataGrid passes to every view (index.vue activeViewProps); the rest is ignored here.
@@ -82,10 +110,13 @@ export default {
       displayIds: [],
       filterConfig: { conditions: [], groups: [] },
       wide: window.innerWidth >= WIDE,
+      checked: [],
       layouts: [
         { label: 'Preview', value: 'preview' },
         { label: 'List', value: 'list' },
       ],
+      // the icon-only button, as MessageTools draws its tools
+      toolProps: { colorScheme: 'secondary', variant: 'minimal', size: 'medium', nativeType: 'button' },
     };
   },
   computed: {
@@ -105,6 +136,14 @@ export default {
         unread: !!r.unread,
         signal: this.signalFor(r),
       }));
+    },
+    /** What the ticked rows can have done to them, by folder (the same set as the table's selection toolbar, D-67). */
+    bulkActions() {
+      const unread = { key: 'unread', label: 'Mark as unread', icon: Mail };
+      const read = { key: 'read', label: 'Mark as read', icon: MailOpen };
+      if (this.ctx.folder === 'deleted') return [unread, read, { key: 'restore', label: 'Restore', icon: ArchiveRestore }];
+      if (this.ctx.folder === 'drafts') return [{ key: 'delete', label: 'Discard draft', icon: Trash2 }];
+      return [unread, read, { key: 'delete', label: 'Delete', icon: Trash2 }];
     },
     kindsValue() {
       const v = conditionValue(this.filterConfig, KIND_FIELD);
@@ -159,6 +198,16 @@ export default {
           options: [{ value: ANY, label: 'Any time' }, ...ACTIVITY_OPTIONS.map((o) => ({ value: o.value, label: o.label }))],
         },
       ];
+    },
+  },
+  watch: {
+    /** A row that left the list (filtered, deleted, moved folder) is no longer ticked. */
+    items(rows) {
+      const ids = new Set(rows.map((r) => r.id));
+      if (this.checked.some((id) => !ids.has(id))) this.checked = this.checked.filter((id) => ids.has(id));
+    },
+    'ctx.folder'() {
+      this.checked = [];
     },
   },
   created() {
@@ -231,6 +280,15 @@ export default {
     },
     open(id) {
       this.ctx.open(id);
+    },
+    onCheck({ id, checked }) {
+      this.checked = checked ? [...this.checked.filter((x) => x !== id), id] : this.checked.filter((x) => x !== id);
+    },
+    /** One of the bar's actions on every ticked row; the screen does the work, the ticks clear. */
+    bulk(key) {
+      const ids = [...this.checked];
+      this.checked = [];
+      this.ctx.bulk(key, ids);
     },
   },
 };

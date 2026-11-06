@@ -124,8 +124,8 @@ try {
   const clickPane = async (text) => { await page.evaluate((t) => { const b = [...document.querySelectorAll('.vp-root button')].find((x) => x.textContent.replace(/\s+/g, ' ').trim().startsWith(t)); if (!b) throw new Error(`no pane row ${t}`); b.click(); }, text); await sleep(400); };
   const clickRow = async (text) => { const ok = await page.evaluate((t) => { const r = [...document.querySelectorAll('.tl-row')].find((x) => x.textContent.includes(t)); if (!r) return false; r.click(); return true; }, text); if (!ok) throw new Error(`no list row "${text}"`); await sleep(500); };
   const paneSubject = () => page.evaluate(() => { const h = document.querySelector('[aria-label="Reading pane"] h2'); return h ? h.textContent.trim() : ''; });
-  const filterBadge = () => page.evaluate(() => { const b = document.querySelector('button[title="Filter"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
-  const viewActive = (title) => page.evaluate((t) => { const b = document.querySelector(`button[title="${t}"]`); return !!b && b.className.includes('surface-container'); }, title);
+  const filterBadge = () => page.evaluate(() => { const b = document.querySelector('button[aria-label="Filter"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
+  const viewActive = (title) => page.evaluate((t) => { const b = document.querySelector(`button[aria-label="${t}"]`); return !!b && b.className.includes('surface-container'); }, title);
   const summary = () => page.evaluate(() => { const el = document.querySelector('.load-status'); return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; });
   /** A row action (Open, Link to record) in the table row whose text includes `rowText`. */
   const clickInRow = async (rowText, buttonText) => {
@@ -274,11 +274,11 @@ try {
   const after = Number(await page.evaluate((el) => el.getAttribute('aria-valuenow'), sep));
   check(after > before, `9 the divider drags (${before} → ${after})`);
   await page.screenshot({ path: `${out}/demo-email-09-reading.png` });
-  await page.click('button[title="List"]');
+  await page.click('button[aria-label="List"]');
   await sleep(500);
   const hs = await headers();
   check(await page.evaluate(() => !!document.querySelector('[aria-label="Email view"]')) && ['STATUS', 'RESPONSE DUE', 'LINKED RECORD'].every((h) => hs.includes(h)), `9 List view: the table with Status, Response due and Linked record (${hs.join(', ')})`);
-  await page.click('button[title="Reading pane"]');
+  await page.click('button[aria-label="Reading pane"]');
   await sleep(500);
   check(await viewActive('Reading pane') && (await paneSubject()).includes('Grid B-4 HVAC duct'), '9 back to the Reading pane with the thread still open');
   // 10: Open thread → summary, Source, the files
@@ -398,7 +398,7 @@ try {
   await goto('correspondence-list&theme=light');
   check((await viewsPane()).includes('Unmatched2'), `15 the Views pane: Unmatched 2 (${(await viewsPane()).join(' | ')})`);
   // 16: List view › Unmatched › Link to record on Ray's row
-  await page.click('button[title="List"]');
+  await page.click('button[aria-label="List"]');
   await sleep(500);
   await click('Unmatched');
   // the total also counts the thread Act 1 sent and the revision email of Act 2b

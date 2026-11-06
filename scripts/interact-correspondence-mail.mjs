@@ -43,12 +43,17 @@ try {
   const clickPane = async (text) => { await page.evaluate((t) => { const b = [...document.querySelectorAll('.vp-root button')].find((x) => x.textContent.replace(/\s+/g, ' ').trim().startsWith(t)); if (!b) throw new Error(`no pane row ${t}`); b.click(); }, text); await sleep(500); };
   const clickRow = async (text) => { const ok = await page.evaluate((t) => { const r = [...document.querySelectorAll('.tl-row')].find((x) => x.textContent.includes(t)); if (!r) return false; r.click(); return true; }, text); if (!ok) throw new Error(`no list row "${text}"`); await sleep(600); };
   const paneSubject = () => page.evaluate(() => { const h = document.querySelector('[aria-label="Reading pane"] h2'); return h ? h.textContent.trim() : ''; });
-  const paneActions = () => page.evaluate(() => [...document.querySelectorAll('[aria-label="Thread actions"] button')].map((b) => b.textContent.trim()));
+  // icon buttons carry their name as aria-label (the design system's Tooltip shows it, D-68)
+  const paneActions = () => page.evaluate(() => [...document.querySelectorAll('[aria-label="Thread actions"] button')].map((b) => b.getAttribute('aria-label') || b.textContent.trim()));
+  const barButtons = () => page.evaluate(() => [...document.querySelectorAll('.rv-listbar button')].map((b) => b.getAttribute('aria-label') || b.textContent.trim()));
+  const tick = async (text) => { await page.evaluate((t) => { const r = [...document.querySelectorAll('.tl-row')].find((x) => x.textContent.includes(t)); r.querySelector('.tl-check input').click(); }, text); await sleep(300); };
+  const checkedRows = () => page.evaluate(() => document.querySelectorAll('.tl-row[data-checked]').length);
   const summary = () => page.evaluate(() => { const el = document.querySelector('.load-status'); return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; });
   const segment = async (label) => { await page.evaluate((l) => { const el = [...document.querySelectorAll('[aria-label="Email view"] button, [aria-label="Email view"] [role="radio"], [aria-label="Email view"] label')].find((x) => x.textContent.trim() === l); if (!el) throw new Error(`no segment ${l}`); el.click(); }, label); await sleep(500); };
   const checkRowWith = async (text) => { await page.evaluate((t) => { const r = [...document.querySelectorAll('.dg-list-row')].find((x) => x.textContent.includes(t)); if (!r) throw new Error(`no table row ${t}`); r.querySelector('.dg-list-cell--seq').click(); }, text); await sleep(300); };
   const checkRow = async (i) => { await page.evaluate((i) => document.querySelectorAll('.dg-list-row')[i].querySelector('.dg-list-cell--seq').click(), i); await sleep(300); };
-  const toolbar = () => page.evaluate(() => [...document.querySelectorAll('.dg-toolbar--selection button')].filter((b) => b.offsetParent).map((b) => b.textContent.trim() || `[${b.title}]`));
+  // icon buttons name themselves through aria-label (the design system Tooltip, P-070); no native title anywhere
+  const toolbar = () => page.evaluate(() => [...document.querySelectorAll('.dg-toolbar--selection button')].filter((b) => b.offsetParent).map((b) => b.textContent.trim() || `[${b.getAttribute('aria-label')}]`));
   const boldCells = () => page.evaluate(() => [...document.querySelectorAll('.dg-list-row [data-unread="true"]')].length);
   const stickyFlush = () => page.evaluate(() => {
     const send = [...document.querySelectorAll('button')].find((b) => b.offsetParent && b.textContent.trim() === 'Send');
@@ -88,12 +93,45 @@ try {
   check((await paneActions()).join(' · ') === 'Mark as unread · Delete · Open thread', `pane actions: ${(await paneActions()).join(' · ')}`);
   const flush = await stickyFlush();
   check(flush.ok, `the reply footer sticks flush to the pane's bottom (${JSON.stringify(flush)})`);
-  await click('Mark as unread');
+  await page.click('[aria-label="Thread actions"] button[aria-label="Mark as unread"]');
   await sleep(300);
   check((await listRows()).find((r) => r.text.includes('Kenji Takahashi')).unread, 'Mark as unread: the row is bold again');
 
+  // --- the list bar (D-68): ticking rows shows the actions at the left, the layout control stays at the right
+  check((await barButtons()).join(' · ') === 'Preview · List' && await page.evaluate(() => document.querySelectorAll('.tl-row .tl-check input').length === 12), 'every row has a checkbox; the bar shows only Preview · List until a row is ticked');
+  await tick('Dave Miller');
+  await tick('Sarah Jenkins');
+  check((await checkedRows()) === 2 && (await paneSubject()).includes('RFI-142'), 'ticking two rows leaves the open thread as it was');
+  check((await barButtons()).join(' · ') === 'Mark as unread · Mark as read · Delete · Preview · List' && await has('2 selected'), `bar: ${(await barButtons()).join(' · ')}, count line`);
+  await page.hover('.rv-listbar button[aria-label="Mark as unread"]');
+  await sleep(500);
+  check(await page.evaluate(() => [...document.querySelectorAll('[role="tooltip"]')].some((t) => t.textContent.trim() === 'Mark as unread')) && !(await page.evaluate(() => document.querySelector('.rv-listbar button[title]'))), 'the icon shows the design system Tooltip, no native title');
+  await page.click('.rv-listbar button[aria-label="Mark as unread"]');
+  await sleep(400);
+  rows = await listRows();
+  check((await checkedRows()) === 0 && rows.find((r) => r.text.includes('Dave Miller')).unread && rows.find((r) => r.text.includes('Sarah Jenkins')).unread, 'Mark as unread from the bar: both rows bold, ticks cleared');
+  await tick('Dave Miller');
+  await tick('Sarah Jenkins');
+  await page.click('.rv-listbar button[aria-label="Mark as read"]');
+  await sleep(400);
+  rows = await listRows();
+  check(!rows.find((r) => r.text.includes('Dave Miller')).unread && !rows.find((r) => r.text.includes('Sarah Jenkins')).unread, 'Mark as read from the bar');
+  await tick('Valerie Chen');
+  await page.click('.rv-listbar button[aria-label="Delete"]');
+  await sleep(800);
+  check((await listRows()).length === 11 && (await viewsPane()).includes('Deleted2'), 'Delete from the bar: the row leaves, Deleted counts 2');
+  await clickPane('Deleted');
+  await tick('PCO-019');
+  check((await barButtons()).join(' · ') === 'Mark as unread · Mark as read · Restore · Preview · List', `Deleted folder bar: ${(await barButtons()).join(' · ')}`);
+  await page.click('.rv-listbar button[aria-label="Restore"]');
+  await sleep(800);
+  check((await listRows()).length === 1, 'Restore from the bar');
+  await clickPane('All');
+  await sleep(300);
+
   // --- Delete from the pane → Deleted folder → Restore
-  await click('Delete');
+  await clickRow('RFI-142');
+  await page.click('[aria-label="Thread actions"] button[aria-label="Delete"]');
   await sleep(800);
   check((await listRows()).length === 11 && !(await listRows()).some((r) => r.text.includes('RFI-142')) && (await viewsPane()).includes('Deleted2'), `Delete: the row leaves the inbox, Deleted counts 2 (${(await listRows()).length} rows)`);
   check((await paneSubject()) === '' && await has('Select an email to read it here.'), 'the pane empties after a delete');
@@ -102,7 +140,7 @@ try {
   await clickRow('RFI-142');
   check((await paneActions()).join(' · ') === 'Mark as unread · Restore · Open thread' && await has('This email is in Deleted. Restore it to reply.'), 'a deleted thread in the pane: Restore, no reply');
   await page.screenshot({ path: `${out}/mail-deleted.png` });
-  await click('Restore');
+  await page.click('[aria-label="Thread actions"] button[aria-label="Restore"]');
   await sleep(800);
   check((await listRows()).length === 1 && (await viewsPane()).includes('Deleted1*'), 'Restore: back to one deleted thread');
   await clickPane('All');
@@ -123,7 +161,7 @@ try {
   check((await listRows()).length === 2, 'closing keeps the draft');
 
   // --- the table: segments with the folders, the selection toolbar
-  await page.click('button[title="List"]');
+  await page.click('button[aria-label="List"]');
   await sleep(600);
   check((await summary()) === '2 drafts', `List view in Drafts: ${await summary()}`);
   await segment('All');
@@ -133,6 +171,7 @@ try {
   await checkRow(2);
   let tb = await toolbar();
   check(tb.includes('[Delete]') && tb.includes('Mark as unread') && tb.includes('Mark as read') && !tb.some((t) => /Cut|Copy|Paste|Deselect|Select All/.test(t)), `selection toolbar: ${tb.join(' · ')}`);
+  check(await page.evaluate(() => ![...document.querySelectorAll('.dg-toolbar--selection button, .rv-listbar button, [aria-label="Thread actions"] button')].some((b) => b.getAttribute('title'))), 'no native title tooltips on the email actions (P-070)');
   await page.screenshot({ path: `${out}/mail-table-selection.png` });
   await click('Mark as unread');
   await sleep(500);
@@ -142,7 +181,7 @@ try {
   await sleep(500);
   check((await boldCells()) === 6, `Mark as read: 3 unread (${await boldCells()} cells)`);
   await checkRow(5);
-  await page.evaluate(() => document.querySelector('.dg-toolbar--selection button[title="Delete"]').click());
+  await page.evaluate(() => document.querySelector('.dg-toolbar--selection button[aria-label="Delete"]').click());
   await sleep(900);
   check((await summary()) === '11 threads', `Delete from the toolbar: ${await summary()}`);
   await segment('Deleted');
@@ -160,7 +199,7 @@ try {
   await segment('All');
   check((await summary()) === '12 threads', `All again: ${await summary()}`);
   // the Unread quick filter
-  await page.click('button[title="Filter"]');
+  await page.click('button[aria-label="Filter"]');
   await sleep(500);
   const hasUnread = await page.evaluate(() => [...document.querySelectorAll('button, label, span')].some((e) => e.offsetParent && e.textContent.trim() === 'Unread'));
   check(hasUnread, 'the Filter panel offers an Unread quick filter');

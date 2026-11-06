@@ -26,9 +26,9 @@ try {
   const listRows = async () => page.evaluate(() => [...document.querySelectorAll('.tl-row')].map((r) => r.textContent.replace(/\s+/g, ' ').trim()));
   const paneSubject = async () => page.evaluate(() => { const h = document.querySelector('[aria-label="Reading pane"] h2'); return h ? h.textContent.trim() : ''; });
   const viewsPane = async () => page.evaluate(() => [...document.querySelectorAll('.vp-root [role="listbox"] [role="option"]')].map((o) => `${o.textContent.replace(/\s+/g, ' ').trim()}${o.getAttribute('aria-selected') === 'true' ? '*' : ''}`));
-  const filterBadge = async () => page.evaluate(() => { const b = document.querySelector('button[title="Filter"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
+  const filterBadge = async () => page.evaluate(() => { const b = document.querySelector('button[aria-label="Filter"]'); return b ? b.textContent.replace(/\s+/g, ' ').trim() : ''; });
   const clickPane = async (text) => { await page.evaluate((t) => { const b = [...document.querySelectorAll('.vp-root button')].find((x) => x.textContent.replace(/\s+/g, ' ').trim().startsWith(t)); if (!b) throw new Error(`no pane row ${t}`); b.click(); }, text); await sleep(350); };
-  const modeButton = async (title) => page.evaluate((t) => { const b = document.querySelector(`button[title="${t}"]`); if (!b) return null; return { active: b.className.includes('surface-container') }; }, title);
+  const modeButton = async (title) => page.evaluate((t) => { const b = document.querySelector(`button[aria-label="${t}"]`); if (!b) return null; return { active: b.className.includes('surface-container') }; }, title);
 
   // Arrival through the hash: Reading view active, THR-1042 open, the pane lists the views with counts
   check((await modeButton('Reading pane')) && (await modeButton('Reading pane')).active, 'Reading pane is the active view');
@@ -38,7 +38,7 @@ try {
   const views = await viewsPane();
   check(views[0] === 'All12*' && views.includes('Needs action4') && views.includes('Overdue1') && views.includes('Unmatched1'), `views pane: ${views.join(' | ')}`);
   check(await page.evaluate(() => !document.querySelector('[aria-label="Email view"]')), 'segments hidden in the Reading view');
-  const paneTop = await page.evaluate(() => { const tb = document.querySelector('.rv-root'); const tool = document.querySelector('button[title="Reading pane"]'); return tb && tool ? Math.round(tb.getBoundingClientRect().top - tool.getBoundingClientRect().bottom) : -1; });
+  const paneTop = await page.evaluate(() => { const tb = document.querySelector('.rv-root'); const tool = document.querySelector('button[aria-label="Reading pane"]'); return tb && tool ? Math.round(tb.getBoundingClientRect().top - tool.getBoundingClientRect().bottom) : -1; });
   check(paneTop >= 0 && paneTop <= 24, `panes start right under the toolbar (${paneTop}px gap)`);
   await page.screenshot({ path: `${out}/reading-1442.png` });
 
@@ -86,7 +86,7 @@ try {
   await page.screenshot({ path: `${out}/reading-resized.png` });
 
   // Back to the list view: segments return, the filter stays, and the hidden filter columns stay hidden (P-068)
-  await page.click('button[title="List"]');
+  await page.click('button[aria-label="List"]');
   await sleep(400);
   check(await page.evaluate(() => !!document.querySelector('[aria-label="Email view"]')), 'segments back in the List view');
   const headers = await page.evaluate(() => [...document.querySelectorAll('.dg-list-header-cell')].map((h) => h.textContent.trim()).filter(Boolean));
@@ -106,7 +106,7 @@ try {
   await fresh.close();
 
   // Narrow: the list alone
-  await page.click('button[title="Reading pane"]');
+  await page.click('button[aria-label="Reading pane"]');
   await sleep(300);
   await page.setViewport({ width: 390, height: 844 });
   await sleep(400);

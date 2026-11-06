@@ -25,12 +25,19 @@
             <span v-if="linkedText" class="truncate">{{ linkedText }}</span>
           </div>
         </div>
-        <!-- The thread's actions (D-67), label-only (D-18); they wrap under each other when the pane is narrow -->
-        <div v-if="thread" class="flex shrink-0 flex-wrap items-center justify-end gap-space-4" role="group" aria-label="Thread actions">
-          <Button label="Mark as unread" variant="text" color-scheme="secondary" size="small" @onClick="$emit('unread', threadId)" />
-          <Button v-if="deleted" label="Restore" variant="text" color-scheme="secondary" size="small" @onClick="$emit('restore', threadId)" />
-          <Button v-else label="Delete" variant="text" color-scheme="secondary" size="small" @onClick="$emit('delete', threadId)" />
-          <Button label="Open thread" variant="text" color-scheme="primary" size="small" @onClick="$emit('open', threadId)" />
+        <!-- The thread's actions (D-67 / D-68): icon buttons with the design system's Tooltip (never the browser's),
+             as the list bar's; Open thread stays a text button (the one that leaves the pane) -->
+        <div v-if="thread" class="flex shrink-0 items-center gap-space-2" role="group" aria-label="Thread actions">
+          <Tooltip label="Mark as unread" placement="bottom">
+            <Button v-bind="toolProps" aria-label="Mark as unread" @onClick="$emit('unread', threadId)"><template #leftIcon><Mail aria-hidden="true" /></template></Button>
+          </Tooltip>
+          <Tooltip v-if="deleted" label="Restore" placement="bottom">
+            <Button v-bind="toolProps" aria-label="Restore" @onClick="$emit('restore', threadId)"><template #leftIcon><ArchiveRestore aria-hidden="true" /></template></Button>
+          </Tooltip>
+          <Tooltip v-else label="Delete" placement="bottom">
+            <Button v-bind="toolProps" aria-label="Delete" @onClick="$emit('delete', threadId)"><template #leftIcon><Trash2 aria-hidden="true" /></template></Button>
+          </Tooltip>
+          <Button label="Open thread" variant="text" color-scheme="primary" size="small" class="ml-space-4" @onClick="$emit('open', threadId)" />
         </div>
       </header>
 
@@ -64,9 +71,11 @@
 </template>
 
 <script>
+import { Mail, Trash2, ArchiveRestore } from '@development/linarc-icons';
 import Button from '@/components/Button/Button.vue';
 import Chip from '@/components/Chip/Chip.vue';
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
+import Tooltip from '@/componentsV2/Tooltip/index.vue';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
 import AiSummary from '~/candidates/AiSummary/AiSummary.vue';
@@ -82,7 +91,7 @@ import Composer from './Composer.vue';
 
 export default {
   name: 'ReadingPane',
-  components: { Button, Chip, StatusChip, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, Composer },
+  components: { Mail, Trash2, ArchiveRestore, Button, Chip, StatusChip, Tooltip, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, Composer },
   mixins: [fileViewing],
   props: {
     threadId: { type: String, default: '' },
@@ -102,6 +111,8 @@ export default {
       highlightId: '',
       notice: '',
       VISIBILITY,
+      // the icon-only button, as MessageTools draws its tools
+      toolProps: { colorScheme: 'secondary', variant: 'minimal', size: 'medium', nativeType: 'button' },
     };
   },
   computed: {

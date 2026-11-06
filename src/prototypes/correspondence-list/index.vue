@@ -235,6 +235,8 @@ export default {
         markUnread: (id) => this.setUnread([id], true),
         remove: (id) => this.removeRows([id]),
         restore: (id) => this.restoreRows([id]),
+        // the list bar's actions on the ticked rows (D-68): the same set as the table's selection toolbar
+        bulk: (key, ids) => this.applyBulk(key, ids),
       },
     };
   },
@@ -427,23 +429,27 @@ export default {
     onSelection({ selectedRowIds }) {
       this.selectedIds = [...selectedRowIds];
     },
-    /** Delete: a thread goes to Deleted (restorable), a draft is discarded. */
+    /** The table's Delete: a thread goes to Deleted (restorable), a draft is discarded. */
     bulkDelete() {
-      const ids = this.selectedIds;
-      if (!ids.length) return;
-      if (this.folder === 'drafts') {
-        ids.forEach(clearDraft);
-        this.afterBulk();
-      } else if (this.folder === 'inbox') {
-        this.removeRows(ids);
-      }
+      this.applyBulk('delete', this.selectedIds);
     },
     bulkAction(key) {
-      const ids = this.selectedIds;
-      if (!ids.length) return;
+      this.applyBulk(key, this.selectedIds);
+    },
+    /** One action on a set of rows, from the table's selection toolbar or the Reading view's list bar (D-67, D-68). */
+    applyBulk(key, ids) {
+      if (!ids || !ids.length) return;
       if (key === 'unread') this.setUnread(ids, true);
       else if (key === 'read') this.setUnread(ids, false);
       else if (key === 'restore') this.restoreRows(ids);
+      else if (key === 'delete') {
+        if (this.folder === 'drafts') {
+          ids.forEach(clearDraft);
+          this.afterBulk();
+        } else if (this.folder === 'inbox') {
+          this.removeRows(ids);
+        }
+      }
     },
     afterBulk() {
       this.selectedIds = [];

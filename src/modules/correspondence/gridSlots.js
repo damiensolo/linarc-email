@@ -52,7 +52,8 @@ const EmphText = {
   },
   render(h) {
     const text = this.cp.value == null ? '' : String(this.cp.value);
-    return h('span', { class: ['block min-w-0 truncate font-label text-fontsize-14 leading-lineheight-20 text-text-default', this.cp.bold ? 'font-bold' : ''], attrs: { title: text, 'data-unread': this.cp.bold ? 'true' : null } }, text);
+    // no `title`: the browser's tooltip is not the design system's (P-070); the full text is on the thread
+    return h('span', { class: ['block min-w-0 truncate font-label text-fontsize-14 leading-lineheight-20 text-text-default', this.cp.bold ? 'font-bold' : ''], attrs: { 'data-unread': this.cp.bold ? 'true' : null } }, text);
   },
 };
 

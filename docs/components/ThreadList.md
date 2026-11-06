@@ -3,7 +3,7 @@
 - **Stage:** figma
 - **Proposed:** 2026-11-04 · **Used on:** `correspondence-list` (Reading view, D-65)
 - **Candidate code:** `src/candidates/ThreadList/ThreadList.vue`
-- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04, variables bound, unpublished) · **Library:** — · **Log:** —
+- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04; Layout and Unread properties added 2026-11-06, 8 variants; variables bound, unpublished) · **Library:** — · **Log:** —
 
 ## Purpose
 The compact list of conversations beside a reading pane: one row per thread with who wrote last, when, the subject, the first line of the last message, a paperclip when files are attached and one status signal. It is the column a reader scans while the pane shows the selected thread; the table (grid / list views) stays the place to sort and compare columns.
@@ -26,16 +26,18 @@ Selected row: `surface/datatable/row-active` (the grid's active row), `aria-sele
 |---|---|---|---|
 | `items` | Array | `[]` | `{ id, from, time, subject, snippet, hasAttachments, unread? }` in display order (the grid's: search, filter, sort applied); `unread` sets sender and subject bold (D-67) |
 | `selectedId` | String | `''` | |
+| `selectable` | Boolean | `false` | a Checkbox at the left of every row (D-68); ticking emits `check` and never selects |
+| `checkedIds` | Array | `[]` | the ticked rows |
 | `layout` | String | `'preview'` | `preview` (sender + time, subject, snippet + signal: three lines) or `list` (one line: sender, subject, signal, paperclip, time); D-67 |
 | `loading` | Boolean | `false` | Skeleton rows |
 | `loadingRowCount` | Number | `8` | |
 | `emptyText` | String | `'No email matches.'` | |
 | `label` | String | `'Conversations'` | listbox name |
 
-Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter).
+Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter), `check({ id, checked })` (the Checkbox, Space on the selected row).
 
 ## States and variants
-Two layouts (`preview`, `list`). Row: default, hover, selected, unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
+Two layouts (`preview`, `list`). Row: default, hover, selected, checked (`data-checked`, the hover tint), unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
 
 ## Tokens
 `surface/container`, `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16 / 40 / 48`, `label/sm/regular`, `label/sm/medium`, `label/sm/bold` (unread), `label/xs/regular`.

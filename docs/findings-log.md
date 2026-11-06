@@ -409,3 +409,15 @@ Why it mattered: the whole point of the footer is that it sits on the edge; a 20
 How it was caught: `getBoundingClientRect()` of the footer against its scroll container in a puppeteer check (now `interact-correspondence-mail.mjs`, "sticks flush").
 What changed: Composer.vue's root is `contents`; hosts pass `footerClass` with `-bottom-space-20 pb-space-20` (the scroller's padding as the sticky offset) and their side bleed; `scripts/interact-correspondence-mail.mjs` asserts the footer's bottom equals the scroller's.
 Case study: Y: a sticky element needs a tall parent and an offset equal to the scroller's padding; measure it, don't eyeball it.
+
+## F-044 · 2026-11-06 · The grid toolbars' tooltips were the browser's, and `title` doubled as the test hook
+
+Tags: design-system | tooling
+What happened:
+- Every icon button in the DataGrid toolbars (Search, Filter, Group, the view switcher, Print, Download, View Settings, the selection toolbar's Delete) named itself with a native `title`: the browser's slow grey tooltip, not the design system's black Tooltip (Figma Tooltip, 200ms). The prototype's own icon buttons (MessageTools) already used the Tooltip component, so the Email screen showed two kinds.
+- The interaction scripts selected those buttons by `button[title="…"]`, so removing `title` broke the selectors; `aria-label` now carries the name and the scripts select on it.
+- Vite served the patched `DataGridToolbar.vue` only after the file was touched again: the first edit through the Python patch did not wake the watcher for that one file although the sibling `index.vue` edit did. Check the served module (`/@fs/…`) before concluding a library change "didn't work".
+Why it mattered: the user asked that every tooltip be the design system's; a native one on the most-hovered buttons would have been the first thing seen.
+How it was caught: hovering the grid's Filter button in `interact-correspondence-mail.mjs` (the script asserts a `[role="tooltip"]` and no `title`).
+What changed: library P-070 (Tooltip wrappers, `aria-label`, in DataGridToolbar, SelectionToolbar and the grid's right cluster); the scripts' selectors.
+Case study: Y: a `title` attribute is a native tooltip, not a free label; name a control with `aria-label` and show the Tooltip component.
