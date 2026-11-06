@@ -54,19 +54,14 @@ try {
 
   // --- the compact tool row replaces Attach files + the drop area
   const l0 = await labelled();
-  check(['Attach file', 'Attach link', 'Choose from cloud drive', 'Attach a record', 'Formatting', 'Discard draft'].every((l) => l0.includes(l)), `tool row buttons present (${l0.filter((l) => /Attach|Choose|Format|Discard/.test(l)).join(' | ')})`);
+  check(['Attach file', 'Attach link', 'Choose from cloud drive', 'Attach a record', 'Discard draft'].every((l) => l0.includes(l)) && !l0.includes('Formatting'), `tool row buttons present, no Formatting toggle (D-69) (${l0.filter((l) => /Attach|Choose|Format|Discard/.test(l)).join(' | ')})`);
   const b0 = await buttons();
   check(b0.includes('Save draft') && b0.includes('Send') && !b0.includes('Attach files') && !(await has('Drop files here')), 'Save draft and Send; no Attach files, no drop area');
   check((await disabled('Send')) === true && (await disabled('Save draft')) === true && (await disabled('Discard draft')) === true, 'Send, Save draft and Discard disabled while empty');
-  check(!(await labelled()).includes('Bold'), 'formatting bar hidden until toggled');
-
-  // --- formatting: only bold / italic / underline / lists / link
-  await click('Formatting');
+  // --- formatting bar always on (D-69): only bold / italic / underline / lists / link
   const l1 = await labelled();
   check(['Bold', 'Italic', 'Underline', 'Numbered list', 'Bulleted list', 'Add link'].every((l) => l1.includes(l)), 'formatting bar shows bold, italic, underline, lists, link');
   check(!['Strikethrough', 'Text colour', 'Highlight', 'Align left', 'Undo', 'Add table', 'Emoji'].some((l) => l1.includes(l)), 'no strikethrough, colour, alignment, undo, table or emoji');
-  const pressed = await page.evaluate(() => { const b = [...document.querySelectorAll('button[aria-label="Formatting"]')].find((x) => x.offsetParent); return b && b.getAttribute('aria-pressed'); });
-  check(pressed === 'true', `Formatting toggle is pressed (${pressed})`);
 
   // --- type with bold
   await typeText('Thanks Dave, ');
@@ -147,7 +142,6 @@ try {
   check(!(await has('Thanks Dave,')) && !(await has('Draft saved.')), 'discarded draft does not come back');
 
   // --- send with a list, a link and a record; the thread keeps the formatting
-  await click('Formatting');
   await typeText('Next steps:');
   await page.keyboard.press('Enter');
   await click('Bulleted list');
@@ -261,7 +255,6 @@ try {
   await page.setViewport({ width: 1440, height: 1000 });
   await page.goto(`${url.replace('theme=light', 'theme=dark')}`, { waitUntil: 'networkidle0' });
   await sleep(500);
-  await click('Formatting');
   await typeText('Dark check');
   await page.evaluate(() => { const b = [...document.querySelectorAll('button[aria-label="Attach file"]')].find((x) => x.offsetParent); b.scrollIntoView({ block: 'center' }); });
   await page.screenshot({ path: `${out}/composer-1440-dark.png`, fullPage: true });

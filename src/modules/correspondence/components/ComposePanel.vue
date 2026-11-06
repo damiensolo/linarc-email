@@ -8,6 +8,15 @@
        trimmed to one line (P-057), the panel is `lg` with a full-screen toggle, and a draft is kept per context: Save
        draft, or simply closing the panel, keeps it until it is sent or discarded. Send disables while sending (§6). -->
   <SlideOverPanel :open="open" title="Compose" :badge="record ? recordLabel(record.id) : ''" size="lg" expandable @close="requestClose">
+    <!-- The project address where mail is composed (D-42, spec §4): replies thread by themselves; other mail is forwarded
+         or Bcc'd. A help icon beside the title with the Tooltip (review 2026-11-06, D-69), not a line of body text. -->
+    <template #title-aside>
+      <Tooltip :label="REPLY_HELP" placement="bottom">
+        <span class="inline-flex rounded-radius-round text-icon-inactive focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-primary-focused" tabindex="0" :aria-label="`About replies. ${REPLY_HELP}`">
+          <CircleHelp :size="16" :stroke-width="1.75" aria-hidden="true" />
+        </span>
+      </Tooltip>
+    </template>
     <div class="flex flex-col gap-space-24 font-label">
       <!-- 1. Linked record (new): pinned, immutable -->
       <div v-if="record" class="flex flex-col gap-space-4">
@@ -90,8 +99,6 @@
         <template #footer><span /></template>
       </FormV2>
 
-      <!-- The project address where mail is composed (D-42, spec §4): replies thread by themselves; other mail is forwarded or Bcc'd. -->
-      <p class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle">Replies from any mail client come back to this thread. To file other mail in this project, forward or Bcc it to {{ PROJECT.inboundAddress }}.</p>
     </div>
 
     <!-- 7. Attachments and the tool row live in the panel's fixed footer (D-67, 2026-11-06): the chips, Send and the
@@ -156,6 +163,7 @@ const ROW_LABEL = { to: 'To', cc: 'Cc', bcc: 'Bcc' };
 /** A directory person as RecipientField takes them. */
 const asRecipient = (p) => ({ id: p.id, email: p.email, name: p.name, company: p.company, role: p.role, avatarUrl: p.avatarUrl || '' });
 const ATTACH_HELP = `Add a file, a link, a cloud-drive file or a record with the tools below. Files over ${MAIL_SIZE_LIMIT_MB} MB are delivered by secure link; recipients don't need an account to open them.`;
+const REPLY_HELP = `Replies from any mail client come back to this thread. To file other mail in this project, forward or Bcc it to ${PROJECT.inboundAddress}.`;
 
 export default {
   name: 'ComposePanel',
@@ -175,7 +183,7 @@ export default {
   data() {
     seq += 1;
     return {
-      ROW_LABEL, ATTACH_HELP, PROJECT,
+      ROW_LABEL, ATTACH_HELP, REPLY_HELP, PROJECT,
       to: [], cc: [], bcc: [], showBcc: false, values: {}, attachments: [],
       // What the panel opened with and what was last saved, as snapshots (see `snapshot`): touched = differs from
       // the baseline, saved = equals the last save.

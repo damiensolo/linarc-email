@@ -64,7 +64,7 @@ Mock attachments point at real files in `public/files/` (PLACEHOLDER DATA). PDFs
 ## Mail behaviours (2026-11-06, D-67)
 - Opening the thread reads it for the viewer (`markRead`): the Email list's row loses its bold.
 - A deleted thread (`deletedAt`, from the Email screen's Delete) still opens from the hash or the picker: an InlineNotice at the top says *This email is in Deleted. Restore it to reply or to see it in the Email list.* with **Restore**; the composer is not rendered until then.
-- The composer's chips and tool row stick to the bottom of the page while the thread scrolls (`footer-class="-bottom-space-20 pb-space-20"`, the content body's padding; F-043), so Send is never below the fold.
+- The whole composer (mode select, editor with its formatting bar always on, chips, tool row; D-69) sticks to the bottom of the page while the thread scrolls and grows with the message (`footer-class="-bottom-space-20 pb-space-20"`, the content body's padding; F-043), so Send is never below the fold.
 
 ## Findings
 F-008 (lodash.throttle shim; dark badge). F-043 (the sticky footer). Also F-006, F-007 (shared with the list). Attachments: F-011 to F-014.

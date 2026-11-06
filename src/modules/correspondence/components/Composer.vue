@@ -1,15 +1,21 @@
 <template>
   <!-- Thread composer (docs/correspondence/spec.md §6.3): a composition of existing components, not a candidate (D-38).
-       Mode select (Reply to all / Internal team note; internal roles only); the product's TextEditorV2, its formatting
-       bar (bold, italic, underline, lists, link; P-056) shown on demand; the attachments as removable chips
-       (AttachmentChips); and the compact tool row (MessageTools, D-58): attach a file, a link, a cloud-drive file or a
-       record, the Formatting toggle; Discard, Save draft (kept per thread in the demo session, restored on return) and
+       Mode select (Reply to all / Internal team note; internal roles only); the product's TextEditorV2 with its
+       formatting bar always on (bold, italic, underline, lists, link; P-056; the toggle went in review, D-69); the
+       attachments as removable chips (AttachmentChips); and the compact tool row (MessageTools, D-58): attach a file,
+       a link, a cloud-drive file or a record; Discard, Save draft (kept per thread in the demo session, restored on return) and
        the one primary button whose label follows the mode. Note mode tints the composer like the note it will
        create. The buttons disable while sending (§6). -->
-  <!-- `contents`: the composer's two parts are children of the host's column, so the footer below can stick to the
-       host's scroll edge (a sticky element sticks within its parent; the composer itself is never tall enough). -->
-  <div class="contents">
-  <div class="flex flex-col gap-space-12 pt-space-16" :class="mode === 'note' ? 'rounded-radius-6 bg-surface-warning-low-subtle p-space-12' : ''">
+  <!-- The whole composer is the reply footer (D-69, 2026-11-06): it sticks to the bottom of the host's scroll area and
+       grows with the message, pushing the thread up, so the reply, its attachments and Send are always in view and
+       nothing scrolls behind them. The host passes `footerClass` with the sticky offset and the bleed: Chrome keeps a
+       sticky element inside the scroller's content box, so a scroller with 20px padding needs `-bottom-space-20` (and
+       `pb-space-20` to keep the row off the edge) for the footer to sit flush (F-043); negative x margins match the
+       scroller's side padding. A note tints the whole footer like the note it will create. -->
+  <div
+    class="sticky z-10 flex flex-col gap-space-12 border-t border-border-subtle pt-space-12"
+    :class="[mode === 'note' ? 'bg-surface-warning-low-subtle' : 'bg-surface-container', footerClass || 'bottom-0']"
+  >
     <div v-if="allowNote" class="flex flex-wrap items-center gap-x-space-16 gap-y-space-8">
       <SelectV2 v-model="mode" class="w-full sm:w-1/3 lg:w-1/4" size="small" :options="modes" :allow-search="false" aria-label="Message type" />
       <span class="font-label text-fontsize-12 leading-lineheight-16 text-text-subtle">
@@ -17,12 +23,13 @@
       </span>
     </div>
 
-    <!-- The product's editor with only the tools the Formatting toggle promises (P-056); its own Send / Save / Cancel
-         are off, the tool row below has them. `keyup` reads the text at once (the editor's own event is debounced). -->
+    <!-- The product's editor with its bar always on (bold, italic, underline, lists, link; P-056; the Formatting toggle
+         went in review 2026-11-06, D-69); its own Send / Save / Cancel are off, the tool row below has them. `keyup`
+         reads the text at once (the editor's own event is debounced). -->
     <TextEditorV2
       ref="editor"
       empty-text="Write your message…"
-      :hide-tool-bar="!formatting"
+      :hide-tool-bar="false"
       :text-styling="true"
       :color-tools="false"
       :strikethrough="false"
@@ -45,36 +52,22 @@
       @keyup.native="syncNow"
     />
 
-  </div>
-    <!-- The reply footer (D-67, 2026-11-06): the chips and the tool row stick to the bottom of the scrolling area while
-         a long thread or message scrolls, so the attachments and the one primary button are always in view. A child
-         of the host's column (see `contents` above): `-mt-space-20` brings it 12px under the editor through the
-         column's 32px gap. The host passes `footerClass` with the sticky offset and the bleed: Chrome keeps a sticky
-         element inside the scroller's content box, so a scroller with 20px padding needs `-bottom-space-20` (and
-         `pb-space-20` to keep the row off the edge) for the footer to sit flush (F-043); negative x margins match the
-         scroller's side padding. A note's footer carries the note's tint and stays at bottom-0. -->
-    <div
-      class="sticky z-10 -mt-space-20 flex flex-col gap-space-12 border-t border-border-subtle pt-space-12"
-      :class="mode === 'note' ? ['bottom-0 rounded-b-radius-6 bg-surface-warning-low-subtle px-space-12 pb-space-12'] : ['bg-surface-container', footerClass || 'bottom-0']"
-    >
-      <AttachmentChips :attachments="attachments" :disabled="busy" @remove="removeAttachment" />
+    <AttachmentChips :attachments="attachments" :disabled="busy" @remove="removeAttachment" />
 
-      <MessageTools
-        :attachments="attachments"
-        :send-label="mode === 'note' ? 'Post note' : 'Send'"
-        :can-send="!!text"
-        :empty="empty"
-        :saved="saved"
-        :busy="busy"
-        :formatting.sync="formatting"
-        :has-saved-draft="!!(draftKey && draftFor(draftKey))"
-        :suggested-record-ids="suggestedRecordIds"
-        @add="addAttachment"
-        @save="saveDraft"
-        @discard="discard"
-        @send="submit"
-      />
-    </div>
+    <MessageTools
+      :attachments="attachments"
+      :send-label="mode === 'note' ? 'Post note' : 'Send'"
+      :can-send="!!text"
+      :empty="empty"
+      :saved="saved"
+      :busy="busy"
+      :has-saved-draft="!!(draftKey && draftFor(draftKey))"
+      :suggested-record-ids="suggestedRecordIds"
+      @add="addAttachment"
+      @save="saveDraft"
+      @discard="discard"
+      @send="submit"
+    />
   </div>
 </template>
 
@@ -109,7 +102,6 @@ export default {
       ],
       html: '',
       text: '',
-      formatting: false,
       attachments: [],
       saved: false,
       restoring: false,

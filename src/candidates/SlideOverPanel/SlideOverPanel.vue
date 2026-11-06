@@ -24,6 +24,8 @@
           <h2 :id="titleId" ref="title" tabindex="-1" class="m-0 min-w-0 flex-1 truncate font-label text-fontsize-16 font-bold leading-lineheight-24 text-text-default outline-none">
             {{ title }}
           </h2>
+          <!-- `title-aside` (2026-11-06): something small beside the title, e.g. a help icon with a Tooltip -->
+          <slot name="title-aside" />
           <Chip v-if="badge" :label="badge" size="small" fill-style="solid" type="default" :removable="false" class="shrink-0" />
           <!-- Full screen (2026-10-28): the panel takes the whole viewport, for a long message or a wide toolbar -->
           <HeaderToolIcon v-if="expandable" type="tool" :aria-label="expanded ? 'Exit full screen' : 'Full screen'" :aria-pressed="String(expanded)" :selected="expanded" class="shrink-0" @click="toggleExpanded">

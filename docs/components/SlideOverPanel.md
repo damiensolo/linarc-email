@@ -29,6 +29,8 @@ Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (titl
 
 Slots: `default` (body), `header-meta`, `footer` (wraps when it holds a tool row: `min-height` 64px, not a fixed height). Events: `close` (Esc, backdrop, close button), `opened`, `closed`, `expand` (Boolean).
 
+Slot `title-aside` (2026-11-06): something small beside the title, e.g. a help icon with a Tooltip (the compose panel's project-address note, D-69).
+
 ## States and variants
 Sizes sm / md / lg; open / closing; with and without footer; body loading (the consumer renders a LoadRegion). Both themes.
 
