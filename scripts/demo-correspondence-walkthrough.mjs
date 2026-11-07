@@ -274,6 +274,22 @@ try {
   const after = Number(await page.evaluate((el) => el.getAttribute('aria-valuenow'), sep));
   check(after > before, `9 the divider drags (${before} → ${after})`);
   await page.screenshot({ path: `${out}/demo-email-09-reading.png` });
+  // the middle pane's Preview · List control (D-67) and the List layout's header checkbox (D-71): Needs action is still on, so 4 rows
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.rv-listbar button, .rv-listbar [role="radio"], .rv-listbar label')].find((x) => x.textContent.trim() === 'List'); b && b.click(); });
+  await sleep(500);
+  const headCells = await page.evaluate(() => [...document.querySelectorAll('.tl-head [role="columnheader"]')].map((c) => c.textContent.trim()).filter(Boolean));
+  check((await page.evaluate(() => document.querySelectorAll('.tl-row--list').length)) === 4 && headCells.join(' · ') === 'From · Subject · Time', `9 List layout: one-line rows under the column header (${headCells.join(' · ')})`);
+  await page.evaluate(() => document.querySelector('.tl-head input[type="checkbox"]').click());
+  await sleep(400);
+  const barLabels = await page.evaluate(() => [...document.querySelectorAll('.rv-listbar button')].map((b) => b.getAttribute('aria-label') || b.textContent.trim()));
+  check(await has('4 selected') && (await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 4 && barLabels.join(' · ') === 'Mark as unread · Mark as read · Delete · Preview · List', `9 the header checkbox ticks every row: 4 selected, the bar's actions (${barLabels.join(' · ')})`);
+  await page.screenshot({ path: `${out}/demo-email-09-list-selected.png` });
+  await page.evaluate(() => document.querySelector('.tl-head input[type="checkbox"]').click());
+  await sleep(400);
+  check((await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 0 && (await paneSubject()).includes('Grid B-4 HVAC duct'), '9 a second click clears them; the thread stays open');
+  await page.evaluate(() => { const b = [...document.querySelectorAll('.rv-listbar button, .rv-listbar [role="radio"], .rv-listbar label')].find((x) => x.textContent.trim() === 'Preview'); b && b.click(); });
+  await sleep(400);
+  check((await page.evaluate(() => !document.querySelector('.tl-head') && document.querySelectorAll('.tl-row--preview').length === 4)), '9 back to Preview: three-line rows, no header');
   await page.click('button[aria-label="List"]');
   await sleep(500);
   const hs = await headers();

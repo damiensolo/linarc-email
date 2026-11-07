@@ -6,7 +6,9 @@
        2026-11-06): `preview` (three lines, the snippet under the subject) and `list` (one line: sender, subject, signal,
        time; the dense view, as a mail client's). An `unread` item reads bold (sender and subject), as a mail client.
        `selectable` (D-68) puts a Checkbox at the left of every row: ticking emits `check({ id, checked })` and never
-       selects the row, so a thread can be read while others are ticked for a bulk action the host offers.
+       selects the row, so a thread can be read while others are ticked for a bulk action the host offers. The `list`
+       layout has a column header as the DataGrid's (D-71): From (124px) · Subject · Time, sticky at the top of the
+       scroll, with a select-all Checkbox (indeterminate while some rows are ticked) that emits `check-all(checked)`.
        Rows are hairline-divided (D-17); the selected row carries surface/datatable/row-active (the grid's active row)
        and aria-selected; hover is surface/datatable/row-hover, as a grid row.
        Keyboard: a listbox; Up / Down move the selection, Home / End jump, Enter opens (`open`). Loading shows Skeleton
@@ -27,7 +29,20 @@
       </template>
     </div>
     <p v-else-if="!items.length" class="m-0 px-space-16 py-space-16 font-label text-fontsize-14 leading-lineheight-20 text-text-subtle">{{ emptyText }}</p>
-    <div v-else ref="list" role="listbox" :aria-label="label" :aria-multiselectable="selectable ? 'true' : null" :aria-activedescendant="selectedId ? rowId(selectedId) : null" tabindex="0" class="flex flex-col outline-none" @keydown="onKey">
+    <!-- list: a column header as the DataGrid's (D-71), sticky at the top of the scroll; the Checkbox ticks every row -->
+    <div
+      v-if="!loading && items.length && layout === 'list'"
+      class="tl-head sticky top-0 z-10 flex h-space-40 shrink-0 select-none items-center gap-space-12 border-b border-border-subtle bg-surface-datatable-header px-space-16 font-label text-fontsize-12 font-semibold uppercase leading-lineheight-16 tracking-letterspacing-4 text-text-subtle"
+      role="row"
+    >
+      <span v-if="selectable" class="tl-check flex shrink-0 items-center" role="columnheader">
+        <Checkbox :value="allChecked" :indeterminate="someChecked && !allChecked" size="small" aria-label="Select all conversations" @input="$emit('check-all', $event)" />
+      </span>
+      <span class="w-space-124 shrink-0 truncate" role="columnheader">From</span>
+      <span class="min-w-0 flex-1 truncate" role="columnheader">Subject</span>
+      <span class="w-space-48 shrink-0 text-right" role="columnheader">Time</span>
+    </div>
+    <div v-if="!loading && items.length" ref="list" role="listbox" :aria-label="label" :aria-multiselectable="selectable ? 'true' : null" :aria-activedescendant="selectedId ? rowId(selectedId) : null" tabindex="0" class="flex flex-col outline-none" @keydown="onKey">
       <div
         v-for="item in items"
         :id="rowId(item.id)"
@@ -51,7 +66,7 @@
         </span>
         <!-- list: one line -->
         <template v-if="layout === 'list'">
-          <span class="w-1/3 shrink-0 truncate text-fontsize-14 leading-lineheight-20 text-text-default" :class="item.unread ? 'font-bold' : 'font-medium'">{{ item.from }}</span>
+          <span class="w-space-124 shrink-0 truncate text-fontsize-14 leading-lineheight-20 text-text-default" :class="item.unread ? 'font-bold' : 'font-medium'">{{ item.from }}</span>
           <span class="min-w-0 flex-1 truncate text-fontsize-14 leading-lineheight-20 text-text-default" :class="item.unread ? 'font-bold' : ''">{{ item.subject }}</span>
           <slot name="status" :item="item" />
           <Paperclip v-if="item.hasAttachments" :size="14" :stroke-width="2" class="shrink-0 text-icon-inactive" aria-label="Has attachments" />
@@ -99,10 +114,18 @@ export default {
     emptyText: { type: String, default: 'No email matches.' },
     label: { type: String, default: 'Conversations' },
   },
-  // select(id) · open(id) · check({ id, checked })
+  // select(id) · open(id) · check({ id, checked }) · check-all(checked)
   data() {
     seq += 1;
     return { uid: `tl-${seq}` };
+  },
+  computed: {
+    allChecked() {
+      return this.items.length > 0 && this.items.every((i) => this.isChecked(i.id));
+    },
+    someChecked() {
+      return this.items.some((i) => this.isChecked(i.id));
+    },
   },
   watch: {
     selectedId(id) {

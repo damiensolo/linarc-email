@@ -80,7 +80,29 @@ try {
   await click('List', '.rv-listbar button, .rv-listbar [role="radio"], .rv-listbar label');
   rows = await listRows();
   check(rows.length === 12 && rows.every((r) => r.list), 'List layout: one-line rows');
+  // --- the List layout's column header (D-71): sticky, From 124px, a select-all Checkbox
+  const head = await page.evaluate(() => {
+    const h = document.querySelector('.tl-head');
+    if (!h) return null;
+    const cells = [...h.querySelectorAll('[role="columnheader"]')];
+    const from = document.querySelector('.tl-row--list > span:nth-of-type(2)');
+    return { cells: cells.map((c) => c.textContent.trim()), sticky: getComputedStyle(h).position === 'sticky', top: Math.round(h.getBoundingClientRect().top), listTop: Math.round(document.querySelector('.tl-root').getBoundingClientRect().top), headFromW: Math.round(cells[1].getBoundingClientRect().width), fromW: from ? Math.round(from.getBoundingClientRect().width) : 0, h: Math.round(h.getBoundingClientRect().height) };
+  });
+  check(head && head.cells.join('|') === '|From|Subject|Time' && head.sticky && head.top === head.listTop && head.h === 40, `List layout: a 40px column header (From · Subject · Time) sticky at the top of the list (${JSON.stringify(head)})`);
+  check(head && head.fromW === 124 && head.headFromW === 124, `the From column is 124px in the header and the rows (${head && head.fromW} / ${head && head.headFromW})`);
+  const headBox = () => page.evaluate(() => { const i = document.querySelector('.tl-head input[type="checkbox"]'); return i ? { checked: i.checked, indeterminate: i.indeterminate } : null; });
+  const clickHead = async () => { await page.evaluate(() => document.querySelector('.tl-head input[type="checkbox"]').click()); await sleep(300); };
   await page.screenshot({ path: `${out}/mail-list-layout.png` });
+  await clickHead();
+  check(await has('12 selected') && (await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 12 && (await headBox()).checked, 'the header checkbox ticks every row: 12 selected');
+  await page.screenshot({ path: `${out}/mail-list-all-checked.png` });
+  await page.evaluate(() => document.querySelector('.tl-row .tl-check input').click());
+  await sleep(300);
+  check(await has('11 selected') && (await headBox()).indeterminate && !(await headBox()).checked, 'unticking one row: 11 selected, the header checkbox is indeterminate');
+  await clickHead();
+  check(await has('12 selected') && (await headBox()).checked && !(await headBox()).indeterminate, 'the indeterminate header checkbox ticks every row again');
+  await clickHead();
+  check((await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 0 && (await barButtons()).join(' · ') === 'Preview · List', 'a second click clears every row; the bar shows only Preview · List');
   await click('Preview', '.rv-listbar button, .rv-listbar [role="radio"], .rv-listbar label');
   check((await listRows()).every((r) => !r.list), 'back to Preview');
 

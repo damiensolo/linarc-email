@@ -182,6 +182,7 @@ save: createLoad({ label: 'changes', action: { busy: 'Saving', done: 'Saved', er
 
 - The panel is 800px with the value column twice the others, so date ranges and multi-values fit (P-044).
 - Check: open the panel, use each quick filter, pick several values, a date range, clear; the badge and (where there is one) the segment agree at every step, in both themes.
+- **A one-line list reads as a table (D-71, 2026-11-06).** A list whose rows are one line of columns (the Reading view's List layout) has a column header as the DataGrid's: 40px, `surface/datatable/header`, 12px semibold uppercase, sticky at the top of its scroll, with a select-all checkbox (indeterminate while some rows are ticked). Fixed-width columns are the same width in the header and the rows (From: 124px). A three-line list (Preview) has no header; its rows carry their own checkbox.
 
 ## 9. AI-generated content
 

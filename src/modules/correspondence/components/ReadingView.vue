@@ -42,6 +42,7 @@
             @select="select"
             @open="open"
             @check="onCheck"
+            @check-all="onCheckAll"
           >
             <template #status="{ item }">
               <StatusChip v-if="item.signal" :label="item.signal.label" :status="item.signal.status" fill-style="outline" type="default" :removable="false" class="shrink-0" />
@@ -283,6 +284,10 @@ export default {
     },
     onCheck({ id, checked }) {
       this.checked = checked ? [...this.checked.filter((x) => x !== id), id] : this.checked.filter((x) => x !== id);
+    },
+    /** The List layout's header Checkbox (D-71): every shown row, or none. */
+    onCheckAll(checked) {
+      this.checked = checked ? this.items.map((i) => i.id) : [];
     },
     /** One of the bar's actions on every ticked row; the screen does the work, the ticks clear. */
     bulk(key) {

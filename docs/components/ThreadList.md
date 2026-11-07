@@ -3,7 +3,7 @@
 - **Stage:** figma
 - **Proposed:** 2026-11-04 · **Used on:** `correspondence-list` (Reading view, D-65)
 - **Candidate code:** `src/candidates/ThreadList/ThreadList.vue`
-- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04; Layout and Unread properties added 2026-11-06, 8 variants; variables bound, unpublished) · **Library:** — · **Log:** —
+- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04; Layout and Unread properties added 2026-11-06, 8 variants; variables bound, unpublished) · [ThreadList Header](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1525) (Select all = None · Some · All, D-71) and [ThreadList · List layout](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1526) (the header over three List rows) · **Library:** — · **Log:** —
 
 ## Purpose
 The compact list of conversations beside a reading pane: one row per thread with who wrote last, when, the subject, the first line of the last message, a paperclip when files are attached and one status signal. It is the column a reader scans while the pane shows the selected thread; the table (grid / list views) stays the place to sort and compare columns.
@@ -21,26 +21,28 @@ Rows divided by 1px `border/subtle` hairlines (D-17), 16px inset, 10px vertical:
 3. Line 3: **snippet** (12/16 `text/subtle`, truncates) · paperclip 14px `icon/inactive` when the thread has files · the `status` slot (one chip or nothing).
 Selected row: `surface/datatable/row-active` (the grid's active row), `aria-selected`. Hover: `surface/datatable/row-hover`. Loading: Skeleton lines in the same three-line layout. Empty: plain text (§3).
 
+**List layout (D-67, D-71):** one 40px line per row (Checkbox · sender 124px · subject · signal · paperclip · time 48px right) under a **column header** as the DataGrid's: 40px, `surface/datatable/header`, 12px semibold uppercase `text/subtle` (From · Subject · Time), a hairline below, sticky at the top of the scroll. The header's Checkbox ticks every row shown and is indeterminate while some are ticked; a second click clears them. Preview has no header (its rows have no columns).
+
 ## API
 | Prop | Type | Default | Notes |
 |---|---|---|---|
 | `items` | Array | `[]` | `{ id, from, time, subject, snippet, hasAttachments, unread? }` in display order (the grid's: search, filter, sort applied); `unread` sets sender and subject bold (D-67) |
 | `selectedId` | String | `''` | |
-| `selectable` | Boolean | `false` | a Checkbox at the left of every row (D-68); ticking emits `check` and never selects |
+| `selectable` | Boolean | `false` | a Checkbox at the left of every row (D-68); ticking emits `check` and never selects; in `list` the header's Checkbox emits `check-all` (D-71) |
 | `checkedIds` | Array | `[]` | the ticked rows |
-| `layout` | String | `'preview'` | `preview` (sender + time, subject, snippet + signal: three lines) or `list` (one line: sender, subject, signal, paperclip, time); D-67 |
+| `layout` | String | `'preview'` | `preview` (sender + time, subject, snippet + signal: three lines) or `list` (one line: sender, subject, signal, paperclip, time, under the column header); D-67, D-71 |
 | `loading` | Boolean | `false` | Skeleton rows |
 | `loadingRowCount` | Number | `8` | |
 | `emptyText` | String | `'No email matches.'` | |
 | `label` | String | `'Conversations'` | listbox name |
 
-Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter), `check({ id, checked })` (the Checkbox, Space on the selected row).
+Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter), `check({ id, checked })` (the Checkbox, Space on the selected row), `check-all(checked)` (the List header's Checkbox; the host ticks every shown row or none).
 
 ## States and variants
-Two layouts (`preview`, `list`). Row: default, hover, selected, checked (`data-checked`, the hover tint), unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
+Two layouts (`preview`, `list`). Row: default, hover, selected, checked (`data-checked`, the hover tint), unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. The List header's Checkbox: none, some (indeterminate), all (Figma: ThreadList Header, Select all = None · Some · All). Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
 
 ## Tokens
-`surface/container`, `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16 / 40 / 48`, `label/sm/regular`, `label/sm/medium`, `label/sm/bold` (unread), `label/xs/regular`.
+`surface/container`, `surface/datatable/header` (the List header), `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16 / 40 / 48 / 124`, `label/sm/regular`, `label/sm/medium`, `label/sm/bold` (unread), `label/xs/regular`, `label/xs/semibold` uppercase (the header).
 
 ## Behaviour
 - Entries arrive resolved (names, labels, times); the component holds no module data.

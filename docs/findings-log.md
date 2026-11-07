@@ -421,3 +421,14 @@ Why it mattered: the user asked that every tooltip be the design system's; a nat
 How it was caught: hovering the grid's Filter button in `interact-correspondence-mail.mjs` (the script asserts a `[role="tooltip"]` and no `title`).
 What changed: library P-070 (Tooltip wrappers, `aria-label`, in DataGridToolbar, SelectionToolbar and the grid's right cluster); the scripts' selectors.
 Case study: Y: a `title` attribute is a native tooltip, not a free label; name a control with `aria-label` and show the Tooltip component.
+
+## F-045 · 2026-11-06 · A one-off puppeteer script in the scratchpad can't find `puppeteer-core`
+
+Tags: tooling
+What happened:
+- A throwaway screenshot script written to the scratchpad and run with `node <scratchpad>/shot.mjs` failed with `ERR_MODULE_NOT_FOUND: Cannot find package 'puppeteer-core'`, although the same import works in `scripts/*.mjs`. ESM resolves bare imports from the importing file's folder upwards, not from the working directory, so a script outside the repo never sees the repo's `node_modules`.
+- Fix: copy the script into `scripts/` under a `_tmp-` name for the run and delete it after (or keep it in `scripts/` as a named check if it earns its place).
+Why it mattered: the D-71 dark-theme and 1024px screenshots were blocked until the script moved.
+How it was caught: the first run's stack trace.
+What changed: nothing in the repo; this note.
+Case study: Y: the scratchpad is for outputs; a Node script that imports the repo's dependencies runs from inside the repo.
