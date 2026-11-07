@@ -8,7 +8,7 @@ A repo for building **view prototypes** of Linarc platform screens with the Lina
 
 ## Commands
 
-- `yarn dev` → http://localhost:5173 (`?p=<slug>` picks a prototype, `?theme=dark|light` forces a theme, `?latency=` simulates loading)
+- `yarn dev` → http://localhost:5173 (`?p=<slug>` picks a prototype, none opens the Email screen (`DEFAULT_SLUG` in `src/prototypes/index.js`), `?theme=dark|light` forces a theme, `?latency=` simulates loading)
 - **Prototype controls** (the sandbox bar: picker, records, roles, *Simulate inbound email* on screens that declare `prototype.inbound`, reset; theme, loading speed and the Figma link in the ··· overflow menu at its right): shown and hidden with the settings gear in each screen's top nav (or its hamburger drawer on a phone); remembered per browser, `?chrome=0` starts hidden. State in `src/modules/sandbox.js` (the gear is P-045 in the library).
 - `yarn run check` → the conventions linter (`scripts/check-conventions.mjs`; plain `yarn check` is Yarn 1's built-in integrity check, F-012): hex colours, primitive palette, raw or arbitrary values, bad `border-*` classes, `<script setup>` / TypeScript, reload navigation. `yarn verify` = check + build. **Run `yarn verify` before calling anything done.**
 - `yarn build` → production build (catches import/compile errors)

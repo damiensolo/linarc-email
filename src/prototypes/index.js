@@ -14,6 +14,10 @@
  *            (src/modules/SimulateEventModal.vue; the screen remounts after the event)
  *   hidden   true keeps the slug out of the picker (still opens by URL). Slugs starting with `_` are hidden too.
  */
+/** The screen a plain URL (no `?p=`) opens: the Email screen in its Reading view (D-65). Before 2026-11-06 it was the first
+ * title alphabetically, which put a deployed visitor on the template's Submittals example. */
+export const DEFAULT_SLUG = 'correspondence-list';
+
 const modules = import.meta.glob('./*/index.vue', { eager: true });
 
 export default Object.entries(modules)

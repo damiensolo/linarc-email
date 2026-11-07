@@ -23,13 +23,18 @@
        (Delete, Mark as unread, Mark as read; Restore in Deleted) and nothing else; the reading pane's header carries the
        same actions; the Reading view's middle pane switches between a Preview and a List layout. -->
   <AppShell screen="email" title="Email">
-    <!-- Title Bar / Page with the project address beside the title (review 2026-10-27): the one fact a visitor needs
-         about this screen, read before the views. The title bar has a fixed height, so below 640px the line is hidden
-         rather than wrapped; the empty state and the compose footer still carry the address there. -->
+    <!-- Title Bar / Page: the project address sits in a Tooltip behind a small help icon beside the title (review
+         2026-11-06; it was a 12px line beside the title from 2026-10-27). The icon is focusable and carries the copy as
+         its label, so the keyboard and a screen reader get it too; the empty state and the compose footer still print
+         the address in full. -->
     <template #header>
-      <div class="flex min-w-0 items-baseline gap-x-space-12">
+      <div class="flex min-w-0 items-center gap-x-space-8">
         <span class="shrink-0 font-label font-bold text-fontsize-16 leading-lineheight-24 text-text-default">Email</span>
-        <span class="hidden min-w-0 truncate font-label text-fontsize-12 leading-lineheight-16 text-text-subtle sm:inline">Mail sent to <strong class="font-bold text-text-default">{{ project.inboundAddress }}</strong> lands here.</span>
+        <Tooltip :label="addressNote" placement="bottom">
+          <span class="inline-flex shrink-0 rounded-radius-round text-icon-inactive focus-visible:outline focus-visible:outline-2 focus-visible:outline-border-primary-focused" tabindex="0" :aria-label="addressNote">
+            <HelpCircle :size="16" aria-hidden="true" />
+          </span>
+        </Tooltip>
       </div>
     </template>
     <template #header-actions>
@@ -117,7 +122,8 @@
 </template>
 
 <script>
-import { PanelRight } from '@development/linarc-icons';
+import { HelpCircle, PanelRight } from '@development/linarc-icons';
+import Tooltip from '@/componentsV2/Tooltip/index.vue';
 import Button from '@/components/Button/Button.vue';
 import DataGrid from '@/components/DataGrid/index.vue';
 import ModalV2 from '@/componentsV2/ModalV2/ModalV2.vue';
@@ -180,7 +186,7 @@ export default {
     inbound: inboundSandbox,
     events: eventsSandbox,
   },
-  components: { AppShell, Button, DataGrid, ModalV2, SegmentedControl, LoadRegion, LoadStatus, SmartPicker, ComposePanel },
+  components: { AppShell, Button, DataGrid, ModalV2, SegmentedControl, LoadRegion, LoadStatus, SmartPicker, ComposePanel, Tooltip, HelpCircle },
   provide() {
     return { readingContext: this.readingCtx };
   },
@@ -241,6 +247,10 @@ export default {
     };
   },
   computed: {
+    /** The tooltip and the icon's accessible name: one sentence, the address in full (D-42). */
+    addressNote() {
+      return `Mail sent to ${this.project.inboundAddress} lands here.`;
+    },
     /** The count, bold (review 2026-10-28); nothing until the first answer: "0 threads" before loading would be a false result. */
     count() {
       if (!this.load.hasData) return '';

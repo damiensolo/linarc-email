@@ -81,7 +81,7 @@
 <script>
 import Button from '@/components/Button/Button.vue';
 import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
-import prototypes from '~/prototypes';
+import prototypes, { DEFAULT_SLUG } from '~/prototypes';
 import { NAVIGATE_EVENT, go } from '~/modules/app/router';
 import { LATENCY_OPTIONS, latencyScenario } from '~/modules/mock/request';
 import { hasChanges, resetSession } from '~/modules/session';
@@ -101,7 +101,7 @@ export default {
   components: { Button, SelectV2, SimulateInboundModal, SimulateEventModal, SandboxMenu },
   data() {
     const slug = readQuerySlug();
-    const fallback = (prototypes[0] || {}).slug;
+    const fallback = prototypes.some((p) => p.slug === DEFAULT_SLUG) ? DEFAULT_SLUG : (prototypes[0] || {}).slug;
     return {
       prototypes,
       currentSlug: prototypes.some((p) => p.slug === slug) ? slug : fallback,
