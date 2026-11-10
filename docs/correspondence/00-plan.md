@@ -1,6 +1,6 @@
 # Correspondence — plan, open questions and decisions
 
-Module **Correspondence** (slugs `correspondence-*`), built in this repo (`linarc-email`, from `linarc-prototype-base`, D-33). Companions: `spec.md` (facts the screens need), `status-model.md`, `screens.md`. Decisions live in `../4-decisions.md`; §7 points at them. `source/` holds the first-pass spec (not the raw PRD; see its README). `reference/` holds the drafts; only the mock data carries forward.
+Module **Correspondence** (slugs `correspondence-*`), built in this repo (`linarc-email`, from `linarc-prototype-base`, D-33). Companions: `spec.md` (facts the screens need), `status-model.md`, `screens.md`, `flows.md` (the information architecture and flows, drawn on the [Email Flows](https://www.figma.com/board/OeDLoqdulJByloYjQg7U3L) FigJam board, 2026-11-10). Decisions live in `../4-decisions.md`; §7 points at them. `source/` holds the first-pass spec (not the raw PRD; see its README). `reference/` holds the drafts; only the mock data carries forward.
 
 **The product already has Email.** This plan upgrades it (§0); it does not add a parallel system. Screens, tabs and copy say **Email**; "Correspondence" is only this repo's module and slug name.
 

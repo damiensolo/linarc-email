@@ -1,6 +1,6 @@
 # Correspondence — screen inventory and component map
 
-One row per screen (skill §0). Titles follow `<Tool> › <Screen>`. Stage: `spec` → `built` → `verified` → `figma`. Tests refer to `00-plan.md` §4. Screens, tabs and copy say **Email** (D-40).
+One row per screen (skill §0). Titles follow `<Tool> › <Screen>`. Stage: `spec` → `built` → `verified` → `figma`. Tests refer to `00-plan.md` §4. Screens, tabs and copy say **Email** (D-40). The screens as a tree, and the flows between them, are in `flows.md` and on the [Email Flows](https://www.figma.com/board/OeDLoqdulJByloYjQg7U3L) board.
 
 ## 1. Screens (`src/modules/app/router.js` `SCREENS`, `src/prototypes/<slug>/`)
 
