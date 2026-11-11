@@ -1,5 +1,5 @@
 <template>
-  <!-- CANDIDATE 2026-10-16: proposed design-system component, see docs/components/ThreadStream.md (D-17, D-38).
+  <!-- CANDIDATE 2026-10-16: proposed design-system component, see docs/components/ThreadStream.md (D-17, D-38). Not a prototype-local widget.
        The entries of an email thread as one hairline list: messages (sender, company, time, ONE delivery signal, body,
        files as AttachmentThumbnail tiles, an actions slot), internal team notes (InlineNotice warning; internal role only), system events (muted
        row with an in-document link), and a bounce notice under a failed message with an actions slot. No AI summary
@@ -115,9 +115,9 @@ export default {
   props: {
     /**
      * Resolved entries, oldest first (README):
-     *  message { id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, toText?,
+     *  message { id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?,
      *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }
-     *  note    { id, type: 'note', sender, sentAt, body }
+     *  note    { id, type: 'note', sender, sentAt, body, bodyHtml? }
      *  event   { id, type: 'event', sentAt, text, recordId? }
      * The screen applies the role before passing entries (an external role never receives notes).
      */

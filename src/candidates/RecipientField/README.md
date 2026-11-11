@@ -34,7 +34,7 @@ An address field with input chips: typeahead over a directory, chips for interna
 | `moveTargets` | `[]` | *Move to …* menu rows |
 | `suggestOnFocus` | `true` | list on focus with an empty query |
 | `maxSuggestions` | `8` | |
-| `placeholder`, `error`, `disabled` | | |
+| `placeholder`, `error`, `disabled` | String, String, Boolean | `''`, `''`, `false` | as InputV2 |
 
 Events: `input`, `unknown { email, name }`, `move { recipient, to }`, `focus`, `blur`. Slot: `trailing`.
 

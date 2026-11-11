@@ -199,4 +199,4 @@ As Sarah, bell › *View all* (**Notifications › All notifications**): scopes 
 | `?p=notifications-preferences` | preset, matrix, quiet hours, cover |
 | Sandbox › Simulate event | a Critical bounce, a reminder, a reassignment, a cover start (no remount: a draft survives) |
 | Figma | Documentation file › **Notifications** page (`4187:3492`): 01 drawer · 02 banner · 03 card states · 04 full page · 05 preferences · 06 Change severity |
-| Scripts | `demo-notifications-walkthrough.mjs` 80/80 (every step of `../notifications/overview-and-demo.md` §6 as written) · `interact-notifications-drawer.mjs` 31/31 · `interact-notifications-list.mjs` 16/16 · `interact-notifications-prefs.mjs` 16/16 · `smoke-notifications-data.mjs` |
+| Scripts | `demo-notifications-walkthrough.mjs` 80/80 (every step of `../notifications/overview-and-demo.md` §6 as written) · `interact-notifications-drawer.mjs` 32/32 · `interact-notifications-list.mjs` 16/16 · `interact-notifications-prefs.mjs` 16/16 · `smoke-notifications-data.mjs` |

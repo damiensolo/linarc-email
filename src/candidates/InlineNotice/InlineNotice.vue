@@ -1,7 +1,7 @@
 <template>
   <!-- CANDIDATE 2026-10-09: proposed design-system component, see docs/components/InlineNotice.md.
        An in-place notice under a field or above a form section (not a toast, not a modal): tone + message, optional
-       title and actions. Used for declared-vs-document mismatches and submission readiness.
+       title and actions. Used for load failures, internal team notes, bounce notices and the secure link page's states (the first module: declared-vs-document mismatches and submission readiness).
        Visual rule (2026-10-09 restyle): warning and error get a tinted fill and a tone icon, nothing else (no outline).
        Info and success are plain text blocks: a bold title and the message, no box, no icon. -->
   <div

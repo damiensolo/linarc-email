@@ -16,10 +16,10 @@
 |---|---|
 | Time from spec to first render | ~45 min |
 | Time to verified done | ~1.25 h |
-| Components used (library / forked / new) | 7 library (TopNavBar, AppLayout, Button, Chip, FormV2 TextareaField, icons) / 0 forked / 0 new (reuses DrawingPinPreview, LoadRegion, LoadStatus, Skeleton, InlineNotice, SheetSvg) |
+| Components used (library / forked / new) | 8 library (TopNavBar, AppLayout, Button, Chip, FormV2 TextareaField, AttachmentThumbnail P-048 through `FileTiles`, icons) / 0 forked / 0 new (reuses DrawingPinPreview, FileViewer, LoadRegion, LoadStatus, Skeleton, InlineNotice, SheetSvg) |
 | Gaps found | 0 |
 | Verification rounds before passing | 1 |
-| Computed-value checks (pass/total) | 17/17 (interaction script) |
+| Computed-value checks (pass/total) | 19/19 (interaction script, 2026-11-11) |
 
 ## Gaps and how they were handled
 | Gap | Handling | Log ID |
@@ -29,7 +29,7 @@
 ## Verification
 - `yarn verify` passes (conventions + build).
 - `yarn shot correspondence-portal` at 1440 / 1024 / 390, light and dark; `#tk-expired` at 390; `#tk-kenji-rfi142` at 1440: no console errors, no overflow.
-- `node scripts/interact-correspondence-portal.mjs 5177 <out>`: 17/17, the valid link on a 390 phone viewport. Sender and recipient named, Response requested by, the pinned markup with grid, the 45 MB video offered as Stream, nothing internal, no Open in Linarc for a recipient without an account, no horizontal overflow, the full sheet toggles; a reply moves the page to "Reply sent", removes the reply box, and the Email thread then shows Marcus's reply with the thread back in Needs action. Expired: the notice, no message or reply, "Send me a new link" acknowledges to the recipient's address. Account holder: "Open in Linarc" lands on the thread.
+- `node scripts/interact-correspondence-portal.mjs 5177 <out>`: 19/19 (2026-11-11), the valid link on a 390 phone viewport. Sender and recipient named, Response requested by, the pinned markup with grid, the 45 MB video offered as Stream, nothing internal, no Open in Linarc for a recipient without an account, no horizontal overflow, the full sheet toggles; a reply moves the page to "Reply sent", removes the reply box, and the Email thread then shows Marcus's reply with the thread back in Needs action. Expired: the notice, no message or reply, "Send me a new link" acknowledges to the recipient's address. Account holder: "Open in Linarc" lands on the thread.
 
 ## Design flags (for the Figma review, not fixed in code)
 - The thumbnail's `md` card on desktop fills the column width and letterboxes the 3:2 crop; a fixed card width (e.g. 360) may read better.

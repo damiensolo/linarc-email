@@ -63,7 +63,7 @@ export default {
   name: 'SlideOverPanel',
   components: { Chip, HeaderToolIcon, X, Maximize2, Minimize2 },
   props: {
-    /** Open state (use with `.sync` or `@close`). */
+    /** Open state, controlled by the host: set it and listen to `@close` (nothing is emitted for `.sync` / v-model). */
     open: { type: Boolean, default: false },
     title: { type: String, required: true },
     /** Optional context chip next to the title (e.g. "A-302 · Rev 3"). */

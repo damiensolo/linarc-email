@@ -432,3 +432,15 @@ Why it mattered: the D-71 dark-theme and 1024px screenshots were blocked until t
 How it was caught: the first run's stack trace.
 What changed: nothing in the repo; this note.
 Case study: Y: the scratchpad is for outputs; a Node script that imports the repo's dependencies runs from inside the repo.
+
+## F-046 · 2026-11-11 · Candidate proposals drift from the code where a composition reuses them
+
+Tags: process, candidates
+What happened:
+- An audit of every `docs/components/<Name>.md`, candidate folder README and backlog row against the `.vue` found: *Used on* missing `correspondence-list` for ThreadStream, AiSummary and FileViewer (the Reading pane, a composition, brought them there) and crediting `correspondence-thread` with DrawingPinPreview, which it never imports; SlideOverPanel's *Used on* missing the Notifications drawer and card; *Stage* lines reading "candidate" while the backlog row said "figma" (SmartPicker, RecipientField); props that no longer exist (ThreadStream `role`), events never emitted (`select`), a behaviour never built (*Show quoted text*), a claimed focus ring that was not in the code (ThreadList), a prop shape from before the build (DrawingPinPreview), the first module's KpiCard row in LoadingStates, and a SmartPicker Figma id in the backlog that never existed (`40024675-1709`; the set is `40024682-1515`).
+- The prototype records had the same drift: six regression counts were from earlier runs (dwg 18 → 19, portal 17 → 19, reading 21 → 23, RFI 51 → 52, composer 49 → 47 after D-69), the Metrics rows never listed the ComposePanel, Reading-view or FileViewer candidates the screens reuse, the thread's Composer row predated `MessageTools.vue` / `AttachmentChips.vue`, and the screens table's sheet row still said *Add a guest user* (removed by D-60) on an `md` panel (now `lg`, D-59). In the library, P-011's row still said the tree indent was 20 although upstream had moved the default to 16, and P-066 had no comment at its spot in `build.js`.
+- Fix: every proposal, README and backlog row corrected from the code; the ThreadList listbox got the ring the proposal described; the loading trio's READMEs got the API tables the rule asks for; the Figma acceptance box on each proposal now carries a dated note of what is drawn and stays open until dark mode is checked.
+Why it mattered: the proposals are what design reviews and the promotion into the library are read from; a wrong *Used on* hides a screen from the review and a wrong API table ships a wrong `.figma.js`.
+How it was caught: a read-only audit (three agents, one per group of candidates) comparing props, `$emit`, slots and imports with the docs, a week after the last component change.
+What changed: 13 proposals, 7 candidate READMEs, the backlog, three `.vue` comments, one `.vue` class.
+Case study: Y: a candidate reused through a composition (ReadingPane, the Notifications drawer) must be added to its proposal's *Used on* in the same piece of work as the composition; re-run the audit before any promotion.

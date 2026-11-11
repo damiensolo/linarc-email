@@ -1,9 +1,9 @@
 # SlideOverPanel
 
 - **Stage:** figma (drawn 2026-10-16 on the library's `_ ☉ Candidates` page; built 2026-10-16, `src/candidates/SlideOverPanel/SlideOverPanel.vue`)
-- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-context-dwg` (compose), `correspondence-thread` (promote), `correspondence-context-rfi` (compose)
-- **Candidate code:** `src/candidates/SlideOverPanel/SlideOverPanel.vue` (once built)
-- **Figma:** [`_ ☉ Candidates` › SlideOverPanel](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024481-1436) (unpublished, variables bound) · **Library:** — · **Log:** —
+- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-context-dwg` (compose), `correspondence-thread` (promote), `correspondence-context-rfi` (compose, Add to Q&A), `correspondence-list` (compose), `notifications-list` (the item's card, `sm`), and every shell screen through the Notifications drawer (`src/modules/notifications/components/NotificationsDrawer.vue`, D-52)
+- **Candidate code:** `src/candidates/SlideOverPanel/SlideOverPanel.vue`
+- **Figma:** [`_ ☉ Candidates` › SlideOverPanel](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024481-1436) (unpublished, variables bound) · **Library:** — · **Log:** D-34, D-36, D-69, D-70; F-017, F-029, F-030, F-051
 - **Rules:** D-34; `docs/5-ui-patterns.md` §1 (contextual create), §2 (scroll padding, F-051)
 
 ## Purpose
@@ -20,18 +20,16 @@ Backdrop (`surface/overlay`) → panel (`surface/container`): fixed header (titl
 ## API
 | Prop | Type | Default | Notes |
 |---|---|---|---|
-| `open` | Boolean | `false` | v-model-able; traps focus while open |
+| `open` | Boolean | `false` | controlled by the host: set it and listen to `close` (no `input` / `update:open` is emitted); traps focus while open |
 | `title` | String | required | `label/md/bold` |
 | `badge` | String | `''` | context chip next to the title |
 | `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | 420 / 560 / 720px; full width below 640px |
 | `closeOnBackdrop` | Boolean | `true` | |
 | `expandable` | Boolean | `false` | a full-screen toggle next to Close (Maximize2 / Minimize2, *Full screen* / *Exit full screen*, `aria-pressed`); the panel takes the whole viewport; resets on close |
 
-Slots: `default` (body), `header-meta`, `footer` (wraps when it holds a tool row: `min-height` 64px, not a fixed height). Events: `close` (Esc, backdrop, close button), `opened`, `closed`, `expand` (Boolean).
+Slots: `default` (body), `title-aside` (something small beside the title, e.g. a help icon with a Tooltip: the compose panel's project-address note, D-69), `header-meta`, `footer` (rendered only when filled; wraps when it holds a tool row: `min-height` 64px, not a fixed height). Events: `close` (Esc, backdrop, close button), `opened`, `closed`, `expand` (Boolean).
 
 The compose panel no longer fills the `footer` slot (D-70): its attachments and tool row sit under the message in the body and stick when the content overflows; the fixed footer stays for panels whose actions are not tied to a field.
-
-Slot `title-aside` (2026-11-06): something small beside the title, e.g. a help icon with a Tooltip (the compose panel's project-address note, D-69).
 
 ## States and variants
 Sizes sm / md / lg; open / closing; with and without footer; body loading (the consumer renders a LoadRegion). Both themes.
@@ -50,7 +48,7 @@ The title names the task (*Message stakeholder*, *Promote to record*); the prima
 - A Figma side-sheet component would let the app map use an instance instead of a `[candidate]` frame.
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component (3 sizes × with/without footer), variables bound, both modes
+- [ ] Figma component (3 sizes × with/without footer), variables bound, both modes — drawn 2026-10-16 with variables bound (link above); the size and footer variants and dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

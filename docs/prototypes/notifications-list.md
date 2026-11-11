@@ -20,7 +20,7 @@
 |---|---|
 | Time from spec to first render | ~1 h |
 | Time to verified done | ~2 h (most of it the interaction script's selectors) |
-| Components used (library / forked / new) | 9 library (AppShell parts, DataGrid with Filter panel, SegmentedControl, Button, StatusChip, NotificationItem P-054) / 0 forked / 0 new candidates (SlideOverPanel, LoadRegion, LoadStatus reused) |
+| Components used (library / forked / new) | 12 library (AppShell parts, DataGrid with Filter panel, SegmentedControl, Button, StatusChip, NotificationItem P-054; through the item card `ItemCard.vue`: Popover for the More menu, ModalV2 + SelectV2 + TextareaField in `AssignModal`, ModalV2 + Radio + InputV2 + TextareaField in `SeverityModal`) / 0 forked / 0 new candidates (SlideOverPanel, LoadRegion, LoadStatus reused) |
 | Gaps found | 0 in the library; 3 in the test script (below) |
 | Verification rounds before passing | 4 |
 | Computed-value checks (pass/total) | 16/16 (`scripts/interact-notifications-list.mjs`) |

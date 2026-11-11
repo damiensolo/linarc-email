@@ -49,7 +49,7 @@ Divider: rest, hover, focus-visible, dragging. Stacked (narrow screens). Both th
 - Default split for the Email screen: 640px pane at 1440 (list 480). Confirm against the reference.
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes — State = Default / Active drawn 2026-11-04 with variables bound (link above); dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

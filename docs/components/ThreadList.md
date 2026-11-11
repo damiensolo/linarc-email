@@ -3,7 +3,7 @@
 - **Stage:** figma
 - **Proposed:** 2026-11-04 · **Used on:** `correspondence-list` (Reading view, D-65)
 - **Candidate code:** `src/candidates/ThreadList/ThreadList.vue`
-- **Figma:** [`_ ☉ Candidates` › ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (drawn 2026-11-04; Layout and Unread properties added 2026-11-06, 8 variants; variables bound, unpublished) · [ThreadList Header](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1525) (Select all = None · Some · All, D-71) and [ThreadList · List layout](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1526) (the header over three List rows) · **Library:** — · **Log:** —
+- **Figma:** [`_ ☉ Candidates` › ThreadList Row](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2656) (drawn 2026-11-04; Layout and Unread properties added 2026-11-06, 8 variants, each with the Checkbox since D-68; variables bound, unpublished) and [ThreadList](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024872-2657) (the list of rows) · [ThreadList Header](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1525) (Select all = None · Some · All, D-71) and [ThreadList · List layout](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024919-1526) (the header over three List rows) · **Library:** — · **Log:** —
 
 ## Purpose
 The compact list of conversations beside a reading pane: one row per thread with who wrote last, when, the subject, the first line of the last message, a paperclip when files are attached and one status signal. It is the column a reader scans while the pane shows the selected thread; the table (grid / list views) stays the place to sort and compare columns.
@@ -39,14 +39,14 @@ Selected row: `surface/datatable/row-active` (the grid's active row), `aria-sele
 Slots: `status` (`{ item }`): one signal per row, decided by the host from `status.js`. Events: `select(id)` (click, Up / Down / Home / End), `open(id)` (double-click, Enter), `check({ id, checked })` (the Checkbox, Space on the selected row), `check-all(checked)` (the List header's Checkbox; the host ticks every shown row or none).
 
 ## States and variants
-Two layouts (`preview`, `list`). Row: default, hover, selected, checked (`data-checked`, the hover tint), unread (bold sender and subject, `data-unread`), focused list (ring on the listbox). List: loading (skeletons in the layout's shape), empty, rows. The List header's Checkbox: none, some (indeterminate), all (Figma: ThreadList Header, Select all = None · Some · All). Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
+Two layouts (`preview`, `list`). Row: default, hover, selected, checked (`data-checked`, the hover tint), unread (bold sender and subject, `data-unread`), focused list (a `border/primary-focused` inset ring on the listbox, `focus-visible` only). List: loading (skeletons in the layout's shape), empty, rows. The List header's Checkbox: none, some (indeterminate), all (Figma: ThreadList Header, Select all = None · Some · All). Unread is per viewer (`unreadBy` on the thread, D-67); a row's signal still says whether it needs action. Both themes.
 
 ## Tokens
 `surface/container`, `surface/datatable/header` (the List header), `surface/datatable/row-active`, `surface/datatable/row-hover`, `border/subtle`, `text/default`, `text/subtle`, `icon/inactive`, `space-2 / 4 / 8 / 10 / 12 / 16 / 40 / 48 / 124`, `label/sm/regular`, `label/sm/medium`, `label/sm/bold` (unread), `label/xs/regular`, `label/xs/semibold` uppercase (the header).
 
 ## Behaviour
 - Entries arrive resolved (names, labels, times); the component holds no module data.
-- Keyboard: the list is a `listbox` with `aria-activedescendant`; arrows move the selection and scroll it into view; Enter opens.
+- Keyboard: the list is a `listbox` with `aria-activedescendant` (`aria-multiselectable` when `selectable`); Up / Down / Home / End move the selection and scroll it into view; Enter opens; Space ticks the selected row.
 - Scrolls inside itself; the host decides the width (the SplitPane's start pane).
 - Responsive: the host shows the list alone below 1024px and opens the thread screen on select.
 
@@ -59,7 +59,7 @@ Time as a mail client: the clock today (*10:14*), the day otherwise (*28 Oct*). 
 - Unread is bold text only (as Gmail); a dot at the left (as Outlook) would also show at a glance in the List layout. Built without one.
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes — Row (Layout × Unread × State), Header (Select all) and the list drawn 2026-11-04 / 06 with variables bound; dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

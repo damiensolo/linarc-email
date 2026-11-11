@@ -1,12 +1,12 @@
 # InlineNotice
 
 - **Stage:** candidate (built 2026-10-09 in the first module; shipped with the template, used by LoadRegion / LoadStatus for failures)
-- **Proposed:** 2026-10-09 · **Used on:** every screen that shows a load failure; in the first module: field mismatches, disclosures, readiness and sample-data notices
+- **Proposed:** 2026-10-09 · **Used on:** every screen that shows a load failure (inside LoadRegion and LoadStatus `variant="notice"`); in this module: the internal team note (`warning`) and the bounce notice (`error`) in ThreadStream, the AiSummary failure, the thread's deleted notice (`correspondence-thread`), the secure link page's expired / revoked / send-failed notices (`correspondence-portal`), the compose and promote panels' send failure. The first module used it for field mismatches, disclosures, readiness and sample-data notices
 - **Candidate code:** `src/candidates/InlineNotice/InlineNotice.vue`
 - **Figma:** — · **Library:** — · **Log:** —
 
 ## Purpose
-A notice that sits in the page flow, under a field or above a section: tone + icon + message, optional title and actions. The PRD's "Action needed: your entered limit does not match the uploaded document" is this component.
+A notice that sits in the page flow, under a field, under a message or above a section: tone + icon + message, optional title and actions. The first module's "Action needed: your entered limit does not match the uploaded document" and this module's *Internal team note (hidden from external recipients)* and *Delivery failed* notices are this component.
 
 ## Why not an existing component
 - `AlertWrapper`: a notification-event wrapper (objectId), not a visual notice.
@@ -27,7 +27,7 @@ Revised 2026-10-09 (D-17). **Warning / error:** tinted box (`surface/<tone>/subt
 Slots: `default` (message), `actions`. Role: `alert` for warning/error, `status` otherwise.
 
 ## Tokens
-`surface/warning/low/subtle`, `surface/error/subtle`, `icon/warning/low`, `icon/error`, `text/default`, `text/subtle`, `radius-4`, `space-8`, `space-12`.
+`surface/warning/low/subtle`, `surface/error/subtle`, `icon/warning/low`, `icon/error`, `text/default`, `text/subtle`, `radius-4`, `space-2` (icon offset, title / message gap), `space-8`, `space-12`, `space-16` (text to actions).
 
 ## Open questions for design
 - Banner vs inline notice: one component with a `placement` axis, or two?

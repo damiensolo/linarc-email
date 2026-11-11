@@ -1,6 +1,6 @@
 # SmartPicker
 
-- **Stage:** candidate (built, drawn in Figma for review; see Figma below)
+- **Stage:** figma (built 2026-10-28; drawn on `_ ☉ Candidates` for review, see Figma below; reviewed 2026-10-28, D-62)
 - **Proposed:** 2026-10-28 · **Used on:** `correspondence-list` (*Link to record*), `correspondence-thread`, `correspondence-context-rfi`, `correspondence-context-dwg` and the Compose panel (*Attach a record*, *Choose from cloud drive* in the composer tool row)
 - **Candidate code:** `src/candidates/SmartPicker/SmartPicker.vue`, ranking in `smartPicker.js`
 - **Figma:** `_ ☉ Candidates` page: [SmartPicker](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024682-1515) (6 states), [specs](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024683-1284) (examples, anatomy & tokens, keyboard, behaviour), [Modal / Size (proposal)](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024683-938) (sm 486 · md 640 with the picker inside · lg 800, built from the published Modal Components) · **App map:** [19](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7737) Choose from cloud drive and [20](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4238-7949) Attach a record on the Documentation file's Email page, Level 4 (2026-10-28) · **Library:** — · **Log:** P-058 (InputV2 `inputAttrs`), P-059 (ModalV2 `size`, padding, Close), P-060 (InputV2 icon gap), D-61, D-62
@@ -73,7 +73,7 @@ Placeholders say what to type (*Search by code or title*, *Search by file name o
 Settled 2026-10-28 (D-62): kind filters are checkboxes, not chips or a segmented control; no *All*.
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes — six states drawn 2026-10-28 with variables bound (link above); dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

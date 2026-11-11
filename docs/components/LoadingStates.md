@@ -1,7 +1,7 @@
 # Loading states: Skeleton · LoadRegion · LoadStatus (+ `createLoad`)
 
 - **Stage:** figma (drawn 2026-10-11; needs building in the library)
-- **Proposed:** 2026-10-10 (first module) · **Used on:** `example-list` and `example-detail` (reference implementations); every screen that loads data
+- **Proposed:** 2026-10-10 (first module) · **Used on:** `example-list` and `example-detail` (reference implementations); every screen that loads data: the six `correspondence-*` screens (including the Reading pane), `notifications-list`, the Notifications drawer, `notifications-preferences` (LoadStatus for saves)
 - **Candidate code:** `src/candidates/Skeleton/Skeleton.vue`, `src/candidates/LoadRegion/LoadRegion.vue` + `createLoad.js`, `src/candidates/LoadStatus/LoadStatus.vue`
 - **Figma:** design system `_Candidates` page: Skeleton `40024347:89` (Shape = Line sm / md / lg · Block · Circle), Load Status `40024347:169` (State = Default · Loading · Updating · Still loading · Couldn't update; Summary text), Load Region `40024347:224` (State = Skeleton · Error · Cancelled); tables: Data Table / Sheet Cell `Type=Skeleton Loader` (40016391:36860) · **Library:** DataGrid `loading` (P-034), tokens (P-035) · **Log:** P-034, P-035, P-036, D-24, F-057, F-058
 - **Rules:** `docs/5-ui-patterns.md` §6
@@ -17,7 +17,7 @@ One way to load data anywhere in the app: answer at once, show nothing for fast 
 - Nothing in the library owns the timing, the stale-request rule or the announcements, which is most of the value.
 
 ## Anatomy
-- **`createLoad({ label, action? })`**: a reactive controller per data region, or per write when `action` is given (`{ busy: 'Saving', done: 'Saved', error: "Couldn't save." }`): same timing and latest-wins rules, action wording, no Cancel, completion always announced. State: `status` (idle / loading / ready / error / cancelled), `hasData`, `indicator`, `slow`, `fromSkeleton`, `error`, `announcement`. Methods: `run(request, apply)`, `cancel()`, `destroy()`.
+- **`createLoad({ label, action? })`**: a reactive controller per data region, or per write when `action` is given (`{ busy: 'Saving', done: 'Saved', error: "Couldn't save." }`): same timing and latest-wins rules, action wording, no Cancel, completion always announced. State: `status` (idle / loading / ready / error / cancelled), `hasData`, `indicator`, `slow`, `fromSkeleton`, `error`, `announcement`, plus `label`, `kind` (`'load'` or `'action'`) and `action` (the wording object; LoadStatus reads `kind` and `action`). Methods: `run(request, apply)` → `{ ok: true, value }`, `{ ok: false, error }`, `{ stale: true }` (a later request won) or `{ cancelled: true }`; `cancel()`, `destroy()`.
 - **LoadRegion**: the region that loads. `aria-busy`, a polite live region, then one of: content (fades in once after a seen skeleton) · the `#skeleton` slot (invisible for the first 200ms, reserving the layout) · an error/cancel notice with Retry. `content-loads` keeps a self-loading child (DataGrid) mounted and passes `skeleton`.
 - **LoadStatus**: the inline meta-line indicator: spinner + "Loading…" / "Updating…" / "Still loading…" (+ Cancel when slow), or "Couldn't update." + Retry after a failed refresh; for an action, "Saving…" / "Still saving…" and the action's error + Retry (`variant="notice"`: as an InlineNotice); otherwise its default slot (e.g. "12 requests", "Saved 2 min ago"). Fixed 24px line, no wrap.
 - **Skeleton**: `line` (sm/md/lg = 20/24/28 line boxes), `block`, `circle`; width from the parent's class.
@@ -37,7 +37,6 @@ One way to load data anywhere in the app: answer at once, show nothing for fast 
 | LoadStatus | `variant` | String | `'inline'` | `notice` = failure as InlineNotice |
 | LoadStatus | `active` | Boolean | true | one controller, several forms: only the submitting one shows |
 | LoadStatus | `size` | String | `'sm'` | `xs` = 12/16 for meta lines set in 12px |
-| KpiCard | `loading` | Boolean | false | value and hint as Skeleton blocks (36 / 16), label kept, not clickable |
 | Skeleton | `shape` | String | `'line'` | line / block / circle |
 | Skeleton | `size` | String | `'sm'` | line height sm 20 / md 24 / lg 28 |
 
@@ -54,7 +53,7 @@ idle → loading (hidden 0–200ms → indicator → slow at 5s) → ready | err
 Region-scoped; never covers the shell. Latest request wins; superseded answers are ignored. Timers cleared on settle and on `destroy()`. Skeletons `aria-hidden`; announcements only on start (after the delay), slow, and done (only if start was announced); errors `role="alert"`. Writes (`action`) announce through one app-level live region (`announce()` in `createLoad.js`, appended to `body`), so "Changes saved" is heard even when success closes the form or modal that started it.
 
 ## Content
-"Loading…", "Updating…", "Still loading…", "Cancel", "Couldn't load the {label}.", "Couldn't update.", "Loading stopped.", "Retry". No stage names, percentages or time estimates unless the backend reports them.
+"Loading…", "Updating…", "Still loading…", "Cancel", "Couldn't load the {label}.", "Couldn't update.", "Loading stopped.", "Retry"; for an action its own words (*Saving…*, *Still saving…*, *Saved*, *Couldn't save.*); announcements "Loading {label}", "Still loading {label}", "{Label} loaded", "Stopped loading {label}". No stage names, percentages or time estimates unless the backend reports them. (The first module's KpiCard `loading` prop is that repo's; nothing here.)
 
 ## Open questions for design
 - Should the shimmer exist in Figma at all (Smart Animate prototype), or stay a code-only behaviour documented here?

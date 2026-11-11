@@ -10,7 +10,7 @@ Components proposed for the design system that exist on neither side yet (no Fig
 
 ## Shipped with the template
 
-These four are generic and the loading rule (D-24, `docs/5-ui-patterns.md` §6) depends on them. They are drawn in Figma on the design system's `_Candidates` page and wait for promotion into the library; until then every app uses them from here.
+These four are generic and the loading rule (D-24, `docs/5-ui-patterns.md` §6) depends on them. The three loading states are drawn in Figma on the design system's `_Candidates` page (InlineNotice is not drawn yet: check the Banners page first) and wait for promotion into the library; until then every app uses them from here.
 
 | Candidate | Purpose | Proposal |
 |---|---|---|

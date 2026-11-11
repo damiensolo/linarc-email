@@ -18,7 +18,7 @@ The narrow pane at the left of a list that says which slice of it is shown and l
 ## Anatomy
 Top to bottom, 16px inset, 24px between sections:
 1. **Section heading**: 12/16 bold uppercase, `text/subtle`, letter-spacing 1.
-2. **List section** (`type: 'list'`): rows of 32px, label left, count right (12/16 `text/subtle`); the chosen row has `surface/datatable/row-active` (the grid's active-row tint) and `text/primary/default` bold; hover `surface/datatable/row-hover`. A row whose item carries `tone: 'error'` and a count above zero shows the count in an `surface/error/subtle` pill with `text/error/default` (the Overdue view; red only for overdue / failed, D-17).
+2. **List section** (`type: 'list'`): rows of 32px, label left, count right (12/16 `text/subtle`); the chosen row has `surface/datatable/row-active` (the grid's active-row tint) and `text/primary/default` bold; hover `surface/datatable/row-hover`. A row whose item carries `tone: 'error'` and a count above zero shows the count in an `surface/error/subtle` pill with `text/error/default` (the Overdue view; red only for overdue / failed, D-17). An item with `muted: true` (the folders Drafts and Deleted, D-67) draws its label in `text/subtle` unless it is the chosen row.
 3. **Checks section** (`type: 'checks'`): rows of 32px, a small Checkbox with its label left, the count right.
 4. **Select section** (`type: 'select'`): a SelectV2 `small` (32, D-64) and an optional helper line (12/16 `text/subtle`).
 
@@ -52,7 +52,7 @@ Headings in title case as on the reference: *Views*, *Tag · Object type*, *Obje
 - Should the pane collapse behind a toolbar button (the Figma Grid Primary Toolbar has a *Show Left Side Panel* toggle mapped to AppLayout)? Today it is part of the Reading view.
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes — drawn 2026-11-04 (folder rows added 2026-11-06) with variables bound (link above); dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

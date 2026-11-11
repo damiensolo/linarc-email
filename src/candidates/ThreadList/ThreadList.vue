@@ -42,7 +42,7 @@
       <span class="min-w-0 flex-1 truncate" role="columnheader">Subject</span>
       <span class="w-space-48 shrink-0 text-right" role="columnheader">Time</span>
     </div>
-    <div v-if="!loading && items.length" ref="list" role="listbox" :aria-label="label" :aria-multiselectable="selectable ? 'true' : null" :aria-activedescendant="selectedId ? rowId(selectedId) : null" tabindex="0" class="flex flex-col outline-none" @keydown="onKey">
+    <div v-if="!loading && items.length" ref="list" role="listbox" :aria-label="label" :aria-multiselectable="selectable ? 'true' : null" :aria-activedescendant="selectedId ? rowId(selectedId) : null" tabindex="0" class="flex flex-col outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-border-primary-focused" @keydown="onKey">
       <div
         v-for="item in items"
         :id="rowId(item.id)"

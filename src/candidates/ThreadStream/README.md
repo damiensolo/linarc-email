@@ -10,8 +10,8 @@ Proposal and rules: `docs/components/ThreadStream.md` (D-17, D-38). Import as `~
 | `emptyText` | String | `'No messages yet.'` | or the `empty` slot |
 
 Entry shapes:
-- message `{ id, type: 'message', direction, sender: { name, company, initials }, sentAt, body, toText?, attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }`
-- note `{ id, type: 'note', sender, sentAt, body }`
+- message `{ id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?, attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }` (`bodyHtml` is rendered when the message was written in the composer, else `body`; `links` are listed under the body)
+- note `{ id, type: 'note', sender, sentAt, body, bodyHtml? }`
 - event `{ id, type: 'event', sentAt, text, recordId? }`
 
 Slots: `message-actions` (scoped `entry`), `bounce-actions` (scoped `entry`), `empty`. Events: `open-attachment` (file, the message's files, index), `download-attachment` (file), `navigate` (recordId). Files render as the library's `AttachmentThumbnail` tiles (P-048) with a name / size caption; the screen opens them in `FileViewer`.

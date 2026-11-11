@@ -16,7 +16,7 @@
 | Measure | Value |
 |---|---|
 | Time from request to verified done | ~40 min |
-| Components used (library / forked / new) | 6 library (AppShell parts, DataGrid with Filter panel, SegmentedControl, StatusChip, Button) / 0 forked / 0 new candidates |
+| Components used (library / forked / new) | 6 library (AppShell parts, DataGrid with Filter panel, SegmentedControl; StatusChip and Button through the grid's slots) / 0 forked / 0 new candidates (reuses LoadRegion, LoadStatus) |
 | Gaps found | 0 |
 | Verification rounds before passing | 1 |
 | Computed-value checks (pass/total) | 12/12 (`scripts/interact-correspondence-rfi-list.mjs`) |

@@ -1,6 +1,6 @@
 # RecipientField
 
-- **Stage:** candidate (drawn in Figma for review; see Figma below)
+- **Stage:** figma (built 2026-10-19; drawn on `_ ☉ Candidates` for review, 8 states + Recipient Chip, see Figma below; inline guest creation removed 2026-10-28, D-60)
 - **Proposed:** 2026-10-19 · **Used on:** `correspondence-context-rfi`, `correspondence-context-dwg`, `correspondence-list` (the shared Compose panel)
 - **Candidate code:** `src/candidates/RecipientField/RecipientField.vue`, helpers `recipients.js`
 - **Figma:** `_ ☉ Candidates` page: [RecipientField](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024505-562) (8 states), [Recipient Chip](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024503-293) (Kind × State × Avatar On/Off), the shared candidates [Dropdown Row](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-696) (typeahead rows), [Menu Item](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-621) (also the typeahead's action row when a page offers one) and [Menu](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-622) (chip menu), the library Tooltip, [specs](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024507-529) (examples, anatomy & tokens, keyboard, behaviour). Documentation file: Email page › 06 · Compose (`[candidate] RecipientField / To`, `/ Cc`) · **Library:** — · **Log:** P-050 (library parts it needs), D-47
@@ -79,7 +79,7 @@ Labels: *To*, *Cc*, *Bcc*. Tooltips: *Outside {organization}* · the address · 
 - Drag handle: whole chip (as built) or a grip on hover?
 
 ## Acceptance (for promotion to the library)
-- [ ] Figma component with the same props as variants/properties, variables bound, both modes
+- [ ] Figma component with the same props as variants/properties, variables bound, both modes — RecipientField (8 states), Recipient Chip, Dropdown Row, Menu and Menu Item drawn 2026-10-19 with variables bound; dark mode not yet checked, so the box stays open
 - [ ] `.vue`, `.stories.js` with UsageDocs, `README.md`, `.figma.js`; Code Connect published
 - [ ] Verified in both themes at 1440 / 1024 / 390; no size change across states
 - [ ] Used by at least one prototype through the library path; candidate folder deleted

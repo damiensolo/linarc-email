@@ -23,7 +23,7 @@
 | Components used (library / forked / new) | 9 library (AppShell parts, HeaderToolIcon, Chip, StatusChip, Button, Popover, plus the ComposePanel's) / 0 forked / 1 new candidate (DrawingPinPreview); reuses SlideOverPanel, LoadRegion, Skeleton |
 | Gaps found | 0 in the library; the sheet itself is stand-in content |
 | Verification rounds before passing | 1 (plus one data fix: the cloud sat over C–D while labelled B-4) |
-| Computed-value checks (pass/total) | 18/18 (interaction script) |
+| Computed-value checks (pass/total) | 19/19 (interaction script) |
 
 ## Gaps and how they were handled
 | Gap | Handling | Log ID |
@@ -35,7 +35,7 @@
 ## Verification
 - `yarn verify` passes (conventions + build).
 - `yarn shot correspondence-context-dwg` (A-302) and `#S-201-Rev1` at 1440 / 1024 / 390, light and dark: no console errors, no overflow; the sheet scales with its box.
-- `node scripts/interact-correspondence-dwg.mjs 5177 <out>`: 18/18. The pin opens the popover with the markup's facts, *Email about this markup* and *Open THR-1042 in Email*; compose opens with `A-302 · Rev 3` pinned, the cropped SVG thumbnail and `Grid B-4 · Corridor 3E`; subject prefilled; no record-PDF option for a drawing; suggested recipients first (Kenji, Dave, Elena); Esc closes the dropdown only; send acknowledged "with A-302 · Rev 3 at Grid B-4 · Corridor 3E pinned" and a link to the new thread. S-201: Superseded chip in the title bar, no pins, compose says "This message stays pinned to Rev 1". Guest role: no compose, popover still opens the thread they are on.
+- `node scripts/interact-correspondence-dwg.mjs 5177 <out>`: 19/19 (2026-11-11). The pin opens the popover with the markup's facts, *Email about this markup* and *Open THR-1042 in Email*; compose opens with `A-302 · Rev 3` pinned, the cropped SVG thumbnail and `Grid B-4 · Corridor 3E`; subject prefilled; no record-PDF option for a drawing; suggested recipients first (Kenji, Dave, Elena); Esc closes the dropdown only; send acknowledged "with A-302 · Rev 3 at Grid B-4 · Corridor 3E pinned" and a link to the new thread. S-201: Superseded chip in the title bar, no pins, compose says "This message stays pinned to Rev 1". Guest role: no compose, popover still opens the thread they are on.
 
 ## Design flags (for the Figma review, not fixed in code)
 - The markup cloud is the primary accent (blue) so red stays "failed"; construction markups are often red. Design to decide the markup colour.
