@@ -35,6 +35,7 @@ An address field that behaves like a modern mail client's To / Cc / Bcc: type a 
 | `value` | Array | `[]` | v-model. `[{ email, name?, company?, role?, avatarUrl?, id?, invalid? }]`, in order |
 | `label` | String | `'To'` | the leading label |
 | `contacts` | Array | `[]` | the directory searched (same shape); order kept for the empty query (suggested first) |
+| `groups` | Array | `[]` | distribution lists offered as one chip each (D-75): `[{ id, name, members: [recipient] }]`; a picked group is `{ group: true, id, name, members, email: 'group:<id>' }` in `value`; the host expands them with `expandRecipients` when it sends |
 | `internalDomains` | Array | `[]` | the organization's domains; any other is external. Empty: no external marking |
 | `organizationName` | String | `''` | named in the external chip's tooltip: *Outside {organizationName}* (fallback *your organization*) |
 | `showAvatar` | Boolean | `true` | avatars on chips and list rows (photo from `avatarUrl`, else the first initial). The Compose panel sets it `false` |
@@ -50,6 +51,8 @@ An address field that behaves like a modern mail client's To / Cc / Bcc: type a 
 | `disabled` | Boolean | `false` | |
 
 Events: `input` (the new array), `unknown` (`{ email, name }`), `move` (`{ recipient, to }`; the source has already removed it), `focus`, `blur`. Slot: `trailing`.
+
+**Group chip (D-75, 2026-11-14):** StatusChip Type=Icon (people icon) reading *Design team · 2*, neutral when every member is in the organization, amber when one is not; tooltip = the members (four names, then *and n more*) and *some outside {organization}*; menu *Show members* (the chip becomes its members' chips, those already in the field left out) · *Copy email addresses* · *Move to …* · *Remove*; double-click shows the members. Typeahead rows for groups come before the people (three at most), the row's description names the members and the right text reads *Group · n*.
 
 ## States and variants
 Empty · focused (list open) · typing (filtered list, first row active) · filled · chip selected · invalid chip (field error) · drop target · disabled · no matches · unknown address offered. Both themes: every colour is a token; chips and rows follow Status Chip and Select Menu Item.

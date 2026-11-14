@@ -8,15 +8,19 @@ import {
   appendThreadAudit,
   patchThread,
   patchRecord,
+  addCreatedRecord,
   revokeLink as sessionRevokeLink,
   markLinkReplied,
+  markLinkAcknowledged,
   setSetting,
+  setNotificationEntry,
 } from '~/modules/session';
-import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, MAIL_SIZE_LIMIT_MB, roleById, replyAddress } from './project';
+import { TODAY, relDate, PROJECT, RESPONSE_DUE_WORKING_DAYS, CONTRACT_TURNAROUND, isWorkingDay, MAIL_SIZE_LIMIT_MB, roleById, replyAddress } from './project';
 import { findPersonByEmail, getPeople, getPerson, guessFromEmail } from './people';
-import { getRecord, recordLabel } from './records';
+import { getRecord, recordLabel, nextRecordCode } from './records';
 import { cloudFile } from './cloud';
-import { getThread, getThreads, nextThreadId, sampleFileUrl, getDeletedThreads, isUnreadFor } from './threads';
+import { nextLetterNumber } from './templates';
+import { getThread, getThreads, nextThreadId, sampleFileUrl, getDeletedThreads, isUnreadFor, ownerOf, canRemind, remindersOf } from './threads';
 import { go } from '~/modules/app/router';
 import { storeFile } from '~/modules/fileStore';
 import { recordPdf, pdfBlob } from '~/modules/mock/pdf';
@@ -29,16 +33,25 @@ const nowIso = () => TODAY; // the demo clock stands still; everything created "
 export const currentRole = () => roleById(session.settings.role);
 export const setRole = (id) => setSetting('role', id);
 
-/** Default Response due: working days from today (spec §7). */
-export function defaultResponseDue() {
+/**
+ * Default Response due: the contract's turnaround for the record type (D-76; plain email: three working days, spec §7),
+ * counted in the project calendar's working days (weekends and holidays skipped).
+ */
+export function defaultResponseDue(kind = 'email') {
+  const rule = CONTRACT_TURNAROUND[kind] || CONTRACT_TURNAROUND.email;
   let days = 0;
   let added = 0;
-  while (added < RESPONSE_DUE_WORKING_DAYS) {
+  while (added < (rule.days || RESPONSE_DUE_WORKING_DAYS)) {
     days += 1;
-    const d = new Date(relDate(days));
-    if (d.getDay() !== 0 && d.getDay() !== 6) added += 1;
+    if (isWorkingDay(new Date(relDate(days)))) added += 1;
   }
   return relDate(days);
+}
+
+/** What Compose says under Response due (D-76): the rule and the calendar, in one line. */
+export function turnaroundNote(kind = 'email') {
+  const rule = CONTRACT_TURNAROUND[kind] || CONTRACT_TURNAROUND.email;
+  return `${rule.days} working days for ${rule.label}${rule.source ? ` (${rule.source})` : ''}; weekends and the project calendar's holidays are skipped.`;
 }
 
 /**
@@ -71,7 +84,11 @@ export function newAttachment(file) {
   const id = uid('att');
   const sizeMb = Math.max(0.1, Math.round((file.size / 1048576) * 10) / 10); // the tiles show tenths of a MB
   storeFile(id, file);
-  return { id, name: file.name, sizeMb, byLink: sizeMb > MAIL_SIZE_LIMIT_MB, stored: true, previewable: /^image\//.test(file.type) };
+  // D-80: a photo keeps when it was taken (the file's own timestamp; the camera's capture time on a phone), so the
+  // tile says "Taken 16 Oct, 10:30" and a site photo is evidence, not just a picture
+  const image = /^image\//.test(file.type);
+  const takenAt = image && file.lastModified ? new Date(file.lastModified).toISOString() : null;
+  return { id, name: file.name, sizeMb, byLink: sizeMb > MAIL_SIZE_LIMIT_MB, stored: true, previewable: image, takenAt };
 }
 
 /** The composer's *Attach a record* (spec §7): the record goes with the message as its PDF, like today's checkbox. */
@@ -117,6 +134,9 @@ function recordPdfAttachment(id, record) {
 export function sendMessage(threadId, { senderId, body, bodyHtml = '', links = [], recipients = [], attachments = [], attachmentIds = [], responseDueAt }) {
   const sender = getPerson(senderId);
   const outbound = sender && !sender.guest;
+  // Reply to all (spec §6.3): everyone on the thread but the writer, unless the caller named the recipients
+  const thread = getThread(threadId);
+  const toAll = outbound && !recipients.length && thread ? thread.participantIds.filter((id) => id !== senderId).map((personId) => ({ personId, kind: 'to' })) : recipients;
   const entry = {
     id: uid('msg'), type: 'message', direction: outbound ? 'outbound' : 'inbound', senderId, sentAt: nowIso(), body,
     // Written in the composer: the formatted body (shown when present) and any links attached (spec §6.3).
@@ -124,7 +144,7 @@ export function sendMessage(threadId, { senderId, body, bodyHtml = '', links = [
     ...(links.length ? { links } : {}),
     // Files picked in the demo travel inline (they are not in the static file table); static ones by id.
     ...(attachments.length ? { attachments } : { attachmentIds }),
-    recipients: outbound ? recipients.map((r) => ({ ...r, delivery: 'delivered' })) : [],
+    recipients: outbound ? toAll.map((r) => ({ ...r, delivery: 'delivered' })) : [],
   };
   appendThreadEntry(threadId, entry);
   const patch = { triage: outbound ? 'waiting' : 'needs_action', lastActivityAt: entry.sentAt, unreadBy: unreadAfter(threadId, senderId) };
@@ -143,7 +163,7 @@ export function sendMessage(threadId, { senderId, body, bodyHtml = '', links = [
  * `attachments` are resolved file objects
  * ({ id, name, sizeMb, byLink }); `attachRecordPdf` adds today's "generate a PDF of the record" as a file.
  */
-export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc = '', subject, body, bodyHtml = '', links = [], attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false }) {
+export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc = '', subject, body, bodyHtml = '', links = [], attachments = [], linkedRecordIds = [], pinId = null, responseDueAt = null, attachRecordPdf = false, remindAtDue = false, letterType = 'general', templateId = null }) {
   const id = nextThreadId();
   const at = nowIso();
   const sender = getPerson(senderId);
@@ -160,6 +180,14 @@ export function createThread({ senderId, toIds = [], ccIds = [], bccIds = [], cc
     promotion: 'unpromoted',
     promotedRecordId: null,
     responseDueAt,
+    // D-78: the project's correspondence number, assigned on send, and the letter type (General · Transmittal · Notice)
+    letterNo: nextLetterNumber(),
+    letterType,
+    templateId,
+    // D-72: the sender owns what they start; a reminder at the due date is the compose panel's choice
+    ownerId: senderId,
+    remindAtDue: !!(remindAtDue && responseDueAt),
+    followUpAt: null,
     lastActivityAt: at,
     participantIds: [senderId, ...toIds, ...ccIds, ...bccIds],
     unreadBy: [...toIds, ...ccIds, ...bccIds], // the recipients have not opened it (D-67)
@@ -196,6 +224,98 @@ export function postNote(threadId, { senderId, body, bodyHtml = '', links = [] }
   appendThreadEntry(threadId, entry);
   // Only the team sees notes, so only the team's participants have it unread
   patchThread(threadId, { lastActivityAt: entry.sentAt, unreadBy: unreadAfter(threadId, senderId).filter((id) => !(getPerson(id) || {}).guest) });
+  // D-72: "@Alex …" in a note hands the thread to Alex (a team member; the first mention wins)
+  const mentioned = mentionedTeam(body)[0];
+  if (mentioned && mentioned.id !== ownerOf(getThread(threadId))) assignOwner(threadId, mentioned.id, { actorId: senderId, how: 'note' });
+  return entry;
+}
+
+/** Team members a note mentions as "@First" or "@First Last" (D-72). */
+export function mentionedTeam(body) {
+  const team = getPeople().filter((p) => !p.guest);
+  const mentions = String(body || '').match(/@[A-Za-z]+(?:\s[A-Z][A-Za-z]+)?/g) || [];
+  const found = [];
+  mentions.forEach((m) => {
+    const text = m.slice(1).toLowerCase();
+    const p = team.find((t) => t.name.toLowerCase() === text) || team.find((t) => t.name.toLowerCase().split(' ')[0] === text.split(' ')[0]);
+    if (p && !found.includes(p)) found.push(p);
+  });
+  return found;
+}
+
+// --- Triage (D-72, 2026-11-14): owner, resolve / reopen, follow-up, reminders. Each writes the thread, an event row
+// the ThreadStream shows and a Delivery row; none of them sends mail except the reminder.
+
+/** Hand the thread to a team member (the title bar's Owner select, the list bar, an @mention in a note). */
+export function assignOwner(threadId, ownerId, { actorId, how = 'select' }) {
+  const owner = getPerson(ownerId);
+  if (!owner) return null;
+  const at = nowIso();
+  const actor = getPerson(actorId);
+  patchThread(threadId, { ownerId, lastActivityAt: at });
+  // Notifications reads the same assignment (docs/notifications/spec.md: one obligation, one owner)
+  setNotificationEntry('ntfAssignments', `thread:${threadId}`, { toId: ownerId, byId: actorId, at });
+  const self = ownerId === actorId;
+  appendThreadEntry(threadId, { id: uid('evt'), type: 'event', kind: 'owner', actorId, sentAt: at, text: self ? `${owner.name} took this thread` : `Assigned to ${owner.name} by ${actor ? actor.name : 'a team member'}${how === 'note' ? ' (mentioned in a note)' : ''}` });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'OWNER_ASSIGNED', actorId, detail: `Owner: ${owner.name}${how === 'note' ? ' (from an @mention)' : ''}` });
+  return owner;
+}
+
+/** Mark resolved by hand: the thread owes nobody a response; Needs action and Overdue let go of it. */
+export function resolveThread(threadId, { actorId }) {
+  const at = nowIso();
+  const actor = getPerson(actorId);
+  patchThread(threadId, { triage: 'resolved', resolvedById: actorId, resolvedAt: at, followUpAt: null, lastActivityAt: at });
+  appendThreadEntry(threadId, { id: uid('evt'), type: 'event', kind: 'resolved', actorId, sentAt: at, text: `Marked resolved by ${actor ? actor.name : 'a team member'}` });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'THREAD_RESOLVED', actorId, detail: 'Marked resolved; no response owed' });
+}
+
+/** Reopen: triage follows the last message again (inbound → Needs action, ours → Waiting on them). */
+export function reopenThread(threadId, { actorId }) {
+  const thread = getThread(threadId);
+  if (!thread) return;
+  const at = nowIso();
+  const actor = getPerson(actorId);
+  const last = [...thread.entries].reverse().find((e) => e.type === 'message');
+  patchThread(threadId, { triage: last && last.direction === 'inbound' ? 'needs_action' : 'waiting', resolvedById: null, resolvedAt: null, lastActivityAt: at });
+  appendThreadEntry(threadId, { id: uid('evt'), type: 'event', kind: 'reopened', actorId, sentAt: at, text: `Reopened by ${actor ? actor.name : 'a team member'}` });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'THREAD_REOPENED', actorId, detail: 'Reopened' });
+}
+
+/** A follow-up date for the team's own chasing (null clears it): the thread surfaces in Follow up on that day. */
+export function setFollowUp(threadId, followUpAt, { actorId }) {
+  const at = nowIso();
+  patchThread(threadId, { followUpAt: followUpAt || null });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'FOLLOW_UP_SET', actorId, detail: followUpAt ? `Follow up on ${followUpAt.slice(0, 10)}` : 'Follow-up cleared' });
+}
+
+/** The reminder's default wording: what was asked, when it was due, how to answer. */
+export function reminderText(thread) {
+  const last = [...thread.entries].reverse().find((e) => e.type === 'message' && e.direction === 'outbound' && !e.reminder);
+  const due = thread.responseDueAt ? new Date(thread.responseDueAt).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }) : null;
+  const n = remindersOf(thread).length;
+  const first = last ? String(last.body).split('\n').find((l) => l.trim()) || '' : '';
+  const topic = thread.subject.replace(/^\[[^\]]+\]\s*/, '');
+  return `${n ? 'Second reminder' : 'Reminder'}: we're still waiting on your reply about "${topic}"${due ? `, requested by ${due}` : ''}.\n\n${first ? `${first}\n\n` : ''}Reply to this email and your answer lands in the thread.`;
+}
+
+/**
+ * Send a reminder (D-72): one outbound message to the recipients of the last message we sent, marked `reminder`, with
+ * its own Delivery row that carries the count. The thread stays in Waiting; the due date does not move.
+ */
+export function sendReminder(threadId, { senderId, body }) {
+  const thread = getThread(threadId);
+  if (!thread || !canRemind(thread)) return null;
+  const last = [...thread.entries].reverse().find((e) => e.type === 'message' && e.direction === 'outbound' && !e.reminder);
+  const at = nowIso();
+  const entry = {
+    id: uid('msg'), type: 'message', direction: 'outbound', senderId, sentAt: at, body, reminder: true, reminderOf: last.id,
+    attachmentIds: [], recipients: last.recipients.map((r) => ({ ...r, delivery: 'delivered' })),
+  };
+  appendThreadEntry(threadId, entry);
+  const n = remindersOf(thread).length + 1;
+  patchThread(threadId, { triage: 'waiting', lastActivityAt: at, lastReminderAt: at });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'REMINDER_SENT', actorId: senderId, detail: `Reminder ${n} sent via the Linarc relay (250 2.0.0 OK)` });
   return entry;
 }
 
@@ -248,8 +368,40 @@ export function linkThreadToRecord(threadId, recordId, { actorId }) {
   return entry;
 }
 
+/** Link to several records at once (D-77): the Email screen's modal and the thread's Linked items. */
+export function linkThreadToRecords(threadId, recordIds, { actorId }) {
+  return recordIds.map((id) => linkThreadToRecord(threadId, id, { actorId })).filter(Boolean);
+}
+
 /**
- * Promote to record (spec §8, D-37): RFI only in the MVP. Writes the RFI (RFI-143 is pre-hydrated in records.js and
+ * Promote to record (D-77): the RFI (below), or a field issue / potential change order created in the demo session
+ * with the same five fields (title, the drafted description, who has it, due date, what to include). Returns the new
+ * record's id for the confirmation. Field issues and PCOs have no screen here; the thread's Linked items name them.
+ */
+export function promoteToRecord(threadId, messageId, { type = 'rfi', actorId, title, question, assignedToId, dueOn, includeIds = [], amount = null }) {
+  if (type === 'rfi') return promoteToRfi(threadId, messageId, { actorId, title, question, assignedToId, dueOn, includeIds });
+  const thread = getThread(threadId);
+  const assignee = getPerson(assignedToId);
+  const at = nowIso();
+  const code = nextRecordCode(type);
+  const record = {
+    type, id: code, code, title, description: question, spec: thread ? thread.trade : '', status: 'open',
+    assignedToId, ballInCourt: assignee ? assignee.company : '', dueOn, createdById: actorId, createdAt: at, createdInDemo: true,
+    includeIds, sourceMessageId: messageId, threadId,
+    ...(type === 'change-order' ? { amount: amount == null ? null : Number(amount), reason: 'From email', scheduleDays: null, revision: 'Draft', status: 'draft', distributionIds: assignedToId ? [assignedToId] : [], closed: false, items: [] } : {}),
+  };
+  addCreatedRecord(record);
+  const promotion = { 'change-order': 'promoted_pco', 'daily-log': 'promoted_daily_log' }[type] || 'promoted_field_issue';
+  // A daily log entry records what happened; it does not hand the thread to anyone (D-80), so triage stays as it is
+  patchThread(threadId, { promotion, promotedRecordId: code, ...(type === 'daily-log' ? {} : { triage: 'waiting' }), lastActivityAt: at, addLinkedRecordIds: [...((session.threadPatches[threadId] || {}).addLinkedRecordIds || []), code] });
+  const noun = { 'change-order': 'PCO', 'daily-log': 'daily log entry' }[type] || 'field issue';
+  appendThreadEntry(threadId, { id: uid('evt'), type: 'event', kind: 'promoted', actorId, sentAt: at, recordId: code, text: type === 'daily-log' ? `Added to the daily log as ${code} by ${(getPerson(actorId) || {}).name || 'a team member'}` : `Promoted to ${noun} ${code} and assigned to ${assignee ? `${assignee.name} (${assignee.company})` : 'the reviewer'}` });
+  appendThreadAudit(threadId, { id: uid('aud'), at, event: 'RECORD_PROMOTED', actorId, detail: `Message promoted to ${code}` });
+  return code;
+}
+
+/**
+ * Promote to RFI (spec §8, D-37). Writes the RFI (RFI-143 is pre-hydrated in records.js and
  * patched here), marks the thread, adds the event and audit rows. Returns the record id for the confirmation.
  */
 export function promoteToRfi(threadId, messageId, { actorId, title, question, assignedToId, dueOn, includeIds = [] }) {
@@ -285,6 +437,21 @@ export function updateContactAndResend(threadId, messageId, { actorId, email }) 
   appendThreadAudit(threadId, { id: uid('aud'), at, event: 'CONTACT_UPDATED', actorId, detail: `${person ? person.name : email}: address updated to ${email}` });
   appendThreadAudit(threadId, { id: uid('aud'), at, event: 'SMTP_DISPATCHED', actorId: original.senderId, detail: `Resent to ${email} (250 2.0.0 OK)` });
   return resend;
+}
+
+/**
+ * The secure link page's quick response (D-73): "Received, I'll answer by <date>". Posts as an inbound reply so the
+ * sender sees it in the thread, moves the thread to Waiting on them with the promised date as Response due (the
+ * recipient now owns the next step), and keeps the link open for the real answer.
+ */
+export function acknowledgeFromLink(link, { by }) {
+  const person = findPersonByEmail(link.recipient.email) || addGuest({ email: link.recipient.email, name: link.recipient.name, company: link.recipient.company, role: link.recipient.role });
+  const when = new Date(by).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+  const entry = sendMessage(link.threadId, { senderId: person.id, body: `Received, thank you. I'll answer by ${when}.` });
+  patchThread(link.threadId, { triage: 'waiting', responseDueAt: by, lastActivityAt: entry.sentAt });
+  appendThreadAudit(link.threadId, { id: uid('aud'), at: entry.sentAt, event: 'MAGIC_LINK_ACCESSED', actorId: person.id, detail: `Acknowledged from the secure link page; answer promised by ${by.slice(0, 10)}` });
+  markLinkAcknowledged(link.token, { by, at: entry.sentAt });
+  return entry;
 }
 
 /** Reply from the secure link page (spec §10): threads like a mailed reply and marks the link as replied. */

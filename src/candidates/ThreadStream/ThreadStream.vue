@@ -46,6 +46,7 @@
                 <StatusChip v-if="entry.delivery && entry.delivery.tone === 'error'" :label="entry.delivery.label" status="error" fill-style="outline" type="default" :removable="false" />
                 <span v-else-if="entry.delivery">{{ entry.delivery.label }}</span>
                 <span v-if="entry.resendOf">Resent</span>
+                <span v-if="entry.reminder">Reminder</span>
               </div>
               <div v-if="$scopedSlots['message-actions']" class="ml-auto flex shrink-0 items-center gap-space-8">
                 <slot name="message-actions" :entry="entry" />
@@ -70,6 +71,7 @@
                   <span class="truncate text-text-default" :title="a.name">{{ a.name }}</span>
                   <span class="text-text-subtle">{{ a.sizeMb }} MB</span>
                   <span v-if="a.byLink" class="text-text-subtle">By secure link</span>
+                  <span v-if="a.takenAt" class="text-text-subtle">Taken {{ when(a.takenAt) }}</span>
                 </span>
               </li>
             </ul>
@@ -116,7 +118,7 @@ export default {
     /**
      * Resolved entries, oldest first (README):
      *  message { id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?,
-     *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf? }
+     *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf?, reminder? }
      *  note    { id, type: 'note', sender, sentAt, body, bodyHtml? }
      *  event   { id, type: 'event', sentAt, text, recordId? }
      * The screen applies the role before passing entries (an external role never receives notes).

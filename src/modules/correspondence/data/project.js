@@ -36,8 +36,30 @@ export const MAIL_SIZE_LIMIT_MB = 20;
 /** Secure link lifetime (D-43). */
 export const LINK_LIFETIME_DAYS = 30;
 
-/** Response due default: working days from sending (spec §7). */
+/** Response due default: working days from sending (spec §7); the plain email case of CONTRACT_TURNAROUND. */
 export const RESPONSE_DUE_WORKING_DAYS = 3;
+
+/**
+ * The contract's turnaround per record type, in working days (D-76, 2026-11-14): what the subcontract and the
+ * owner contract say a party has to answer. Compose defaults Response due to it when the message is about a record;
+ * plain email keeps three working days. A project sets these once (a settings page is outside the prototype).
+ */
+export const CONTRACT_TURNAROUND = Object.freeze({
+  email: { days: 3, label: 'email' },
+  drawing: { days: 3, label: 'a drawing markup' },
+  rfi: { days: 7, label: 'an RFI', source: 'Subcontract §4.3' },
+  submittal: { days: 10, label: 'a submittal', source: 'General conditions §3.12' },
+  'change-order': { days: 14, label: 'a change order', source: 'Owner contract §7.2' },
+});
+
+/** The project calendar (D-76): working days are Monday to Friday; these dates are skipped too (holidays, site closures). */
+export const PROJECT_HOLIDAYS = Object.freeze([
+  { on: '2026-10-23', label: 'Site closed · crane lift (Level 2 steel)' },
+  { on: '2026-11-11', label: 'Veterans Day' },
+  { on: '2026-11-26', label: 'Thanksgiving' },
+  { on: '2026-11-27', label: 'Day after Thanksgiving' },
+]);
+export const isWorkingDay = (date) => { const d = date instanceof Date ? date : new Date(date); if (d.getDay() === 0 || d.getDay() === 6) return false; const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; return !PROJECT_HOLIDAYS.some((h) => h.on === key); };
 
 /**
  * Demo roles for the sandbox role switcher (spec §3, D-41). `personId` is who the viewer is; `internal` gates notes

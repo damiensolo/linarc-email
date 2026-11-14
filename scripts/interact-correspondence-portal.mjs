@@ -53,6 +53,13 @@ try {
   await click('View the full sheet');
   check(await has('Hide the full sheet'), 'full sheet toggles');
   await page.screenshot({ path: `${out}/portal-390.png`, fullPage: true });
+  // Quick response (D-73): one tap says received and when; the reply box stays
+  check(await has('Not ready to answer yet?') && (await buttons()).includes("Received, I'll answer by then"), 'the quick response is offered with a date');
+  await click("Received, I'll answer by then");
+  await sleep(1000);
+  check(await has('Sent: received, answering by Monday 19 Oct'), 'the acknowledgement is sent with the requested date');
+  check((await buttons()).includes('Send') && !(await buttons()).includes("Received, I'll answer by then"), 'the reply box stays; the quick response is gone');
+  await page.screenshot({ path: `${out}/portal-acknowledged.png`, fullPage: true });
   await page.evaluate(() => { const t = document.querySelector('textarea#fv2-portal-reply'); t.focus(); t.value = 'Shifting the baffle 4" north keeps STC-50; send me the revised cove detail.'; t.dispatchEvent(new Event('input', { bubbles: true })); });
   await sleep(300);
   await click('Send');
@@ -66,6 +73,10 @@ try {
   await page.goto(`http://localhost:${port}/?p=correspondence-thread&theme=light#THR-1042`, { waitUntil: 'networkidle0' });
   await sleep(300);
   check(await has('Shifting the baffle 4" north') && await has('Marcus Vance'), 'the thread shows the reply from Marcus');
+  check(await has("Received, thank you. I'll answer by Monday, Oct 19."), 'the acknowledgement is on the thread as a reply');
+  await click('Delivery');
+  await sleep(300);
+  check(await has('answer promised by 2026-10-19'), 'Delivery records the promise');
   check(await has('Needs action'), 'thread back to Needs action');
 
   // --- expired

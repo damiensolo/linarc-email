@@ -174,7 +174,7 @@ import { TRIAGE, RFI_STATUS, SLA, AUDIT_EVENT, toneToChipStatus } from '~/module
 import {
   RFIS, ROLES, TODAY, currentRole, setRole, getRecord, getPerson, getPeople, getThread, viewFor, sendMessage, postNote, inboundSandbox,
   RFI_TYPES, WORKFLOW_ACTIONS, currentStep, nextStep, hasExternal, addWorkingDays, rfiThreads, rfiActivity,
-  addToQa, postQaStep, routeRfi, approveRfi, reviseRfi, rejectRfi, closeRfi, setWatchers,
+  addToQa, postQaStep, routeRfi, approveRfi, reviseRfi, rejectRfi, closeRfi, setWatchers, RECORD_SCREEN,
 } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
 import { threadEntries } from '~/modules/correspondence/view';
@@ -188,7 +188,6 @@ import RfiWorkflow from '~/modules/correspondence/components/rfi/RfiWorkflow.vue
 import RfiActivity from '~/modules/correspondence/components/rfi/RfiActivity.vue';
 import { fileViewing } from '~/modules/correspondence/fileViewing';
 
-const RECORD_SCREEN = { rfi: 'rfi', drawing: 'sheet' };
 const escapeHtml = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export default {

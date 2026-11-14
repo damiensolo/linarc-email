@@ -4,6 +4,8 @@
 import { session } from '~/modules/session';
 import { TODAY, relDate, dayOf } from './project';
 import { ARCHIVE_THREADS } from './threads-archive';
+import { getPerson } from './people';
+import { SEED_LETTER_NUMBERS } from './templates';
 
 // Attachment: { id, name, sizeMb, byLink, url, thumbnailUrl?, posterUrl? } — over MAIL_SIZE_LIMIT_MB goes by secure link
 // (spec §5). `url` is the file in public/files/ (scripts/make-sample-files.mjs writes the PDFs); files attached in the
@@ -27,6 +29,7 @@ export const sampleFileUrl = sample;
 export const THREADS = Object.freeze([
   {
     id: 'THR-1042',
+    ownerId: 'usr-alex', // D-72: Sarah's note hands it to Alex
     subject: '[RMC-04] A-302 Rev 3 — Grid B-4 HVAC duct and acoustic cove clash',
     triage: 'needs_action',
     visibility: 'project_public',
@@ -92,6 +95,7 @@ export const THREADS = Object.freeze([
 
   {
     id: 'THR-1039',
+    ownerId: 'usr-alex',
     unreadBy: ['usr-sarah', 'usr-alex'], // Kenji's answer this morning, not opened yet (D-67)
     subject: '[RMC-04] RFI-142 — Level 2 OR lead-lined drywall termination',
     // Needs action: Kenji's answer came back by email this morning and waits for *Add to Q&A* (D-49). Seed data since
@@ -148,6 +152,10 @@ export const THREADS = Object.freeze([
 
   {
     id: 'THR-1031',
+    letterType: 'transmittal', // D-78: the SUB-088 revision went out as a transmittal (C-0038)
+    ownerId: 'usr-sarah',
+    followUpAt: relDate(1), // D-72: Sarah flagged it for tomorrow's call with Riverside
+    remindAtDue: true,
     subject: '[RMC-04] SUB-088 — Card-reader door hardware voltage mismatch',
     triage: 'needs_action',
     visibility: 'restricted', // Confidential (D-41)
@@ -180,6 +188,7 @@ export const THREADS = Object.freeze([
   // Mail sent straight to the project address with no thread to join: the Unmatched view (spec §4, Q-06).
   {
     id: 'THR-1050',
+    ownerId: null, // nobody has picked it up (D-72: the Unmatched view's job)
     unreadBy: ['usr-sarah', 'usr-alex', 'usr-carlos'], // arrived at 07:58, nobody has opened it (D-67)
     subject: 'Level 2 door frames — card reader rough-in holding us up',
     triage: 'needs_action',
@@ -226,7 +235,9 @@ export function getThread(id) {
   const entries = [...base.entries, ...(session.threadEntries[id] || [])].sort((a, b) => a.sentAt.localeCompare(b.sentAt));
   const audit = [...base.audit, ...(session.threadAudit[id] || [])].sort((a, b) => a.at.localeCompare(b.at));
   const linkedRecordIds = [...base.linkedRecordIds, ...(patch.addLinkedRecordIds || [])];
-  return { unreadBy: [], deletedAt: null, ...base, ...patch, entries, audit, linkedRecordIds };
+  // D-78: the project's correspondence number and type (seeded for the threads the GC started; new ones get theirs on send)
+  const letterNo = base.letterNo || SEED_LETTER_NUMBERS[id] || null;
+  return { unreadBy: [], deletedAt: null, ownerId: null, followUpAt: null, remindAtDue: false, letterNo, letterType: letterNo ? base.letterType || 'general' : null, ...base, ...patch, entries, audit, linkedRecordIds, letterNo };
 }
 
 /** Every thread that is not deleted (the inbox, the record tabs, Notifications, the sandbox's reply destinations). */
@@ -260,6 +271,32 @@ export function weakestDelivery(thread) {
 
 /** Unmatched: arrived at the project address and linked to nothing yet (spec §4). */
 export const isUnmatched = (thread) => thread.linkedRecordIds.length === 0;
+
+// --- Triage (D-72, 2026-11-14): owner, follow-up, reminders. Stored on the thread; nothing here is derived from mail.
+
+/** The team member the thread is with: `ownerId`, else the first internal participant (the sender, usually). */
+export function ownerOf(thread) {
+  if (!thread) return null;
+  if (thread.ownerId) return thread.ownerId;
+  const internal = thread.participantIds.find((id) => { const p = getPerson(id); return p && !p.guest; });
+  return internal || null;
+}
+
+/** `follow_up` against TODAY: 'due' (today or past), 'later', or 'none'. Marking a thread resolved clears it (actions.js). */
+export function followUpFor(thread) {
+  if (!thread || !thread.followUpAt) return 'none';
+  return dayOf(thread.followUpAt) <= dayOf(TODAY) ? 'due' : 'later';
+}
+
+/** Reminders sent on the thread (outbound messages marked `reminder`), oldest first. */
+export const remindersOf = (thread) => thread.entries.filter((e) => e.type === 'message' && e.reminder);
+
+/** Can a reminder go out? The thread waits on someone outside and its last outbound message had recipients. */
+export function canRemind(thread) {
+  if (!thread || thread.triage !== 'waiting' || thread.deletedAt) return false;
+  const last = [...thread.entries].reverse().find((e) => e.type === 'message' && e.direction === 'outbound' && !e.reminder);
+  return !!(last && last.recipients.some((r) => r.personId || r.email));
+}
 
 /** The records of the most recently active threads, newest first (the pickers' Recent group, D-61). */
 export function recentRecordIds(limit = 3) {

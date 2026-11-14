@@ -35,6 +35,7 @@
     </div>
 
     <input ref="file" type="file" multiple class="sr-only" tabindex="-1" aria-hidden="true" @change="onFilePick" />
+    <input ref="photo" type="file" accept="image/*" capture="environment" class="sr-only" tabindex="-1" aria-hidden="true" data-photo-input @change="onFilePick" />
     <AttachLinkModal :visible="linkOpen" @attach="addLink" @close="linkOpen = false" />
     <AttachPickerModal
       :visible="picker === 'cloud'"
@@ -74,7 +75,7 @@
 import Button from '@/components/Button/Button.vue';
 import ModalV2 from '@/componentsV2/ModalV2/ModalV2.vue';
 import Tooltip from '@/componentsV2/Tooltip/index.vue';
-import { Paperclip, Link as LinkIcon, Cloud, FileBox, Type, Trash2 } from '@development/linarc-icons';
+import { Paperclip, Camera, Link as LinkIcon, Cloud, FileBox, Type, Trash2 } from '@development/linarc-icons';
 import AttachLinkModal from './AttachLinkModal.vue';
 import AttachPickerModal from './AttachPickerModal.vue';
 import { newAttachment, recordAttachment, cloudAttachment } from '../data/actions';
@@ -116,6 +117,8 @@ export default {
     tools() {
       return [
         { id: 'file', label: 'Attach file', icon: Paperclip, run: () => this.$refs.file.click() },
+        // D-80: on a phone the camera opens; the photo keeps its capture time
+        { id: 'photo', label: 'Take a photo', icon: Camera, run: () => this.$refs.photo.click() },
         { id: 'link', label: 'Attach link', icon: LinkIcon, run: () => { this.linkOpen = true; } },
         { id: 'cloud', label: 'Choose from cloud drive', icon: Cloud, run: () => { this.picker = 'cloud'; } },
         { id: 'record', label: 'Attach a record', icon: FileBox, run: () => { this.picker = 'record'; } },

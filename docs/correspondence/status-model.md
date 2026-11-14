@@ -31,6 +31,24 @@ The draft's `replied` collapsed into `waiting`: "we replied" is "waiting on them
 | `downloaded` | Files downloaded | success | check |
 | `bounced` | Delivery failed | error | chip, plus the InlineNotice on the message |
 
+### `follow_up` (thread; computed from the team's follow-up date, D-72)
+| Value | Label | Tone | Signal |
+|---|---|---|---|
+| `due` | Follow up | info | chip on the list row when nothing stronger applies (Overdue, Needs action win); the date as a word on the thread |
+| `later` | Follow up · 19 Oct | neutral | word |
+| `none` | — | neutral | none |
+
+The owner (`ownerId`, D-72) is a person, not a status: a select on the thread, a column and the *Assigned to me* view on the Email screen.
+
+### `correspondenceType` (thread the GC started; D-78)
+| Value | Label | Tone | Signal |
+|---|---|---|---|
+| `general` | General | neutral | word, after the number (*C-0040 · General*) |
+| `transmittal` | Transmittal | neutral | word |
+| `notice` | Notice | warning | word (a notice carries contract deadlines; the Email screen's *Notices* quick filter finds them) |
+
+The number (`letterNo`, *C-0041*) is data assigned on send, not a status; inbound mail has none.
+
 ### `visibility` (thread)
 | Value | Label | Tone | Signal |
 |---|---|---|---|
@@ -44,7 +62,9 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 |---|---|---|---|---|
 | `unpromoted` | — | neutral | none | |
 | `promoted_rfi` | Promoted to RFI | info | link (record code) | |
-| `promoted_pco` | Promoted to PCO | info | link | data only; not reachable in the MVP (Q-10) |
+| `promoted_pco` | Promoted to PCO | info | link | a target since D-77 |
+| `promoted_field_issue` | Promoted to field issue | info | link | D-77 |
+| `promoted_daily_log` | Added to the daily log | info | link | D-80; the thread's triage is unchanged |
 
 ### `drawingRevision` (linked drawing)
 | Value | Label | Tone | Signal |
@@ -86,8 +106,8 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 
 ## Audit event vocabulary (right panel › Delivery)
 
-`SMTP_DISPATCHED`, `SMTP_BOUNCED`, `INBOUND_REPLY_INGESTED`, `INBOUND_UNMATCHED` (mail to the project address with no thread), `RECORD_LINKED`, `MAGIC_LINK_ACCESSED`, `ATTACHMENT_DOWNLOADED`, `RECORD_PROMOTED`, `LINK_REVOKED`, `CONTACT_UPDATED`, `QA_ADDED` (a message added to an RFI's Q&A, D-49). Today's product already records per-recipient delivery and failure; the rest is new. Rows show event, actor and time; IP and checksum sit in the row's expand only (Q-09; no export in the MVP).
+`SMTP_DISPATCHED`, `SMTP_BOUNCED`, `INBOUND_REPLY_INGESTED`, `INBOUND_UNMATCHED` (mail to the project address with no thread), `RECORD_LINKED`, `MAGIC_LINK_ACCESSED`, `ATTACHMENT_DOWNLOADED`, `RECORD_PROMOTED`, `LINK_REVOKED`, `CONTACT_UPDATED`, `QA_ADDED` (a message added to an RFI's Q&A, D-49), and since D-72 `REMINDER_SENT` (with the count: *Reminder 2 sent*), `THREAD_RESOLVED`, `THREAD_REOPENED`, `OWNER_ASSIGNED`, `FOLLOW_UP_SET`. Today's product already records per-recipient delivery and failure; the rest is new. Rows show event, actor and time; IP and checksum sit in the row's expand only (Q-09; no export in the MVP).
 
 ## Entry types (ThreadStream)
 
-`EXTERNAL_EMAIL` (inbound or outbound), `INTERNAL_COMMENT`, `SYSTEM_EVENT`.
+`EXTERNAL_EMAIL` (inbound or outbound; a reminder is an outbound one marked *Reminder*, D-72), `INTERNAL_COMMENT`, `SYSTEM_EVENT` (promoted, linked, filed to Q&A; since D-72 assigned, marked resolved, reopened).

@@ -112,7 +112,7 @@ try {
   await sleep(600);
   rows = await listRows();
   check(!rows.find((r) => r.text.includes('Kenji Takahashi')).unread, 'opening it reads it: the row is no longer bold');
-  check((await paneActions()).join(' · ') === 'Mark as unread · Delete · Open thread', `pane actions: ${(await paneActions()).join(' · ')}`);
+  check((await paneActions()).join(' · ') === 'Mark resolved · Follow up · Mark as unread · Delete · Open thread', `pane actions: ${(await paneActions()).join(' · ')}`);
   const flush = await stickyFlush();
   check(flush.ok, `the reply footer sticks flush to the pane's bottom (${JSON.stringify(flush)})`);
   await page.click('[aria-label="Thread actions"] button[aria-label="Mark as unread"]');
@@ -124,7 +124,7 @@ try {
   await tick('Dave Miller');
   await tick('Sarah Jenkins');
   check((await checkedRows()) === 2 && (await paneSubject()).includes('RFI-142'), 'ticking two rows leaves the open thread as it was');
-  check((await barButtons()).join(' · ') === 'Mark as unread · Mark as read · Delete · Preview · List' && await has('2 selected'), `bar: ${(await barButtons()).join(' · ')}, count line`);
+  check((await barButtons()).join(' · ') === 'Mark as unread · Mark as read · Mark resolved · Delete · Preview · List' && await has('2 selected'), `bar: ${(await barButtons()).join(' · ')}, count line`);
   await page.hover('.rv-listbar button[aria-label="Mark as unread"]');
   await sleep(500);
   check(await page.evaluate(() => [...document.querySelectorAll('[role="tooltip"]')].some((t) => t.textContent.trim() === 'Mark as unread')) && !(await page.evaluate(() => document.querySelector('.rv-listbar button[title]'))), 'the icon shows the design system Tooltip, no native title');

@@ -31,6 +31,13 @@
         <slot name="pin-preview" />
       </div>
 
+      <!-- 1b. Letter (D-78): the type, a template for a notice or a transmittal, and the number the letter gets on send -->
+      <div class="flex flex-wrap items-end gap-x-space-16 gap-y-space-8" data-letter>
+        <SelectV2 v-model="letterType" label="Type" class="letter-select" size="large" :options="letterTypes" :allow-search="false" />
+        <SelectV2 v-if="templates.length" :value="templateId" label="Template" class="template-select" size="large" :options="templateOptions" :allow-search="false" placeholder="None" @input="useTemplate" />
+        <span class="pb-space-12 text-fontsize-12 leading-lineheight-16 text-text-subtle">Numbered {{ nextNumber }} on send; the number and type go on the project's correspondence log.</span>
+      </div>
+
       <!-- 2. From (today) -->
       <div class="flex flex-col gap-space-4">
         <span class="text-fontsize-14 font-bold leading-lineheight-20 text-text-default">From</span>
@@ -46,6 +53,7 @@
           v-model="to"
           label="To"
           :contacts="contacts"
+          :groups="groups"
           :internal-domains="internalDomains"
           :organization-name="organizationName"
           :show-avatar="false"
@@ -64,6 +72,7 @@
           v-model="cc"
           label="Cc"
           :contacts="contacts"
+          :groups="groups"
           :internal-domains="internalDomains"
           :organization-name="organizationName"
           :show-avatar="false"
@@ -79,6 +88,7 @@
           v-model="bcc"
           label="Bcc"
           :contacts="contacts"
+          :groups="groups"
           :internal-domains="internalDomains"
           :organization-name="organizationName"
           :show-avatar="false"
@@ -93,11 +103,20 @@
         <p v-if="invalidNote" class="m-0 text-fontsize-12 leading-lineheight-16 text-text-error">{{ invalidNote }}</p>
       </div>
 
-      <!-- 5–6. Subject, Response due, Message -->
-      <!-- `key`: FormV2 copies its value once, so a reset (Discard) remounts it with the defaults -->
-      <FormV2 :key="formKey" v-model="values" :schema="schema" :flat="true" mode="manual" label-position="top" :submit-on-enter="false">
+      <!-- 5–6. Subject, Response due, Message. Two forms (D-76): the turnaround note belongs under the date, and FormV2
+           has no per-field helper line. `key`: FormV2 copies its value once, so a reset (Discard) remounts it with the defaults -->
+      <div class="flex flex-col gap-space-8">
+        <FormV2 :key="formKey" v-model="values" :schema="schema" :flat="true" mode="manual" label-position="top" :submit-on-enter="false">
+          <template #footer><span /></template>
+        </FormV2>
+        <!-- D-76: where the default came from: the contract's turnaround for this record type and the project calendar -->
+        <p v-if="values.dueOn" class="m-0 text-fontsize-12 leading-lineheight-16 text-text-subtle" data-turnaround>{{ rfi && rfi.dueOn ? "The RFI step's due date." : `Per the contract: ${turnaroundNote}` }}</p>
+      </div>
+      <FormV2 :key="`body-${formKey}`" v-model="message" :schema="messageSchema" :flat="true" mode="manual" label-position="top" :submit-on-enter="false">
         <template #footer><span /></template>
       </FormV2>
+      <!-- D-72: chasing is the default; the reminder goes to the recipients at the due date when nobody has replied -->
+      <Checkbox v-if="values.dueOn" :value="remindAtDue" label="Send a reminder at the due date if there's no reply" size="small" @input="remindAtDue = $event" />
 
       <!-- 7. Attachments and the tool row sit right under the message (D-70, 2026-11-06), as the reading pane's
            composer: anchored to the input while the panel is short, and a sticky footer once the content overflows
@@ -140,9 +159,11 @@
 
 <script>
 import Button from '@/components/Button/Button.vue';
+import Checkbox from '@/components/Checkbox/Checkbox.vue';
 import Chip from '@/components/Chip/Chip.vue';
 import InputV2 from '@/componentsV2/InputV2/InputV2.vue';
 import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
+import { LETTER_TYPES, templatesFor, applyTemplate, nextLetterNumber } from '../data/templates';
 import FormV2 from '@/componentsV2/FormV2/FormV2.vue';
 import Tooltip from '@/componentsV2/Tooltip/index.vue';
 import { CircleHelp } from '@development/linarc-icons';
@@ -151,8 +172,10 @@ import RecipientField from '~/candidates/RecipientField/RecipientField.vue';
 import { PROJECT, MAIL_SIZE_LIMIT_MB } from '../data/project';
 import { getPerson, getPeople } from '../data/people';
 import { getRecord, recordLabel } from '../data/records';
-import { createThread, defaultResponseDue, recordAttachment } from '../data/actions';
+import { createThread, defaultResponseDue, turnaroundNote, recordAttachment } from '../data/actions';
 import { rfiRecipients } from '../data/rfi';
+import { distributionGroups } from '../data/lists';
+import { expandRecipients } from '~/candidates/RecipientField/recipients';
 import { setDraft } from '~/modules/session';
 import { draftFor, clearDraft } from '../data/drafts';
 import AttachmentChips from './AttachmentChips.vue';
@@ -168,7 +191,7 @@ const REPLY_HELP = `Replies from any mail client come back to this thread. To fi
 
 export default {
   name: 'ComposePanel',
-  components: { Button, Chip, FormV2, Tooltip, CircleHelp, SlideOverPanel, RecipientField, AttachmentChips, MessageTools },
+  components: { Button, Checkbox, Chip, FormV2, SelectV2, Tooltip, CircleHelp, SlideOverPanel, RecipientField, AttachmentChips, MessageTools },
   props: {
     open: { type: Boolean, default: false },
     /** The viewer (sender): a role from data/project.js ROLES */
@@ -185,7 +208,8 @@ export default {
     seq += 1;
     return {
       ROW_LABEL, ATTACH_HELP, REPLY_HELP, PROJECT,
-      to: [], cc: [], bcc: [], showBcc: false, values: {}, attachments: [],
+      to: [], cc: [], bcc: [], showBcc: false, values: {}, message: { body: '' }, attachments: [], remindAtDue: true,
+      letterType: 'general', templateId: null,
       // What the panel opened with and what was last saved, as snapshots (see `snapshot`): touched = differs from
       // the baseline, saved = equals the last save.
       baselineKey: '', savedKey: '', formKey: 0,
@@ -204,10 +228,32 @@ export default {
     },
     /** Everyone in the project directory but the sender: suggested first (the record's reviewers, step parties or distribution list), then the rest. */
     contacts() {
-      const suggested = this.rfi ? this.rfi.suggestedIds : this.record ? this.record.suggestedRecipientIds || (this.record.assignedToId ? [this.record.assignedToId] : []) : [];
+      // D-74: a submittal or change order suggests its assignee, then its distribution list
+      const suggested = this.rfi ? this.rfi.suggestedIds : this.record ? this.record.suggestedRecipientIds || [...new Set([this.record.assignedToId, ...(this.record.distributionIds || [])].filter(Boolean))] : [];
       const people = getPeople().filter((p) => p.id !== this.role.personId);
       const ordered = [...suggested.map((id) => people.find((p) => p.id === id)).filter(Boolean), ...people.filter((p) => !suggested.includes(p.id))];
       return ordered.map(asRecipient);
+    },
+    // --- letters (D-78)
+    letterTypes() {
+      return LETTER_TYPES.map((t) => ({ value: t.id, label: t.label }));
+    },
+    templates() {
+      return templatesFor(this.letterType);
+    },
+    templateOptions() {
+      return this.templates.map((t) => ({ value: t.id, label: t.name }));
+    },
+    nextNumber() {
+      return nextLetterNumber();
+    },
+    /** The contract's rule for this record type, under the date (D-76). */
+    turnaroundNote() {
+      return turnaroundNote(this.record ? this.record.type : 'email');
+    },
+    /** Distribution lists as one chip each (D-75): the record's own list first, then the project's. */
+    groups() {
+      return distributionGroups(this.recordId, this.role.personId);
     },
     /** The sender's company, named in the external chip's tooltip ("Outside Vanguard Construction Group"). */
     organizationName() {
@@ -233,6 +279,17 @@ export default {
             fields: [
               { id: 'subject', type: 'text', label: 'Subject', colSpan: 'full', rules: [{ type: 'required', message: 'Give the message a subject' }] },
               { id: 'dueOn', type: 'date', label: 'Response due', props: { width: 'short' } },
+            ],
+          },
+        ],
+      };
+    },
+    messageSchema() {
+      return {
+        sections: [
+          {
+            id: 'message',
+            fields: [
               {
                 id: 'body', type: 'rich-text', label: 'Message', colSpan: 'full',
                 // One line of tools (P-057): style, bold / italic / underline / strike, colour, alignment menu, lists,
@@ -245,10 +302,10 @@ export default {
       };
     },
     bodyText() {
-      return textOf(this.values.body || '');
+      return textOf(this.message.body || '');
     },
     canSend() {
-      return this.to.length > 0 && !this.invalidNote && !!(this.values.subject || '').trim() && this.bodyText.length > 0;
+      return expandRecipients(this.to).length > 0 && !this.invalidNote && !!(this.values.subject || '').trim() && this.bodyText.length > 0;
     },
     /** Per context: the Email screen, or the record (and pin) composed from. */
     draftKey() {
@@ -259,8 +316,8 @@ export default {
     },
     /** Everything the draft is made of, as one comparable string. */
     snapshotKey() {
-      const ids = (rs) => rs.map((r) => r.id || r.email).join(',');
-      return JSON.stringify([ids(this.to), ids(this.cc), ids(this.bcc), (this.values.subject || '').trim(), this.values.dueOn || '', this.bodyText, this.attachments.map((a) => a.id)]);
+      const ids = (rs) => rs.map((r) => (r.group ? `group:${r.id}` : r.id || r.email)).join(',');
+      return JSON.stringify([ids(this.to), ids(this.cc), ids(this.bcc), (this.values.subject || '').trim(), this.values.dueOn || '', this.bodyText, this.attachments.map((a) => a.id), this.remindAtDue, this.letterType, this.templateId]);
     },
     touched() {
       return this.snapshotKey !== this.baselineKey;
@@ -273,6 +330,10 @@ export default {
     open(open) {
       if (open && !this.restore()) this.reset();
     },
+    /** A type with no templates drops the one chosen (D-78). */
+    letterType(type) {
+      if (this.templateId && !templatesFor(type).some((t) => t.id === this.templateId)) this.templateId = null;
+    },
   },
   created() {
     this.reset();
@@ -282,7 +343,7 @@ export default {
     reset() {
       const r = this.record;
       // To: the prefill, else on an RFI the ball-in-court party (the current step's), else nobody.
-      const assignee = r && r.type === 'rfi' && r.assignedToId ? getPerson(r.assignedToId) : null;
+      const assignee = r && r.type !== 'drawing' && r.assignedToId ? getPerson(r.assignedToId) : null; // the ball-in-court party (RFI, submittal, change order; D-74)
       const toIds = (this.prefill && this.prefill.toIds) || (this.rfi ? this.rfi.toIds : assignee ? [assignee.id] : []);
       this.to = toIds.map(getPerson).filter(Boolean).map(asRecipient);
       this.cc = [];
@@ -290,13 +351,17 @@ export default {
       this.showBcc = false;
       // Today's "Attach a PDF of the record", on by default, as a removable chip
       this.attachments = r && r.type !== 'drawing' ? [recordAttachment(r.id)].filter(Boolean) : [];
+      this.remindAtDue = true;
+      this.letterType = 'general';
+      this.templateId = null;
       this.values = {
         // An RFI's subject carries its name (rfi-integration.md §B); other records leave the topic to the sender.
-        subject: r ? `[${PROJECT.code}] ${recordLabel(r.id)} — ${r.type === 'rfi' ? r.title : ''}` : `[${PROJECT.code}] `,
-        // On an RFI the step's due date (§B), else three working days (spec §7)
-        dueOn: ((this.rfi && this.rfi.dueOn) || defaultResponseDue()).slice(0, 10),
-        body: (this.prefill && this.prefill.body) || '',
+        // the record's code and title (D-74); a drawing keeps its code and revision, the topic is the sender's
+        subject: r ? (r.type === 'drawing' ? `[${PROJECT.code}] ${recordLabel(r.id)} — ` : `[${PROJECT.code}] ${r.code} — ${r.title}`) : `[${PROJECT.code}] `,
+        // On an RFI the step's due date (§B), else the contract's turnaround for the record type (D-76; plain email: three working days, spec §7)
+        dueOn: ((this.rfi && this.rfi.dueOn) || defaultResponseDue(r ? r.type : 'email')).slice(0, 10),
       };
+      this.message = { body: (this.prefill && this.prefill.body) || '' };
       this.baselineKey = this.snapshotKey;
       this.savedKey = '';
       this.formKey += 1;
@@ -311,14 +376,20 @@ export default {
       this.bcc = d.bcc || [];
       this.showBcc = !!d.showBcc || this.bcc.length > 0;
       this.attachments = (d.attachments || []).map((a) => ({ ...a }));
-      this.values = { ...this.values, ...(d.values || {}) };
+      // a draft keeps the body with the other values (data/drafts.js reads `values.body`)
+      const { body, ...rest } = d.values || {};
+      this.values = { ...this.values, ...rest };
+      this.message = { body: body || '' };
+      if (typeof d.remindAtDue === 'boolean') this.remindAtDue = d.remindAtDue;
+      this.letterType = d.letterType || 'general';
+      this.templateId = d.templateId || null;
       this.savedKey = this.snapshotKey;
       return true;
     },
     saveDraft() {
       if (!this.touched && !this.savedKey) return;
       setDraft(this.draftKey, {
-        to: this.to, cc: this.cc, bcc: this.bcc, showBcc: this.showBcc, values: { ...this.values }, attachments: this.attachments.map((a) => ({ ...a })), savedAt: new Date().toISOString(),
+        to: this.to, cc: this.cc, bcc: this.bcc, showBcc: this.showBcc, values: { ...this.values, body: this.message.body || '' }, attachments: this.attachments.map((a) => ({ ...a })), remindAtDue: this.remindAtDue, letterType: this.letterType, templateId: this.templateId, savedAt: new Date().toISOString(),
       });
       this.savedKey = this.snapshotKey;
     },
@@ -345,6 +416,18 @@ export default {
     moveRecipient({ recipient, to }) {
       this.addTo(to, recipient);
     },
+    /** A template fills the subject and the message with the letter's form and the project letterhead (D-78). */
+    useTemplate(id) {
+      this.templateId = id;
+      const t = this.templates.find((x) => x.id === id);
+      if (!t) return;
+      const topic = (this.values.subject || '').replace(/^\[[^\]]+\]\s*/, '').replace(/\s*[—-]\s*$/, '').trim() || (this.record ? `${this.record.code} — ${this.record.title}` : '');
+      const first = expandRecipients(this.to)[0];
+      const { subject, body } = applyTemplate(t, { topic, recipientCompany: first ? first.company : '', sender: this.sender, items: this.attachments.map((a) => a.name) });
+      this.values = { ...this.values, subject: `[${PROJECT.code}] ${subject}` };
+      this.message = { body };
+      this.formKey += 1; // FormV2 copies its value once: remount with the template's text
+    },
     addAttachment(a) {
       this.attachments.push(a);
     },
@@ -355,17 +438,21 @@ export default {
       if (!this.canSend || this.busy) return;
       const thread = createThread({
         senderId: this.role.personId,
-        toIds: this.to.map((r) => r.id),
-        ccIds: this.cc.map((r) => r.id),
-        bccIds: this.bcc.map((r) => r.id),
+        // group chips go out as their members (D-75); someone in two rows is kept in the first
+        toIds: expandRecipients(this.to).map((r) => r.id),
+        ccIds: expandRecipients(this.cc).map((r) => r.id).filter((id) => !expandRecipients(this.to).some((r) => r.id === id)),
+        bccIds: expandRecipients(this.bcc).map((r) => r.id).filter((id) => !expandRecipients([...this.to, ...this.cc]).some((r) => r.id === id)),
         subject: this.values.subject.trim().replace(/\s*[—-]\s*$/, ''), // a prefix left as-is loses its trailing dash
         body: this.bodyText,
-        bodyHtml: this.values.body || '',
+        bodyHtml: this.message.body || '',
         links: this.attachments.filter((a) => a.kind === 'link').map(({ url, name }) => ({ url, name })),
         attachments: this.attachments.filter((a) => a.kind !== 'link'),
         linkedRecordIds: this.record ? [this.record.id] : [],
         pinId: this.pinId,
         responseDueAt: this.values.dueOn ? `${this.values.dueOn}T17:00:00` : null,
+        remindAtDue: this.remindAtDue,
+        letterType: this.letterType,
+        templateId: this.templateId,
       });
       clearDraft(this.draftKey);
       this.$emit('sent', thread);
@@ -373,3 +460,13 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* The letter selects hug their longest option (Transmittal · Non-conformance notice), D-70; no width token fits (needs-token). */
+.letter-select {
+  width: 160px;
+}
+.template-select {
+  width: 240px;
+}
+</style>

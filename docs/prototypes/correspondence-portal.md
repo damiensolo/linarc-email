@@ -2,6 +2,7 @@
 
 - **Date:** 2026-10-16
 - **Figma:** [07 · Secure link page](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4102-2174) on the Email page
+- **2026-11-14 (D-73):** the quick response *Received, I'll answer by <date>* under the files (a FormV2 short date input, the requested date by default, and one secondary button): `acknowledgeFromLink` posts an inbound reply, moves the thread to Waiting with the promised date as Response due, records *answer promised by* on Delivery and keeps the link open (`session.linkAcks`; `getLink().acknowledged`). The page then says *Sent: received, answering by Monday 19 Oct* and the reply box stays. `interact-correspondence-portal.mjs` 24/24. Figma: [25 · Secure link page — quick response](https://www.figma.com/design/9ANM41f3QwNjt27Sl08i8O/Documentation?node-id=4370-9790).
 - **URL:** `/?p=correspondence-portal#tk-marcus-a302` (also `#tk-kenji-rfi142`, account holder; `#tk-expired`)
 - **Status:** done
 

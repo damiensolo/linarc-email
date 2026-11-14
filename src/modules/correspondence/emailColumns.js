@@ -7,8 +7,8 @@
 // Since 2026-11-06 (D-67): Drafts and Deleted are folder views (a different row set, not a filter); a row is unread for
 // the viewer (bold Subject and From, as a mail client) until the thread is opened; the hidden Read column filters it.
 import './gridSlots';
-import { TRIAGE, DELIVERY, PROMOTION, VISIBILITY, toneToChipStatus } from '~/modules/app/status';
-import { getPerson, getPeople, recordLabel, slaFor, weakestDelivery, isUnmatched, isUnreadFor, isDeleted, linkableRecords, RECORD_KINDS, TODAY } from './data';
+import { TRIAGE, DELIVERY, PROMOTION, VISIBILITY, CORRESPONDENCE_TYPE, toneToChipStatus } from '~/modules/app/status';
+import { getPerson, getPeople, recordLabel, slaFor, weakestDelivery, isUnmatched, isUnreadFor, isDeleted, linkableRecords, RECORD_KINDS, TODAY, ownerOf, followUpFor, getFile } from './data';
 import { costImpactText } from './view';
 
 // A cell with only a `left` slot keeps the column value for sorting and filtering without rendering it twice.
@@ -21,10 +21,13 @@ const BLANK = { type: 'text', componentProps: { value: '' } };
  */
 export const VIEWS = [
   { id: 'all', label: 'All', test: () => true },
+  // D-72: the viewer's own threads (the owner), and the threads flagged for a follow-up
+  { id: 'mine', label: 'Assigned to me', test: (r) => r.mine },
   { id: 'needs_action', label: 'Needs action', test: (r) => r.triage === 'needs_action' },
   { id: 'waiting', label: 'Waiting', test: (r) => r.triage === 'waiting' },
   { id: 'overdue', label: 'Overdue', test: (r) => r.sla === 'overdue', tone: 'error' },
   { id: 'unmatched', label: 'Unmatched', test: (r) => r.unmatched },
+  { id: 'follow_up', label: 'Follow up', test: (r) => r.followUp !== 'none' },
   { id: 'drafts', label: 'Drafts', folder: true },
   { id: 'deleted', label: 'Deleted', folder: true },
 ];
@@ -39,6 +42,8 @@ export const RECORD_FIELD = 'recordIds';
 export const COMPANY_FIELD = 'companyText';
 export const ACTIVITY_FIELD = 'activityWithin';
 export const READ_FIELD = 'readText';
+export const OWNER_FIELD = 'ownerText';
+export const TYPE_FIELD = 'letterTypeLabel';
 
 /** Object types for the pane and the hidden column: the record kinds, then Untagged (no linked record). */
 export const KIND_OPTIONS = [...RECORD_KINDS.map((k) => ({ value: k.id, label: k.one })), { value: 'untagged', label: 'Untagged' }];
@@ -55,6 +60,7 @@ export const ACTIVITY_OPTIONS = [
 export const emailQuickFilters = [
   ...viewOptions.map((o) => ({ label: o.label, field: VIEW_FIELD, operator: 'is', value: o.value })),
   { label: 'Unread', field: READ_FIELD, operator: 'is', value: 'Unread' },
+  { label: 'Notices', field: TYPE_FIELD, operator: 'is', value: CORRESPONDENCE_TYPE.notice.label },
   { label: 'Has attachments', field: 'attachmentsText', operator: 'is', value: 'Yes' },
   { label: 'Confidential', field: 'visibilityLabel', operator: 'is', value: VISIBILITY.restricted.label },
 ];
@@ -67,6 +73,9 @@ const snippetOf = (body) =>
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 140);
+
+/** Every file on a thread, by name (D-79): the grid's search box covers visible columns, so a file name finds its thread. */
+const filesOf = (t) => [...new Set(t.entries.flatMap((e) => [...(e.attachments || []), ...(e.attachmentIds || []).map(getFile).filter(Boolean)]).map((f) => f.name))];
 
 /** The list row's time: the clock today, the day otherwise (as a mail client). */
 const timeTextOf = (activity, ageDays) => (ageDays === 0 ? activity.format('HH:mm') : activity.format('D MMM'));
@@ -84,6 +93,9 @@ export function emailRows(threads, moment, role) {
     const delivery = weakestDelivery(t);
     const unmatched = isUnmatched(t);
     const unread = role ? isUnreadFor(t, role.personId) : false;
+    const ownerId = ownerOf(t);
+    const owner = ownerId ? getPerson(ownerId) : null;
+    const followUp = followUpFor(t);
     const activity = moment(t.lastActivityAt);
     const ageDays = today.diff(activity.clone().startOf('day'), 'days');
     const kinds = t.linkedRecordIds.map((id) => (RECORD_KINDS.find((k) => recordKind(id) === k.id) || {}).id).filter(Boolean);
@@ -112,6 +124,18 @@ export function emailRows(threads, moment, role) {
       unread,
       deleted: isDeleted(t),
       draft: null,
+      // D-79: the thread's files, searchable by name
+      filesText: filesOf(t).join(', ') || '—',
+      // D-78: the correspondence number and type (threads the GC started)
+      letterText: t.letterNo ? `${t.letterNo} · ${(CORRESPONDENCE_TYPE[t.letterType] || CORRESPONDENCE_TYPE.general).label}` : '—',
+      [TYPE_FIELD]: t.letterNo ? (CORRESPONDENCE_TYPE[t.letterType] || CORRESPONDENCE_TYPE.general).label : '—',
+      // D-72: owner, follow-up
+      ownerId,
+      mine: !!(role && ownerId === role.personId),
+      followUp,
+      followUpText: followUp === 'none' ? '—' : moment(t.followUpAt).format('D MMM'),
+      remindAtDue: !!t.remindAtDue,
+      [OWNER_FIELD]: owner ? owner.name : 'Unassigned',
       [READ_FIELD]: unread ? 'Unread' : 'Read',
       [KIND_FIELD]: kinds.length ? [...new Set(kinds)] : ['untagged'],
       [RECORD_FIELD]: [...t.linkedRecordIds],
@@ -155,6 +179,15 @@ export function draftRows(drafts, moment) {
       unread: false,
       deleted: false,
       draft: { kind: d.kind, key: d.key, recordId: d.recordId, pinId: d.pinId, threadId: d.threadId },
+      letterText: '—',
+      [TYPE_FIELD]: '—',
+      filesText: '—',
+      ownerId: null,
+      mine: false,
+      followUp: 'none',
+      followUpText: '—',
+      remindAtDue: false,
+      [OWNER_FIELD]: '—',
       [READ_FIELD]: 'Read',
       [VIEW_FIELD]: [],
       [KIND_FIELD]: kinds.length ? [...new Set(kinds)] : ['untagged'],
@@ -178,14 +211,21 @@ export function emailColumns(onAction, { canSeeCost }) {
   const triageOptions = [...Object.values(TRIAGE).map((s) => ({ label: s.label, value: s.label })), { label: 'Draft', value: 'Draft' }];
   const deliveryOptions = Object.values(DELIVERY).map((s) => ({ label: s.label, value: s.label }));
   const companyOptions = [...new Set(getPeople().map((p) => p.company))].sort().map((c) => ({ label: c, value: c }));
+  const ownerOptions = [...getPeople().filter((p) => !p.guest).map((p) => ({ label: p.name, value: p.name })), { label: 'Unassigned', value: 'Unassigned' }];
   const recordOptions = linkableRecords().map((r) => ({ label: r.label, value: r.value }));
   // Unread rows read bold, as a mail client (D-67): the cell renders the value itself so the weight can follow the row.
   const emph = (field) => ({ left: { type: 'emph-text', componentProps: { value: (r) => r[field], bold: (r) => r.unread } }, center: BLANK });
   return [
     { field: 'subject', label: 'SUBJECT', type: 'ShortText', width: 300, readonly: true, frozen: true, cell: emph('subject') },
+    // D-78: the project's correspondence number and letter type, for the threads the GC started
+    { field: 'letterText', label: 'LETTER', type: 'ShortText', width: 150, readonly: true },
     // A promoted record is one of the linked records, so there is no separate Promoted column.
     { field: 'linkedText', label: 'LINKED RECORD', type: 'ShortText', width: 160, readonly: true },
+    // D-79: the files on the thread, so the search box finds a thread by a file name
+    { field: 'filesText', label: 'FILES', type: 'ShortText', width: 200, readonly: true },
     { field: 'fromText', label: 'FROM', type: 'ShortText', width: 230, readonly: true, cell: emph('fromText') },
+    // D-72: who on the team has the thread
+    { field: OWNER_FIELD, label: 'OWNER', type: 'ShortText', width: 150, readonly: true, customProps: { treatAsSelectFilter: true, options: ownerOptions } },
     {
       field: 'triageLabel',
       label: 'STATUS',
@@ -207,6 +247,8 @@ export function emailColumns(onAction, { canSeeCost }) {
       readonly: true,
       cell: { left: { type: 'sla-due', componentProps: { sla: (r) => r.sla, dueText: (r) => r.dueText } }, center: BLANK },
     },
+    // D-72: the team's own follow-up date (a word; the Follow up view and the list row's signal say when it is due)
+    { field: 'followUpText', label: 'FOLLOW UP', type: 'ShortText', width: 120, readonly: true },
     { field: 'deliveryLabel', label: 'DELIVERY', type: 'ShortText', width: 140, readonly: true, customProps: { treatAsSelectFilter: true, options: deliveryOptions } },
     { field: 'activityText', label: 'LAST ACTIVITY', type: 'ShortText', width: 130, readonly: true },
     ...(canSeeCost ? [{ field: 'costText', label: 'COST IMPACT', type: 'ShortText', width: 110, readonly: true }] : []),
@@ -224,6 +266,7 @@ export function emailColumns(onAction, { canSeeCost }) {
     { field: READ_FIELD, label: 'Read', type: 'ShortText', invisible: true, readonly: true, customProps: { treatAsSelectFilter: true, options: [{ label: 'Unread', value: 'Unread' }, { label: 'Read', value: 'Read' }] } },
     { field: 'attachmentsText', label: 'Has attachments', type: 'ShortText', invisible: true, readonly: true, customProps: { treatAsSelectFilter: true, options: [{ label: 'Yes', value: 'Yes' }, { label: 'No', value: 'No' }] } },
     { field: 'visibilityLabel', label: 'Visibility', type: 'ShortText', invisible: true, readonly: true, customProps: { treatAsSelectFilter: true, options: Object.values(VISIBILITY).map((s) => ({ label: s.label, value: s.label })) } },
+    { field: TYPE_FIELD, label: 'Letter type', type: 'ShortText', invisible: true, readonly: true, customProps: { treatAsSelectFilter: true, options: [...Object.values(CORRESPONDENCE_TYPE).map((s) => ({ label: s.label, value: s.label })), { label: '—', value: '—' }] } },
     // The Reading view's pane (D-65): object type, record, company and last activity, each one ordinary condition.
     { field: KIND_FIELD, label: 'Object type', type: 'MultiSelect', invisible: true, readonly: true, customProps: { options: KIND_OPTIONS } },
     { field: RECORD_FIELD, label: 'Record', type: 'MultiSelect', invisible: true, readonly: true, customProps: { options: recordOptions } },

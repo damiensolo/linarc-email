@@ -21,6 +21,8 @@ export const SCREENS = Object.freeze({
   rfis: 'correspondence-rfi-list',
   rfi: 'correspondence-context-rfi',
   sheet: 'correspondence-context-dwg',
+  submittal: 'correspondence-context-sub', // D-74
+  changeOrder: 'correspondence-context-co', // D-74
   portal: 'correspondence-portal',
   // Notifications (docs/notifications/screens.md): rail-less screens opened from the bell (D-52)
   notifications: 'notifications-list',

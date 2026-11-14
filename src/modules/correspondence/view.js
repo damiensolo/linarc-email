@@ -32,6 +32,7 @@ export function fileView(f) {
     url,
     thumbnailUrl: f.thumbnailUrl || (f.previewable ? url : ''),
     posterUrl: f.posterUrl || '',
+    takenAt: f.takenAt || null,
     meta: `${f.sizeMb} MB${f.byLink ? ' · by secure link' : ''}`,
   };
 }
@@ -63,6 +64,7 @@ export function threadEntries(thread) {
       delivery: weakest ? { key: weakest, label: DELIVERY[weakest].label, tone: DELIVERY[weakest].tone } : null,
       bounce: e.bounce ? { ...e.bounce, resolved: resolved.includes(e.id) } : null,
       resendOf: e.resendOf || null,
+      reminder: !!e.reminder,
       promotion: e.promotion || null,
       recipients,
     };
@@ -86,6 +88,9 @@ export function linkedItems(thread) {
     let status = null;
     if (r.type === 'drawing') status = DRAWING_REVISION[r.revisionStatus];
     if (r.type === 'rfi') status = RFI_STATUS[r.status];
+    if (r.type === 'field-issue') status = { label: 'Field issue', tone: 'neutral' };
+    if (r.type === 'daily-log') status = { label: 'Daily log', tone: 'neutral' };
+    if (r.type === 'change-order' && r.createdInDemo) status = { label: 'PCO · Draft', tone: 'neutral' };
     return { id, type: r.type, label: recordLabel(id), title: r.title, status, supersededBy: r.supersededBy || null };
   });
 }

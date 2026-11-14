@@ -37,7 +37,8 @@ export default {
       if (a.kind === 'link') return a.url;
       if (a.kind === 'record') return `PDF of ${recordLabel(a.recordId)}`;
       const link = a.byLink ? ` · over ${MAIL_SIZE_LIMIT_MB} MB, sent by secure link` : '';
-      return a.kind === 'cloud' ? `${a.provider} · ${a.sizeMb} MB${link}` : `${a.sizeMb} MB${link}`;
+      const taken = a.takenAt ? ` · taken ${new Date(a.takenAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}` : '';
+      return a.kind === 'cloud' ? `${a.provider} · ${a.sizeMb} MB${link}` : `${a.sizeMb} MB${link}${taken}`;
     },
   },
 };

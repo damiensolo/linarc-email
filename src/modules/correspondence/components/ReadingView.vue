@@ -70,7 +70,7 @@
 </template>
 
 <script>
-import { Mail, MailOpen, Trash2, ArchiveRestore } from '@development/linarc-icons';
+import { Mail, MailOpen, Trash2, ArchiveRestore, CircleCheck } from '@development/linarc-icons';
 import Button from '@/components/Button/Button.vue';
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
 import SegmentedControl from '@/componentsV2/SegmentedControl/SegmentedControl.vue';
@@ -144,7 +144,8 @@ export default {
       const read = { key: 'read', label: 'Mark as read', icon: MailOpen };
       if (this.ctx.folder === 'deleted') return [unread, read, { key: 'restore', label: 'Restore', icon: ArchiveRestore }];
       if (this.ctx.folder === 'drafts') return [{ key: 'delete', label: 'Discard draft', icon: Trash2 }];
-      return [unread, read, { key: 'delete', label: 'Delete', icon: Trash2 }];
+      // D-72: closing by hand is a bulk action too
+      return [unread, read, { key: 'resolve', label: 'Mark resolved', icon: CircleCheck }, { key: 'delete', label: 'Delete', icon: Trash2 }];
     },
     kindsValue() {
       const v = conditionValue(this.filterConfig, KIND_FIELD);
@@ -235,10 +236,11 @@ export default {
     syncFilter() {
       this.filterConfig = this.filterService.getFilterConfig();
     },
-    /** One signal per row (D-17): Overdue (red) wins, then Needs action; waiting, resolved and draft rows show nothing. */
+    /** One signal per row (D-17): Overdue (red) wins, then Needs action, then a follow-up that is due (D-72); waiting, resolved and draft rows show nothing. */
     signalFor(r) {
       if (r.sla === 'overdue') return { label: SLA.overdue.label, status: toneToChipStatus(SLA.overdue.tone, { strong: true }) };
       if (r.triage === 'needs_action') return { label: TRIAGE.needs_action.label, status: toneToChipStatus(TRIAGE.needs_action.tone) };
+      if (r.followUp === 'due') return { label: 'Follow up', status: toneToChipStatus('info') };
       return null;
     },
     /** The view the filter expresses: 'all' when none, the view when one `is` condition, null when more (as the segments). */

@@ -54,5 +54,5 @@ export function getLink(token) {
   let state = 'valid';
   if (session.revokedLinks[token]) state = 'revoked';
   else if (new Date(expiresAt) < new Date(TODAY)) state = 'expired';
-  return { ...base, expiresAt, state, replied: Boolean(session.linkReplies[token]) };
+  return { ...base, expiresAt, state, replied: Boolean(session.linkReplies[token]), acknowledged: session.linkAcks[token] || null };
 }

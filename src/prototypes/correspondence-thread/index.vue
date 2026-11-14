@@ -6,7 +6,10 @@
        AiSummary + ThreadStream candidates + the composer; Linked items and Delivery in the right panel (inline at the
        end below 1024px). Promote to record opens the SlideOverPanel beside the thread with the source message
        highlighted (D-37); a bounce's guided fix is a compact ModalV2 (§3). Role (D-41) from the sandbox role switcher:
-       the data layer removes notes, cost and the audit for a guest before anything renders. -->
+       the data layer removes notes, cost and the audit for a guest before anything renders.
+       Triage (D-72, 2026-11-14): the title bar's actions are the Owner select (a team member), *Send reminder* while
+       the thread waits on someone outside, *Mark resolved* / *Reopen*, and *Follow up*; the thread's meta shows the
+       follow-up date and whether a reminder goes out at the due date. -->
   <AppShell screen="thread" header-size="comfortable" title="Email thread" :right-panel="isWide" :scrollable-content="true">
     <template #header>
       <span class="flex min-w-0 items-center gap-space-8">
@@ -14,7 +17,9 @@
         <span v-if="load.hasData && thread" class="truncate font-label text-fontsize-16 font-bold leading-lineheight-24 text-text-default">{{ thread.subject }}</span>
         <Skeleton v-else size="md" class="w-space-124 shrink-0" :class="{ invisible: !load.indicator }" />
         <Chip v-if="thread" :label="thread.id" size="small" fill-style="solid" type="default" :removable="false" class="shrink-0" />
-        <span v-if="thread" class="hidden items-center gap-space-8 font-label text-fontsize-14 leading-lineheight-20 text-text-subtle md:inline-flex">
+        <!-- D-78: the project's correspondence number and letter type (threads the GC started), a muted word -->
+        <span v-if="letterText" class="hidden shrink-0 whitespace-nowrap font-label text-fontsize-14 leading-lineheight-20 text-text-subtle lg:inline">{{ letterText }}</span>
+        <span v-if="thread" class="hidden shrink-0 items-center gap-space-8 whitespace-nowrap font-label text-fontsize-14 leading-lineheight-20 text-text-subtle md:inline-flex">
           Status:
           <StatusChip :label="triage.label" :status="chip(triage.tone)" fill-style="outline" type="default" :removable="false" />
           <StatusChip v-if="thread.visibility === 'restricted'" :label="VISIBILITY.restricted.label" :status="chip(VISIBILITY.restricted.tone)" fill-style="outline" type="default" :removable="false" />
@@ -23,8 +28,27 @@
             <span aria-hidden="true">·</span>
             <span>Cost impact: <span class="text-text-default">{{ costText }}</span></span>
           </template>
+          <!-- The follow-up and the due-date reminder are the team's own notes to self: shown from 1280px, where the title bar has room -->
+          <template v-if="followUpText">
+            <span class="hidden xl:inline" aria-hidden="true">·</span>
+            <span class="hidden xl:inline">Follow up: <span class="text-text-default">{{ followUpText }}</span></span>
+          </template>
+          <template v-if="thread.remindAtDue && thread.triage === 'waiting'">
+            <span class="hidden xl:inline" aria-hidden="true">·</span>
+            <span class="hidden xl:inline">Reminder at the due date</span>
+          </template>
         </span>
       </span>
+    </template>
+    <template v-if="thread && role.internal && !thread.deletedAt" #header-actions>
+      <!-- Triage actions (D-72): who has it, chase, close by hand, flag for later. Label-only (D-17); the select hugs a name (D-26). -->
+      <div class="flex flex-wrap items-center gap-space-8">
+        <SelectV2 :value="ownerId" class="owner-select" size="small" :options="teamOptions" :allow-search="false" placeholder="Unassigned" aria-label="Owner" :disabled="write.status === 'loading'" @input="assign" />
+        <Button v-if="canRemindNow" label="Send reminder" color-scheme="secondary" variant="outline" size="medium" :is-disabled="write.status === 'loading'" @onClick="reminding = true" />
+        <Button label="Follow up" color-scheme="secondary" variant="outline" size="medium" :is-disabled="write.status === 'loading'" @onClick="followingUp = true" />
+        <Button v-if="thread.triage !== 'resolved'" label="Mark resolved" color-scheme="secondary" variant="outline" size="medium" :is-disabled="write.status === 'loading'" @onClick="resolve" />
+        <Button v-else label="Reopen" color-scheme="secondary" variant="outline" size="medium" :is-disabled="write.status === 'loading'" @onClick="reopen" />
+      </div>
     </template>
 
     <template #content>
@@ -67,7 +91,7 @@
           <!-- Below 1024px the right panel's content moves inline at the end (§1). -->
           <section v-if="!isWide" class="flex flex-col gap-space-12">
             <TabNavigation v-model="tab" :tabs="tabs" aria-label="Thread details" />
-            <LinkedItems v-if="tab === 'linked'" :items="linked" @open="openRecord" />
+            <LinkedItems v-if="tab === 'linked'" :items="linked" :linkable="role.internal && !thread.deletedAt" @open="openRecord" @link="linking = true" />
             <DeliveryList v-else :rows="delivery" />
           </section>
           </div>
@@ -82,12 +106,18 @@
         :open="!!promoting"
         :thread-id="id"
         :message="promoting"
+        :subject="thread ? thread.subject : ''"
         :assignee-options="assigneeOptions"
+        :can-see-cost="role.canSeeCost"
         :busy="write.status === 'loading'"
         @close="promoting = null"
-        @create="createRfi"
+        @create="createRecord"
       />
+      <!-- D-77: the other records this email is about -->
+      <LinkRecordModal :open="linking" :thread="thread" :busy="write.status === 'loading'" @close="linking = false" @confirm="linkRecords" />
       <FixContactModal :open="!!fixing" :recipient-name="fixingName" :bounce="fixing && fixing.bounce" :busy="write.status === 'loading'" @close="fixing = null" @confirm="resend" />
+      <ReminderModal :open="reminding" :thread="thread" :busy="write.status === 'loading'" @close="reminding = false" @confirm="remind" />
+      <FollowUpModal :open="followingUp" :thread="thread" :busy="write.status === 'loading'" @close="followingUp = false" @confirm="followUpOn" />
       <FileViewer :open="viewer.open" :files="viewer.files" :index.sync="viewer.index" @close="closeFiles" @download="downloadFile" />
     </template>
 
@@ -96,7 +126,7 @@
         <TabNavigation v-model="tab" :tabs="tabs" aria-label="Thread details" />
         <LoadRegion secondary :load="load">
           <template #default>
-            <LinkedItems v-if="tab === 'linked'" :items="linked" @open="openRecord" />
+            <LinkedItems v-if="tab === 'linked'" :items="linked" :linkable="role.internal && !thread.deletedAt" @open="openRecord" @link="linking = true" />
             <DeliveryList v-else :rows="delivery" />
           </template>
           <template #skeleton><Skeleton v-for="n in 3" :key="n" size="sm" class="my-space-8 w-full" /></template>
@@ -111,6 +141,7 @@ import Button from '@/components/Button/Button.vue';
 import Chip from '@/components/Chip/Chip.vue';
 import StatusChip from '@/components/StatusChip/StatusChip.vue';
 import HeaderToolIcon from '@/componentsV2/HeaderToolIcon/HeaderToolIcon.vue';
+import SelectV2 from '@/componentsV2/SelectV2/SelectV2.vue';
 import TabNavigation from '@/componentsV2/TabNavigation/TabNavigation.vue';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import Skeleton from '~/candidates/Skeleton/Skeleton.vue';
@@ -122,27 +153,32 @@ import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
 import { currentRoute, go, isBuilt } from '~/modules/app/router';
-import { TRIAGE, VISIBILITY, toneToChipStatus } from '~/modules/app/status';
+import { TRIAGE, VISIBILITY, CORRESPONDENCE_TYPE, toneToChipStatus } from '~/modules/app/status';
 import {
-  ROLES, THREADS, currentRole, setRole, getThread, getThreads, getDeletedThreads, inboundSandbox, viewFor, getPerson, getGuests, getRecord,
-  sendMessage, postNote, promoteToRfi, updateContactAndResend, markRead, isUnreadFor, restoreThreads,
+  ROLES, THREADS, currentRole, setRole, getThread, getThreads, getDeletedThreads, inboundSandbox, viewFor, getPerson, getGuests, getPeople, getRecord,
+  sendMessage, postNote, promoteToRecord, linkThreadToRecords, updateContactAndResend, markRead, isUnreadFor, restoreThreads,
+  ownerOf, followUpFor, canRemind, assignOwner, resolveThread, reopenThread, setFollowUp, sendReminder, RECORD_SCREEN,
 } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
 import { threadEntries, summaryView, linkedItems, deliveryRows, costImpactText } from '~/modules/correspondence/view';
 import Composer from '~/modules/correspondence/components/Composer.vue';
 import { fileViewing } from '~/modules/correspondence/fileViewing';
 import PromotePanel from '~/modules/correspondence/components/PromotePanel.vue';
+import LinkRecordModal from '~/modules/correspondence/components/LinkRecordModal.vue';
 import FixContactModal from '~/modules/correspondence/components/FixContactModal.vue';
+import ReminderModal from '~/modules/correspondence/components/ReminderModal.vue';
+import FollowUpModal from '~/modules/correspondence/components/FollowUpModal.vue';
 
-/** Linked items: hairline rows with the record's label, title and one status signal (D-17). Local to this screen. */
+/** Linked items: hairline rows with the record's label, title and one status signal (D-17), and *Link a record* (D-77). Local to this screen. */
 const LinkedItems = {
   name: 'LinkedItems',
   components: { Button, StatusChip },
-  props: { items: { type: Array, required: true } },
+  props: { items: { type: Array, required: true }, linkable: { type: Boolean, default: false } },
   methods: { chip: (t) => toneToChipStatus(t) },
   render(h) {
-    if (!this.items.length) return h('p', { class: 'm-0 font-label text-fontsize-14 leading-lineheight-20 text-text-subtle' }, 'No linked items');
-    return h(
+    const link = this.linkable ? h(Button, { class: 'mt-space-8 self-start', props: { label: 'Link a record', variant: 'text', colorScheme: 'primary', size: 'small' }, on: { onClick: () => this.$emit('link') } }) : null;
+    if (!this.items.length) return h('div', { class: 'flex flex-col' }, [h('p', { class: 'm-0 font-label text-fontsize-14 leading-lineheight-20 text-text-subtle' }, 'No linked items'), link]);
+    return h('div', { class: 'flex flex-col' }, [h(
       'ul',
       { class: 'm-0 flex list-none flex-col p-0' },
       this.items.map((it) =>
@@ -158,7 +194,7 @@ const LinkedItems = {
           h('span', { class: 'text-fontsize-12 leading-lineheight-16 text-text-subtle' }, it.title),
         ]),
       ),
-    );
+    ), link]);
   },
 };
 
@@ -194,7 +230,6 @@ const DeliveryList = {
   },
 };
 
-const RECORD_SCREEN = { rfi: 'rfi', drawing: 'sheet' };
 
 export default {
   name: 'CorrespondenceThread',
@@ -206,7 +241,7 @@ export default {
     inbound: inboundSandbox,
     events: eventsSandbox,
   },
-  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, InlineNotice, Composer, PromotePanel, FixContactModal, LinkedItems, DeliveryList },
+  components: { AppShell, Button, Chip, StatusChip, HeaderToolIcon, SelectV2, TabNavigation, LoadRegion, Skeleton, AiSummary, ThreadStream, FileViewer, InlineNotice, Composer, PromotePanel, FixContactModal, ReminderModal, FollowUpModal, LinkRecordModal, LinkedItems, DeliveryList },
   mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
@@ -221,6 +256,9 @@ export default {
       summaryStatus: 'ready',
       promoting: null,
       fixing: null,
+      linking: false,
+      reminding: false,
+      followingUp: false,
       highlightId: '',
       notice: null,
       VISIBILITY,
@@ -238,6 +276,23 @@ export default {
     },
     costText() {
       return this.thread ? costImpactText(this.thread.estimatedCostImpact) : '';
+    },
+    /** "C-0040 · General" (D-78), empty for a thread the GC did not start */
+    letterText() {
+      return this.thread && this.thread.letterNo ? `${this.thread.letterNo} · ${(CORRESPONDENCE_TYPE[this.thread.letterType] || CORRESPONDENCE_TYPE.general).label}` : '';
+    },
+    // --- triage (D-72)
+    teamOptions() {
+      return getPeople().filter((p) => !p.guest).map((p) => ({ value: p.id, label: p.name }));
+    },
+    ownerId() {
+      return ownerOf(this.thread);
+    },
+    followUpText() {
+      return this.thread && followUpFor(this.thread) !== 'none' ? this.$moment(this.thread.followUpAt).format('D MMM') : '';
+    },
+    canRemindNow() {
+      return canRemind(this.thread);
     },
     linked() {
       return this.thread ? linkedItems(this.thread) : [];
@@ -308,18 +363,47 @@ export default {
         },
       );
     },
+    // --- triage (D-72)
+    assign(ownerId) {
+      if (!ownerId || ownerId === this.ownerId) return;
+      const name = (this.teamOptions.find((o) => o.value === ownerId) || {}).label;
+      this.writeThen(() => assignOwner(this.id, ownerId, { actorId: this.role.personId }), () => { this.notice = { text: `Assigned to ${name}.` }; });
+    },
+    resolve() {
+      this.writeThen(() => resolveThread(this.id, { actorId: this.role.personId }), () => { this.notice = { text: 'Marked resolved. Nothing is owed on this thread.' }; });
+    },
+    reopen() {
+      this.writeThen(() => reopenThread(this.id, { actorId: this.role.personId }), () => { this.notice = { text: 'Reopened.' }; });
+    },
+    remind(body) {
+      this.writeThen(() => sendReminder(this.id, { senderId: this.role.personId, body }), () => { this.reminding = false; this.notice = { text: 'Reminder sent. It is on the Delivery tab with the count.' }; });
+    },
+    followUpOn(date) {
+      this.writeThen(() => setFollowUp(this.id, date, { actorId: this.role.personId }), () => { this.followingUp = false; this.notice = { text: date ? `Follow up on ${this.$moment(date).format('D MMM')}.` : 'Follow-up cleared.' }; });
+    },
     startPromote(entry) {
       this.highlightId = entry.id;
       this.promoting = entry;
     },
-    createRfi(fields) {
+    /** Promote to an RFI, a field issue or a PCO (D-77). */
+    createRecord(fields) {
       const messageId = this.promoting.id;
       this.writeThen(
-        () => promoteToRfi(this.id, messageId, { actorId: this.role.personId, ...fields }),
+        () => promoteToRecord(this.id, messageId, { actorId: this.role.personId, ...fields }),
         (recordId) => {
           this.promoting = null;
           this.highlightId = '';
           this.notice = { text: `${recordId} created.`, recordId };
+        },
+      );
+    },
+    /** Link a record (D-77): the other records this email is about. */
+    linkRecords(ids) {
+      this.writeThen(
+        () => linkThreadToRecords(this.id, ids, { actorId: this.role.personId }),
+        () => {
+          this.linking = false;
+          this.notice = { text: `Linked to ${ids.map(getRecord).filter(Boolean).map((r) => r.code).join(', ')}.` };
         },
       );
     },
@@ -350,7 +434,7 @@ export default {
       const r = getRecord(recordId);
       const screen = r && RECORD_SCREEN[r.type];
       if (screen && isBuilt(screen)) go(screen, recordId);
-      else this.notice = { text: `${recordId} opens in its own tool; that screen is not in this prototype.` };
+      else this.notice = { text: `${recordId} opens in its own tool; that screen is not in this prototype.` }; // every kind has one since D-74
     },
     back() {
       go('email');
@@ -358,3 +442,10 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+/* The owner select hugs a name (D-70); no width token fits a select sized to a string (needs-token). */
+.owner-select {
+  width: 160px;
+}
+</style>

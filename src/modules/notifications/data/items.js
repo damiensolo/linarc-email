@@ -99,7 +99,8 @@ function threadItems(thread) {
   const messages = thread.entries.filter((e) => e.type === 'message');
   const lastMsg = messages[messages.length - 1] || null;
   const lastOut = [...messages].reverse().find((e) => e.direction === 'outbound') || null;
-  const owner = (session.ntfAssignments[`thread:${thread.id}`] || {}).toId || (lastOut ? lastOut.senderId : CORRESPONDENCE_OWNER.ownerId);
+  // D-72: the thread's own owner (assigned on the thread, or the sender) unless Notifications reassigned it
+  const owner = (session.ntfAssignments[`thread:${thread.id}`] || {}).toId || thread.ownerId || (lastOut ? lastOut.senderId : CORRESPONDENCE_OWNER.ownerId);
   const rfiId = [thread.promotedRecordId, ...thread.linkedRecordIds].find((id) => id && (getRecord(id) || {}).type === 'rfi') || null;
   const rfi = rfiId ? getRecord(rfiId) : null;
   const rfiStep = rfi ? currentStep(rfi) : null;

@@ -444,3 +444,35 @@ Why it mattered: the proposals are what design reviews and the promotion into th
 How it was caught: a read-only audit (three agents, one per group of candidates) comparing props, `$emit`, slots and imports with the docs, a week after the last component change.
 What changed: 13 proposals, 7 candidate READMEs, the backlog, three `.vue` comments, one `.vue` class.
 Case study: Y: a candidate reused through a composition (ReadingPane, the Notifications drawer) must be added to its proposal's *Used on* in the same piece of work as the composition; re-run the audit before any promotion.
+
+## F-047 · 2026-11-14 · A reply written in the composer had no recipients
+
+Tags: data, email
+What happened:
+- `sendMessage` took `recipients` from its caller, and neither the thread screen, the reading pane nor the RFI tab passed any for a reply, so every reply composed in the demo was an outbound message with an empty recipient list: no *to Dave Miller* line in the stream, no per-recipient delivery, and (found while building D-72) nothing for a reminder to go to.
+- Fix: a reply to all defaults to everyone on the thread but the writer (`participantIds`), as the mode's own label promises; a caller can still name the recipients.
+Why it mattered: the Delivery tab is the claim evidence (bet 3); a reply with no recipients recorded nothing about who got it.
+How it was caught: the triage script asserted *Send reminder* after a reply and `canRemind` found no recipients.
+What changed: `src/modules/correspondence/data/actions.js` (`sendMessage`).
+Case study: Y: when a write defaults a field to "nothing", check what the screen says about that field (*Reply to all* said everyone).
+
+## F-048 · 2026-11-14 · A grid Download that the app said it would handle, and never did
+
+Tags: library, email
+What happened:
+- The Email screen set DataGrid `application-should-handle-download` (so the grid's own export modal stays off) but listened to nothing: the toolbar's Download button did nothing for a month. Found while building the correspondence log export (D-79): the grid emits `download-click` in that mode.
+- Fix: `@download-click="exportLog"` writes the CSV of the rows as filtered; `scripts/interact-correspondence-export.mjs` reads the browser's download back from disk (CDP `Page.setDownloadBehavior`), so a dead button is now a failing check.
+Why it mattered: a toolbar button that does nothing reads as a broken product in a client session.
+How it was caught: reading the grid's `onDownloadClick` while wiring the export.
+What changed: `src/prototypes/correspondence-list/index.vue`, `src/modules/correspondence/export.js`.
+Case study: Y: every toolbar flag that turns a built-in off must name the handler that replaces it, and a script should click it.
+
+## F-049 · 2026-11-14 · FormV2 has no per-field helper line, so one note needed two forms
+
+Tags: library, forms
+What happened:
+- The compose panel wanted one line under Response due (*Per the contract: 10 working days …*, D-76). FormV2 renders its fields in a grid with no `helperText` per field, so a note placed after the form fell under the Message editor. The panel is now two forms (Subject + Response due, then Message) with the note between them; a template (D-78) remounts both.
+Why it mattered: the note explains a date people would otherwise overwrite.
+How it was caught: the first screenshot after the change.
+What changed: `ComposePanel.vue` (`values` and `message.body`; drafts keep `values.body` for `data/drafts.js`).
+Case study: N: a FormV2 per-field helper (InputV2 has `helperText`) is a library follow-up; log it as needs-review when the forms are next touched.

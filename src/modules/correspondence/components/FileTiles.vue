@@ -17,6 +17,7 @@
         <span class="truncate text-text-default" :title="f.name">{{ f.name }}</span>
         <span class="text-text-subtle">{{ f.sizeMb }} MB</span>
         <span v-if="f.byLink" class="text-text-subtle">By secure link</span>
+        <span v-if="f.takenAt" class="text-text-subtle">Taken {{ $moment(f.takenAt).format('D MMM, HH:mm') }}</span>
       </span>
     </li>
   </ul>

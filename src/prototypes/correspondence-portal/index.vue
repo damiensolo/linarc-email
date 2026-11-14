@@ -6,7 +6,9 @@
        Shows: who sent it and the project, the message, the pinned markup (DrawingPinPreview), the files (tiles that
        open in the FileViewer; any size, streamed; opening one is recorded on the sender's Delivery tab), Response due, "Open in Linarc" for a recipient with an account. Never notes, cost or other
        recipients' delivery (D-39). States: valid · expired (Send me a new link) · revoked · replied. The token is the
-       hash (?p=correspondence-portal#tk-marcus-a302); the sandbox record picker lists the links. -->
+       hash (?p=correspondence-portal#tk-marcus-a302); the sandbox record picker lists the links.
+       Quick response (D-73, 2026-11-14): one tap says *Received, I'll answer by <date>*: it posts as a reply, the
+       thread waits on the recipient until that date, and the reply box stays for the real answer. -->
   <div class="flex h-full flex-col bg-surface-page">
     <TopNavBar
       :module="{ custom: true }"
@@ -97,6 +99,23 @@
                   <span class="text-fontsize-12 leading-lineheight-16 text-text-subtle">No account needed. Opening a file is recorded for the sender.</span>
                 </section>
 
+                <!-- Quick response (D-73): the one answer a consultant on a phone gives most often -->
+                <section v-if="!link.replied && !replied" class="flex flex-col gap-space-8" aria-labelledby="portal-ack-heading">
+                  <h2 id="portal-ack-heading" class="m-0 font-heading text-fontsize-16 font-bold leading-lineheight-24 text-text-default">Not ready to answer yet?</h2>
+                  <p v-if="ack" class="m-0 text-fontsize-14 leading-lineheight-20 text-text-default" role="status">
+                    Sent: received, answering by {{ $moment(ack.by).format('dddd D MMM') }}. {{ senderName }} sees it in the thread; reply below or by email when you have the answer.
+                  </p>
+                  <template v-else>
+                    <p class="m-0 text-fontsize-14 leading-lineheight-20 text-text-subtle">Tell {{ senderName }} you've received this and when you'll answer. One tap; it goes on the thread like a reply.</p>
+                    <div class="flex flex-wrap items-end gap-space-12">
+                      <FormV2 :key="ackKey" v-model="ackValues" :schema="ackSchema" :flat="true" mode="manual" label-position="top" :submit-on-enter="false" class="shrink-0">
+                        <template #footer><span /></template>
+                      </FormV2>
+                      <Button label="Received, I'll answer by then" color-scheme="secondary" variant="outline" size="medium" :is-disabled="!ackValues.by || ackBusy" @onClick="acknowledge" />
+                    </div>
+                  </template>
+                </section>
+
                 <!-- Reply -->
                 <section v-if="!link.replied && !replied" class="flex flex-col gap-space-8">
                   <h2 class="m-0 font-heading text-fontsize-16 font-bold leading-lineheight-24 text-text-default">Reply</h2>
@@ -138,6 +157,7 @@ import AppLayout from '@/componentsV2/AppLayout/AppLayout.vue';
 import Button from '@/components/Button/Button.vue';
 import Chip from '@/components/Chip/Chip.vue';
 import TextareaField from '@/componentsV2/FormV2/fields/TextareaField.vue';
+import FormV2 from '@/componentsV2/FormV2/FormV2.vue';
 import { LinarcLogoDark } from '@development/linarc-icons';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import LoadStatus from '~/candidates/LoadStatus/LoadStatus.vue';
@@ -149,7 +169,7 @@ import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import { currentRoute, go } from '~/modules/app/router';
 import { accountWithSettings, overflowWithSettings, onAccountClick } from '~/modules/sandbox';
-import { PROJECT, LINKS, TODAY, dayOf, getLink, getThread, getRecord, getPerson, getFile, replyFromLink, recordFileOpened, inboundSandbox } from '~/modules/correspondence/data';
+import { PROJECT, LINKS, TODAY, dayOf, getLink, getThread, getRecord, getPerson, getFile, replyFromLink, acknowledgeFromLink, recordFileOpened, inboundSandbox, addWorkingDays } from '~/modules/correspondence/data';
 import { fileView } from '~/modules/correspondence/view';
 import { fileViewing, saveFile } from '~/modules/correspondence/fileViewing';
 import SheetSvg from '~/modules/correspondence/components/SheetSvg.vue';
@@ -163,7 +183,7 @@ export default {
     records: () => LINKS.map((l) => ({ value: l.token, label: `${l.recipient.name} · ${l.threadId}${l.token === 'tk-expired' ? ' (expired)' : ''}` })),
     inbound: inboundSandbox,
   },
-  components: { TopNavBar, AppLayout, Button, Chip, TextareaField, LinarcLogoDark, FileTiles, LoadRegion, LoadStatus, Skeleton, InlineNotice, DrawingPinPreview, FileViewer, SheetSvg },
+  components: { TopNavBar, AppLayout, Button, Chip, TextareaField, FormV2, LinarcLogoDark, FileTiles, LoadRegion, LoadStatus, Skeleton, InlineNotice, DrawingPinPreview, FileViewer, SheetSvg },
   mixins: [fileViewing],
   data() {
     const asked = currentRoute().id;
@@ -177,6 +197,11 @@ export default {
       repliedAt: null,
       renewed: false,
       viewing: false,
+      // the quick response (D-73): the date defaults to the requested one, else the next working day
+      ackValues: { by: '' },
+      ackKey: 0,
+      ackBusy: false,
+      acked: null,
       opened: {}, // fileId → true once its opening is recorded for the sender (once per visit)
       load: createLoad({ label: 'message' }),
       write: createLoad({ label: 'reply', action: { busy: 'Sending', done: 'Sent', error: "Couldn't send." } }),
@@ -213,6 +238,13 @@ export default {
     replyField() {
       return { id: 'portal-reply', placeholder: 'Write your reply…', props: { rows: 5 } };
     },
+    ackSchema() {
+      return { sections: [{ id: 'ack', fields: [{ id: 'by', type: 'date', label: "I'll answer by", props: { width: 'short' } }] }] };
+    },
+    /** The acknowledgement already on the link (this visit or an earlier one). */
+    ack() {
+      return this.acked || (this.link && this.link.acknowledged) || null;
+    },
   },
   created() {
     this.fetch();
@@ -232,6 +264,10 @@ export default {
         ({ link, thread }) => {
           this.link = link;
           this.thread = thread;
+          if (link && !this.ackValues.by) {
+            this.ackValues = { by: (link.responseDueAt || addWorkingDays(TODAY, 1)).slice(0, 10) };
+            this.ackKey += 1;
+          }
         },
       );
     },
@@ -250,6 +286,16 @@ export default {
     },
     renew() {
       this.renewed = true; // the product emails a fresh link to the same address (D-43); nothing else happens here
+    },
+    /** The quick response (D-73): one tap, then the real answer can still follow. */
+    acknowledge() {
+      if (!this.ackValues.by || this.ackBusy) return;
+      const by = `${this.ackValues.by}T17:00:00`;
+      this.ackBusy = true;
+      const entry = acknowledgeFromLink(this.link, { by });
+      this.acked = { by, at: entry.sentAt };
+      this.ackBusy = false;
+      this.fetch();
     },
     /** Opening a file is recorded for the sender (the page says so): once per file per visit, on the Delivery tab. */
     recordOpened(file, action = 'open') {

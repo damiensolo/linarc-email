@@ -81,7 +81,24 @@ export const VISIBILITY = def([
 export const PROMOTION = def([
   ['unpromoted', 'Not promoted', 'neutral', 'Signal: none'],
   ['promoted_rfi', 'Promoted to RFI', 'info', 'Signal: link to the record'],
-  ['promoted_pco', 'Promoted to PCO', 'info', 'Signal: link to the record (data only in the MVP, Q-10)'],
+  ['promoted_pco', 'Promoted to PCO', 'info', 'Signal: link to the record (a target since D-77)'],
+  ['promoted_field_issue', 'Promoted to field issue', 'info', 'Signal: link to the record (D-77)'],
+  ['promoted_daily_log', 'Added to the daily log', 'info', 'Signal: link to the entry (D-80)'],
+]);
+
+/** Change order (the stand-in's record status, D-74); SUBMITTAL above is the submittal's */
+export const CHANGE_ORDER = def([
+  ['draft', 'Draft', 'neutral', 'Signal: word'],
+  ['pending', 'Pending owner approval', 'warning', 'Signal: chip'],
+  ['approved', 'Approved', 'success', 'Signal: check'],
+  ['rejected', 'Rejected', 'error', 'Signal: chip'],
+]);
+
+/** What an outbound thread is as correspondence (D-78): a letter type; the number is data, not a status */
+export const CORRESPONDENCE_TYPE = def([
+  ['general', 'General', 'neutral', 'Signal: word'],
+  ['transmittal', 'Transmittal', 'neutral', 'Signal: word'],
+  ['notice', 'Notice', 'warning', 'Signal: word (a notice carries contract deadlines; the word, not a chip, D-17)'],
 ]);
 
 /** Linked drawing revision */
@@ -121,6 +138,12 @@ export const AUDIT_EVENT = def([
   ['LINK_REVOKED', 'Link withdrawn', 'neutral'],
   ['CONTACT_UPDATED', 'Contact updated', 'neutral'],
   ['QA_ADDED', 'Added to Q&A', 'info'],
+  // Triage (D-72, 2026-11-14): chasing, ownership and closing a thread by hand
+  ['REMINDER_SENT', 'Reminder sent', 'neutral'],
+  ['THREAD_RESOLVED', 'Marked resolved', 'success'],
+  ['THREAD_REOPENED', 'Reopened', 'warning'],
+  ['OWNER_ASSIGNED', 'Owner assigned', 'info'],
+  ['FOLLOW_UP_SET', 'Follow-up set', 'neutral'],
   // Notifications (docs/notifications/status-model.md › Audit event vocabulary): a card's history rows
   ['ITEM_CREATED', 'Item created', 'neutral'],
   ['ITEM_UPDATED', 'Updated', 'neutral'],

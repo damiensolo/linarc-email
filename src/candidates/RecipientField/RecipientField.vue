@@ -6,7 +6,11 @@
        of the same `group`, and a right-click menu (View contact, Copy email address, Show email address, Move to…,
        Edit, Remove), a Tooltip per chip (external: "Outside <organization>"), avatars optional (`showAvatar`).
        Composes library parts: StatusChip Type=Avatar (+ Avatar xs, P-050), SelectV2ListItem detailed rows with an avatar
-       (P-050), Tooltip, Popover, MemberCardV2. -->
+       (P-050), Tooltip, Popover, MemberCardV2.
+       Groups (D-75, 2026-11-14): `groups` are distribution lists the typeahead offers (by name, before the people); a
+       pick is one chip "Design team · 2" (amber when any member is outside the organization) whose tooltip names the
+       members and whose menu has *Show members* (replace the chip with its members); the host expands groups when it
+       sends (recipients.js `expandRecipients`). -->
   <div class="rf font-label">
     <div
       ref="box"
@@ -35,7 +39,22 @@
         <!-- The library Tooltip says who the chip is and, for external chips, that they're outside the organization;
              it also opens when the chip's ✕ gets keyboard focus. -->
         <Tooltip :label="chipTooltip(r)" placement="top" :delay="300">
+          <!-- A group chip (D-75): the list's name and size, a people icon instead of an avatar -->
           <StatusChip
+            v-if="r.group"
+            type="icon"
+            :left-item="GroupIcon"
+            :status="chipStatus(r)"
+            fill-style="outline"
+            :label="chipLabel(r)"
+            :removable="!disabled"
+            :remove-aria-label="`Remove ${r.name}`"
+            :disabled="disabled"
+            data-group-chip
+            @remove="remove(i)"
+          />
+          <StatusChip
+            v-else
             type="avatar"
             :status="chipStatus(r)"
             fill-style="outline"
@@ -93,15 +112,27 @@
       :light-dismiss="false"
     >
       <div :id="listId" role="listbox" :aria-label="`${label} suggestions`" class="rf-list overflow-y-auto py-space-4" :style="{ width: `${boxWidth}px` }" @mousedown.prevent>
+        <!-- Groups first (D-75): a distribution list as one row, its members named -->
         <SelectV2ListItem
-          v-for="(c, i) in suggestions"
+          v-for="(g, i) in groupSuggestions"
           :id="optionId(i)"
+          :key="`group:${g.id}`"
+          :option="{ value: `group:${g.id}`, label: g.name, leftDescription: groupMembersText(g), rightDescription: `Group · ${g.members.length}` }"
+          type="detailed"
+          :highlighted="i === active"
+          data-group-option
+          @select="pickGroup(g)"
+          @mouseenter.native="active = i"
+        />
+        <SelectV2ListItem
+          v-for="(c, j) in suggestions"
+          :id="optionId(groupSuggestions.length + j)"
           :key="c.email"
           :option="{ value: c.email, label: c.name || c.email, leftDescription: c.name ? c.email : '', rightDescription: c.company || '', avatarInitials: showAvatar ? c.name || c.email : '', avatarUrl: showAvatar ? c.avatarUrl : '' }"
           type="detailed"
-          :highlighted="i === active"
+          :highlighted="groupSuggestions.length + j === active"
           @select="pick(c)"
-          @mouseenter.native="active = i"
+          @mouseenter.native="active = groupSuggestions.length + j"
         />
         <div
           v-if="unknownOption && unknownActionLabel"
@@ -120,7 +151,7 @@
         <p v-else-if="unknownOption" class="m-0 px-space-12 py-space-8 text-fontsize-14 leading-lineheight-20 text-text-subtle">
           {{ unknownMessage.replace('{email}', unknownOption.email) }}
         </p>
-        <p v-if="!suggestions.length && !unknownOption" class="m-0 px-space-12 py-space-8 text-fontsize-14 leading-lineheight-20 text-text-subtle">
+        <p v-if="!suggestions.length && !groupSuggestions.length && !unknownOption" class="m-0 px-space-12 py-space-8 text-fontsize-14 leading-lineheight-20 text-text-subtle">
           {{ buffer.trim() ? 'No one in the directory matches. Enter a full email address.' : 'Type a name or an email address.' }}
         </p>
       </div>
@@ -158,8 +189,8 @@ import MemberCardV2 from '@/components/MemberCardV2/index.vue';
 import SelectV2ListItem from '@/componentsV2/SelectV2/SelectV2ListItem.vue';
 import Popover from '@/componentsV2/Popover/Popover.vue';
 import Tooltip from '@/componentsV2/Tooltip/index.vue';
-import { UserPlus, IdCard, ClipboardCopy, Mail, User, Pencil, Trash2, ArrowRightLeft } from '@development/linarc-icons';
-import { isEmail, parseToken, splitTokens, kindOf, toClipboardText, matchContacts } from './recipients';
+import { UserPlus, Users, IdCard, ClipboardCopy, Mail, User, Pencil, Trash2, ArrowRightLeft } from '@development/linarc-icons';
+import { isEmail, parseToken, splitTokens, kindOf, toClipboardText, matchContacts, matchGroups, isGroup, asGroupRecipient } from './recipients';
 
 let seq = 0;
 // One drag at a time across every field on the page: who started it and where it was dropped.
@@ -176,6 +207,8 @@ export default {
     label: { type: String, default: 'To' },
     /** The directory the typeahead searches: same shape as `value`. Order is kept when the query is empty. */
     contacts: { type: Array, default: () => [] },
+    /** Distribution lists offered as one chip each (D-75): [{ id, name, members: [recipient], own? }]; an `own` group shows before anything is typed. The host expands them on send. */
+    groups: { type: Array, default: () => [] },
     /** Domains of the organization; any other domain gets the external (amber) chip. Empty: no external marking. */
     internalDomains: { type: Array, default: () => [] },
     /** The organization's name for the external chip's tooltip ("Outside Vanguard Construction Group"). */
@@ -206,6 +239,7 @@ export default {
     seq += 1;
     return {
       uid: `rf-${seq}`,
+      GroupIcon: Users, // the group chip's leading icon (StatusChip Type=Icon takes a component)
       buffer: '',
       focused: false,
       listWanted: false,
@@ -237,6 +271,18 @@ export default {
       if (!q && !this.suggestOnFocus) return [];
       return matchContacts(this.contacts, q, this.taken).slice(0, this.maxSuggestions);
     },
+    /**
+     * Groups the query names, those already in the field left out (D-75). Before anything is typed only a group marked
+     * `own` (the record's own list) shows, so the suggested people keep the first rows; the project's lists come when
+     * their name is typed.
+     */
+    groupSuggestions() {
+      const q = this.buffer.trim();
+      if (!q && !this.suggestOnFocus) return [];
+      const takenIds = this.value.filter(isGroup).map((r) => r.id);
+      const pool = q ? this.groups : this.groups.filter((g) => g.own);
+      return matchGroups(pool, q, takenIds).slice(0, 3);
+    },
     /** A complete address typed that nobody in the directory has, when the page adds unknown people itself. */
     unknownOption() {
       if (this.allowUnknown) return null;
@@ -245,7 +291,7 @@ export default {
       return t;
     },
     optionCount() {
-      return this.suggestions.length + (this.unknownOption && this.unknownActionLabel ? 1 : 0);
+      return this.groupSuggestions.length + this.suggestions.length + (this.unknownOption && this.unknownActionLabel ? 1 : 0);
     },
     listOpen() {
       return this.focused && this.listWanted && !this.disabled && this.selected < 0 && (this.optionCount > 0 || !!this.buffer.trim());
@@ -256,6 +302,14 @@ export default {
     menuItems() {
       const r = this.menuRecipient;
       if (!r) return [];
+      if (isGroup(r)) {
+        return [
+          { id: 'expand', label: 'Show members', icon: Users },
+          { id: 'copy', label: 'Copy email addresses', icon: ClipboardCopy },
+          ...this.moveTargets.map((t) => ({ id: `move:${t.id}`, label: `Move to ${t.label}`, icon: ArrowRightLeft, target: t })),
+          { id: 'remove', label: 'Remove', icon: Trash2 },
+        ];
+      }
       const known = !!this.findContact(r.email);
       const valid = kindOf(r) !== 'invalid';
       return [
@@ -287,17 +341,26 @@ export default {
       return this.contacts.find((c) => String(c.email).toLowerCase() === e) || null;
     },
     kind(r) {
+      // a group is external when any member is (D-75)
+      if (isGroup(r)) return r.members.some((m) => kindOf(m, this.internalDomains) === 'external') ? 'external' : 'internal';
       return kindOf(r, this.internalDomains);
     },
     chipStatus(r) {
       return { internal: 'warning-neutral', external: 'warning-low', invalid: 'error' }[this.kind(r)];
     },
     chipLabel(r) {
+      if (isGroup(r)) return `${r.name} · ${r.members.length}`;
       if (this.kind(r) === 'invalid') return r.email;
       return this.masked[r.email] || !r.name ? r.email : r.name;
     },
+    /** The members a group row or chip names: up to four names, then "and n more". */
+    groupMembersText(g) {
+      const names = g.members.map((m) => m.name || m.email);
+      return names.length > 4 ? `${names.slice(0, 4).join(', ')} and ${names.length - 4} more` : names.join(', ');
+    },
     /** Tooltip: the address; for external chips also that they're outside the organization; for invalid ones the fix. */
     chipTooltip(r) {
+      if (isGroup(r)) return `${this.groupMembersText(r)}${this.kind(r) === 'external' ? ` · some outside ${this.organizationName || 'your organization'}` : ''}`;
       const k = this.kind(r);
       if (k === 'invalid') return `"${r.email}" isn't a valid email address. Double-click to fix it.`;
       // External: only why it's amber (Tooltip wraps at 250px, so one message reads cleanly; the address is in the
@@ -392,6 +455,25 @@ export default {
       this.active = -1;
       this.focus();
     },
+    /** A group row: one chip for the whole list (D-75). */
+    pickGroup(g) {
+      this.buffer = '';
+      this.emit([...this.value, asGroupRecipient(g)]);
+      this.say(`${g.name} (${g.members.length} people) added to ${this.label}.`);
+      this.listWanted = this.suggestOnFocus;
+      this.active = -1;
+      this.focus();
+    },
+    /** *Show members*: the group chip becomes its members' chips (those not already in the field). */
+    expandGroup(i) {
+      const g = this.value[i];
+      if (!isGroup(g)) return;
+      const rest = this.value.filter((_, j) => j !== i);
+      const taken = rest.filter((r) => !isGroup(r)).map((r) => String(r.email).toLowerCase());
+      const members = g.members.filter((m) => !taken.includes(String(m.email).toLowerCase())).map((m) => ({ ...m }));
+      this.emit([...rest.slice(0, i), ...members, ...rest.slice(i)]);
+      this.say(`${g.name} replaced by its ${members.length} members.`);
+    },
     commitUnknown(t) {
       this.buffer = '';
       this.active = -1;
@@ -399,7 +481,9 @@ export default {
     },
     commitActiveOrBuffer() {
       if (this.listOpen && this.active >= 0) {
-        if (this.active < this.suggestions.length) this.pick(this.suggestions[this.active]);
+        const g = this.groupSuggestions.length;
+        if (this.active < g) this.pickGroup(this.groupSuggestions[this.active]);
+        else if (this.active - g < this.suggestions.length) this.pick(this.suggestions[this.active - g]);
         else if (this.unknownOption) this.commitUnknown(this.unknownOption);
         return true;
       }
@@ -516,11 +600,12 @@ export default {
       if (r) this.say(`${r.name || r.email} removed from ${this.label}.`);
       this.$nextTick(() => this.focus());
     },
-    /** Unpack a chip back into editable text at the caret (double-click or Edit). */
+    /** Unpack a chip back into editable text at the caret (double-click or Edit); a group chip shows its members instead. */
     edit(i) {
       if (this.disabled) return;
       const r = this.value[i];
       if (!r) return;
+      if (isGroup(r)) { this.expandGroup(i); return; }
       if (this.buffer.trim()) this.commitText(this.buffer, { quiet: true });
       this.emit(this.value.filter((_, j) => j !== i));
       this.buffer = r.email;
@@ -567,7 +652,8 @@ export default {
       this.menu = { ...this.menu, open: false };
       if (!r) return;
       if (item.id === 'contact') this.card = { open: true, anchor, recipient: { ...r, ...(this.findContact(r.email) || {}) } };
-      else if (item.id === 'copy') this.copy(r.email);
+      else if (item.id === 'expand') this.expandGroup(i);
+      else if (item.id === 'copy') this.copy(isGroup(r) ? toClipboardText(r) : r.email);
       else if (item.id === 'mask') this.$set(this.masked, r.email, !this.masked[r.email]);
       else if (item.id === 'edit') this.edit(i);
       else if (item.id === 'remove') this.remove(i);

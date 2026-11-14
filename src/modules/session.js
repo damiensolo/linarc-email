@@ -26,6 +26,7 @@ const empty = () => ({
   threadAudit: {}, // threadId → Delivery rows appended
   revokedLinks: {}, // token → true
   linkReplies: {}, // token → true once the recipient replied from the page
+  linkAcks: {}, // token → { by, at } once the recipient acknowledged from the page with a date (D-73)
   drafts: {}, // threadId → a saved reply { mode, html, text, attachments, savedAt } (Save draft in the composer)
   removedDrafts: {}, // draft key → true once a seeded draft (data/drafts.js) was sent or discarded (D-67)
   // Notifications (src/modules/notifications/data/, docs/notifications/spec.md). Items are derived (D-55); only what a person did
@@ -58,6 +59,12 @@ export function persistSession() {
   } catch (e) {
     // storage unavailable; the demo just won't survive a reload
   }
+}
+
+/** A record created in the demo (a field issue or PCO promoted from a thread, D-77); records.js merges it. */
+export function addCreatedRecord(record) {
+  session.created.push(record);
+  persistSession();
 }
 
 /** Example write: patch fields on a record so every screen sees the change. */
@@ -127,6 +134,12 @@ export function markDraftRemoved(key) {
 
 export function markLinkReplied(token) {
   Vue.set(session.linkReplies, token, true);
+  persistSession();
+}
+
+/** The recipient said when they will answer (the secure link page's quick response, D-73). */
+export function markLinkAcknowledged(token, ack) {
+  Vue.set(session.linkAcks, token, ack);
   persistSession();
 }
 

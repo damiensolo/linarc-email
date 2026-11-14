@@ -83,6 +83,7 @@
             @filter-change="onFilterChange"
             @view-change="onViewChange"
             @row-click="openRow"
+            @download-click="exportLog"
             @selection-change="onSelection"
             @selection-delete="bulkDelete"
             @selection-action="bulkAction"
@@ -90,30 +91,9 @@
         </LoadRegion>
       </div>
 
-      <!-- Link to record (spec §4): a short single-step task, so a compact modal (5-ui-patterns.md §1), inside #content.
-           The SmartPicker candidate (D-61): records the subject names come first as Suggested, then Recent, then by kind. -->
-      <ModalV2
-        :is-visible="!!linking"
-        size="md"
-        title="Link to record"
-        :title-description="linking ? linking.subject : ''"
-        primary-label="Link"
-        secondary-label="Cancel"
-        :primary-disabled="!linkTarget || linkBusy"
-        :secondary-disabled="linkBusy"
-        :close-on-primary-click="false"
-        @onPrimaryClick="confirmLink"
-        @closeModal="closeLink"
-      >
-        <template #modal-body>
-          <div class="flex flex-col gap-space-16 font-label">
-            <p class="m-0 text-fontsize-14 leading-lineheight-20 text-text-subtle">
-              This mail arrived at {{ project.inboundAddress }} and matches no thread. Linking it to a record puts it on that record's Email tab and in its history.
-            </p>
-            <SmartPicker v-if="linking" v-model="linkTarget" :items="linkItems" :kinds="linkKinds" noun="records" placeholder="Search by code or title" :visible-rows="5" />
-          </div>
-        </template>
-      </ModalV2>
+      <!-- Link to record (spec §4): a short single-step task, so a compact modal (5-ui-patterns.md §1), inside #content;
+           the SmartPicker candidate (D-61), several records at once since D-77 (shared with the thread's Linked items). -->
+      <LinkRecordModal :open="!!linking" :thread="linking" :busy="linkBusy" @close="closeLink" @confirm="confirmLink" />
 
       <!-- Compose, or a compose draft from the Drafts folder (its record and pin name the draft; D-67) -->
       <ComposePanel :open="composing" :role="role" :record-id="composeRecordId" :pin-id="composePinId" @close="closeCompose" @sent="onSent" />
@@ -126,24 +106,24 @@ import { HelpCircle, PanelRight } from '@development/linarc-icons';
 import Tooltip from '@/componentsV2/Tooltip/index.vue';
 import Button from '@/components/Button/Button.vue';
 import DataGrid from '@/components/DataGrid/index.vue';
-import ModalV2 from '@/componentsV2/ModalV2/ModalV2.vue';
 import SegmentedControl from '@/componentsV2/SegmentedControl/SegmentedControl.vue';
 import LoadRegion from '~/candidates/LoadRegion/LoadRegion.vue';
 import LoadStatus from '~/candidates/LoadStatus/LoadStatus.vue';
-import SmartPicker from '~/candidates/SmartPicker/SmartPicker.vue';
 import { createLoad } from '~/candidates/LoadRegion/createLoad';
 import { mockRequest } from '~/modules/mock/request';
 import AppShell from '~/modules/app/AppShell.vue';
 import { currentRoute, go } from '~/modules/app/router';
 import { session, setSetting } from '~/modules/session';
 import {
-  PROJECT, ROLES, currentRole, setRole, visibleThreads, deletedThreads, listDrafts, clearDraft, inboundSandbox, linkThreadToRecord, pickerRecords,
-  suggestRecordIds, recentRecordIds, RECORD_KINDS, markRead, markUnread, deleteThreads, restoreThreads,
+  PROJECT, ROLES, currentRole, setRole, visibleThreads, deletedThreads, listDrafts, clearDraft, inboundSandbox, linkThreadToRecords,
+  markRead, markUnread, deleteThreads, restoreThreads, resolveThread,
 } from '~/modules/correspondence/data';
 import { eventsSandbox } from '~/modules/notifications/data';
 import { VIEWS, VIEW_FIELD, READ_FIELD, isFolderView, emailRows, draftRows, emailColumns, emailQuickFilters } from '~/modules/correspondence/emailColumns';
 import ComposePanel from '~/modules/correspondence/components/ComposePanel.vue';
+import LinkRecordModal from '~/modules/correspondence/components/LinkRecordModal.vue';
 import ReadingView from '~/modules/correspondence/components/ReadingView.vue';
+import { correspondenceCsv, downloadCsv } from '~/modules/correspondence/export';
 
 /** The single view a filter config expresses ('all' when it has no view condition), or null when it is more. */
 function viewOf(config) {
@@ -186,7 +166,7 @@ export default {
     inbound: inboundSandbox,
     events: eventsSandbox,
   },
-  components: { AppShell, Button, DataGrid, ModalV2, SegmentedControl, LoadRegion, LoadStatus, SmartPicker, ComposePanel, Tooltip, HelpCircle },
+  components: { AppShell, Button, DataGrid, SegmentedControl, LoadRegion, LoadStatus, ComposePanel, LinkRecordModal, Tooltip, HelpCircle },
   provide() {
     return { readingContext: this.readingCtx };
   },
@@ -210,12 +190,13 @@ export default {
       selectedIds: [],
       load: createLoad({ label: 'email' }),
       linking: null,
-      linkTarget: null,
       linkBusy: false,
-      linkKinds: RECORD_KINDS,
       composing: false,
       composeRecordId: null,
       composePinId: null,
+      lastExport: null, // the last CSV handed to the browser (D-79)
+      searchText: '',
+      searchWatched: false,
       // Reading view (D-65): the grid's second view, beside List (the Grid view was removed in review, 2026-11-04).
       mode,
       customViews: [{ id: 'reading', label: 'Reading pane', icon: PanelRight, component: ReadingView }],
@@ -277,11 +258,7 @@ export default {
       const base = { cut: off, copy: off, paste: off, copyHierarchy: off, deselect: off, selectAll: off };
       if (this.folder === 'deleted') return { ...base, delete: off, actions: [{ key: 'restore', label: 'Restore' }] };
       if (this.folder === 'drafts') return { ...base, actions: [] };
-      return { ...base, actions: [{ key: 'unread', label: 'Mark as unread' }, { key: 'read', label: 'Mark as read' }] };
-    },
-    /** The picker's records: those the mail's subject names are Suggested, the latest threads' records Recent. */
-    linkItems() {
-      return pickerRecords({ suggestedIds: this.linking ? suggestRecordIds(this.linking.subject) : [], recentIds: recentRecordIds() });
+      return { ...base, actions: [{ key: 'unread', label: 'Mark as unread' }, { key: 'read', label: 'Mark as read' }, { key: 'resolve', label: 'Mark resolved' }] };
     },
   },
   created() {
@@ -324,6 +301,7 @@ export default {
       if (ctx.selectedId && !rows.some((r) => r.id === ctx.selectedId)) this.selectThread('');
       this.$nextTick(() => {
         this.syncCount();
+        this.watchSearch();
         // A view chosen before the answer arrived (or kept across a refresh) is re-applied to the grid.
         if (this.folder === 'inbox' && this.view !== 'all') this.pickView(this.view);
       });
@@ -381,8 +359,22 @@ export default {
         return;
       }
       this.view = this.folder === 'inbox' ? viewOf(filterConfig) : this.folder;
-      this.filtered = conds.length + (filterConfig.groups || []).length > 0;
+      this.filtered = conds.length + (filterConfig.groups || []).length > 0 || !!this.searchText;
       this.$nextTick(this.syncCount);
+    },
+    /** The toolbar's search narrows the rows too (D-79): the count line says "1 of 12" while a search is on. */
+    watchSearch() {
+      const grid = this.$refs.grid;
+      if (!grid || this.searchWatched || !grid.getFilterService) return;
+      this.searchWatched = true;
+      grid.getFilterService().on('filter-change', (payload) => {
+        const text = payload && typeof payload.searchText === 'string' ? payload.searchText.trim() : this.searchText;
+        if (text === this.searchText) return;
+        this.searchText = text;
+        const config = grid.getFilterService().getFilterConfig();
+        this.filtered = (config.conditions || []).length + (config.groups || []).length > 0 || !!text;
+        this.$nextTick(this.syncCount);
+      });
     },
     syncCount() {
       const grid = this.$refs.grid;
@@ -452,7 +444,11 @@ export default {
       if (key === 'unread') this.setUnread(ids, true);
       else if (key === 'read') this.setUnread(ids, false);
       else if (key === 'restore') this.restoreRows(ids);
-      else if (key === 'delete') {
+      else if (key === 'resolve') {
+        // D-72: closed by hand; the rows stay, their chips go
+        ids.forEach((id) => resolveThread(id, { actorId: this.role.personId }));
+        this.afterBulk();
+      } else if (key === 'delete') {
         if (this.folder === 'drafts') {
           ids.forEach(clearDraft);
           this.afterBulk();
@@ -484,6 +480,16 @@ export default {
       if (ids.includes(this.readingCtx.selectedId)) this.selectThread('');
       this.afterBulk();
     },
+    /** The toolbar's Download (D-79): the correspondence log as a CSV of the rows as filtered and sorted. */
+    exportLog() {
+      const grid = this.$refs.grid;
+      const ids = grid && grid.getDisplayIds ? grid.getDisplayIds() : this.rows.map((r) => r.id);
+      const byId = Object.fromEntries(this.rows.map((r) => [r.id, r]));
+      const rows = ids.map((id) => byId[id]).filter(Boolean);
+      const csv = correspondenceCsv(rows);
+      this.lastExport = { rows: rows.length, csv };
+      downloadCsv(csv, `${this.project.code}-correspondence-log-${new Date().toISOString().slice(0, 10)}.csv`);
+    },
     // --- compose and drafts
     compose() {
       this.composeRecordId = null;
@@ -508,18 +514,17 @@ export default {
       this.fetch();
     },
     startLink(row) {
-      this.linkTarget = null;
-      this.linking = row;
+      this.linking = { id: row.id, subject: row.subject, linkedRecordIds: [] };
     },
     closeLink() {
       if (this.linkBusy) return;
       this.linking = null;
     },
-    confirmLink() {
-      if (!this.linking || !this.linkTarget) return;
+    confirmLink(ids) {
+      if (!this.linking || !ids || !ids.length) return;
       this.linkBusy = true;
       const threadId = this.linking.id;
-      linkThreadToRecord(threadId, this.linkTarget, { actorId: this.role.personId });
+      linkThreadToRecords(threadId, ids, { actorId: this.role.personId });
       this.linkBusy = false;
       this.linking = null;
       // The row now has a record: refresh keeps the rows on screen with "Updating…" (D-24), then shows the change.

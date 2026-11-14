@@ -23,6 +23,7 @@ An address field with input chips: typeahead over a directory, chips for interna
 |---|---|---|
 | `value` | `[]` | `[{ email, name?, company?, role?, avatarUrl?, id?, invalid? }]` (v-model) |
 | `label` | `'To'` | leading label inside the field |
+| `groups` | `[]` | distribution lists as one chip each (D-75): `[{ id, name, members }]`; expand with `expandRecipients` on send |
 | `contacts` | `[]` | directory for the typeahead; empty query keeps this order |
 | `internalDomains` | `[]` | other domains get the amber chip |
 | `organizationName` | `''` | external tooltip: *Outside {organizationName}* |

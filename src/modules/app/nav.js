@@ -26,7 +26,6 @@ import {
   MapPinned,
   MessageSquareMore,
   Network,
-  Package,
   PencilRuler,
   ProjectModuleIcon,
   Receipt,
@@ -55,6 +54,8 @@ export const TOOLS = [
   { id: 'drawings', label: 'Drawings', icon: PencilRuler, menuItem: 'plan-sheets' },
   { id: 'rfis', label: 'RFIs', icon: FileQuestion, menuItem: 'rfi' },
   { id: 'submittals', label: 'Submittals', icon: FileCheck, menuItem: 'submittals' },
+  // D-74: the Change Order stand-in with the Email tab
+  { id: 'change-orders', label: 'Change orders', icon: FileClock, menuItem: 'change-order' },
 ];
 
 const rail = (tool, items) =>
@@ -77,10 +78,9 @@ export const RAILS = {
   ]),
   drawings: rail('drawings', [['Sheets', PencilRuler, { screen: 'sheet' }]]),
   rfis: rail('rfis', [['All RFIs', List, { screen: 'rfis' }]]),
-  submittals: rail('submittals', [
-    ['All Submittals', List, { screen: 'list' }],
-    ['Packages', Package],
-  ]),
+  // Submittals and Change orders (D-74): one stand-in record each, with the upgraded Email tab; no log screens yet.
+  submittals: rail('submittals', [['Submittals', List, { screen: 'submittal' }]]),
+  'change-orders': rail('change-orders', [['Change orders', List, { screen: 'changeOrder' }]]),
 };
 
 /** Module mega menu, opened from the top-nav module tile (Figma Mega Menu 40023243:158917 = StaticMegaMenu). Every area

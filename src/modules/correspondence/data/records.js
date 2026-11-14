@@ -204,15 +204,54 @@ export const RFIS = Object.freeze([
   },
 ]);
 
+// Submittals and Change Orders (D-74): the stand-ins with the upgraded Email tab. The Email screen links threads to
+// them (THR-1031, THR-1050 once linked, the archive's PCO-019 thread); `distributionIds` lead Compose's suggestions.
 export const SUBMITTALS = Object.freeze([
-  { type: 'submittal', id: 'SUB-088', code: 'SUB-088', title: 'Patient room card-reader door hardware schedule (Rev 1)', spec: '08 71 00 · Door Hardware', revision: 'Rev 1', closed: false },
+  {
+    type: 'submittal', id: 'SUB-088', code: 'SUB-088', title: 'Patient room card-reader door hardware schedule (Rev 1)', spec: '08 71 00 · Door Hardware',
+    revision: 'Rev 1', status: 'in-review', // status.js SUBMITTAL
+    submittedBy: 'Keystone Door & Hardware', receivedOn: relDate(-9), leadTime: '6 weeks after approval',
+    assignedToId: 'usr-kenji', ballInCourt: 'Studio West Architecture', dueOn: relDate(2),
+    createdById: 'usr-sarah', createdAt: relDate(-9, '14:10:00'),
+    description: 'Hardware schedule for the Level 2 patient-room doors: card-reader sets with a 24V power supply (the 12V reader on the first issue was rejected). Release of hardware fabrication waits on the owner\'s acknowledgement of the 24V revision.',
+    items: [
+      { label: 'Hardware set HW-12 · patient room, card reader', value: '14 doors' },
+      { label: '24V power supply, surface mount', value: 'Rev 1' },
+      { label: 'Reader rough-in box', value: '4 11/16" square' },
+    ],
+    distributionIds: ['usr-kenji', 'usr-valerie', 'usr-sarah', 'usr-ray'],
+    closed: false,
+  },
 ]);
 
 export const CHANGE_ORDERS = Object.freeze([
-  { type: 'change-order', id: 'PCO-019', code: 'PCO-019', title: 'Owner directive — imaging suite chiller pad vibration isolators', spec: '23 05 48 · Vibration and Seismic Controls', amount: 18450, revision: 'Draft', closed: false },
+  {
+    type: 'change-order', id: 'PCO-019', code: 'PCO-019', title: 'Owner directive — imaging suite chiller pad vibration isolators', spec: '23 05 48 · Vibration and Seismic Controls',
+    amount: 18450, revision: 'Draft', status: 'pending', // status.js CHANGE_ORDER
+    reason: 'Owner directive', scheduleDays: 12,
+    assignedToId: 'usr-valerie', ballInCourt: 'Riverside Health System', dueOn: relDate(4),
+    createdById: 'usr-sarah', createdAt: relDate(-6, '09:30:00'),
+    description: 'Spring isolators under the imaging suite chiller pad per the owner\'s directive of 10 Oct: vendor quote, 38 labour hours and a 12-day schedule impact on the Level 1 mechanical room. Pricing backup was emailed to the owner (THR-1025); the countersigned directive is in the owner portal.',
+    items: [
+      { label: 'Spring isolators, 4 × SLR-2', value: '$11,200' },
+      { label: 'Labour, 38 h', value: '$5,250' },
+      { label: 'Markup and bond', value: '$2,000' },
+    ],
+    distributionIds: ['usr-valerie', 'usr-sarah'],
+    closed: false,
+  },
 ]);
 
-const ALL = [...DRAWINGS, ...RFIS, ...SUBMITTALS, ...CHANGE_ORDERS];
+/** The screen each record type opens in (router.js SCREENS); drawings are the sheet stand-in (D-74 adds the other two). */
+export const RECORD_SCREEN = Object.freeze({ rfi: 'rfi', drawing: 'sheet', submittal: 'submittal', 'change-order': 'changeOrder' });
+
+// Field issues (D-77): none seeded; promoted from a thread in the demo (session.created)
+export const FIELD_ISSUES = Object.freeze([]);
+
+const STATIC = [...DRAWINGS, ...RFIS, ...SUBMITTALS, ...CHANGE_ORDERS, ...FIELD_ISSUES];
+/** Every record: the static ones plus those created in the demo (D-77). */
+const all = () => [...STATIC, ...session.created.filter((r) => r && r.type)];
+const ALL = { find: (fn) => all().find(fn), map: (fn) => all().map(fn), filter: (fn) => all().filter(fn) };
 
 /** A record with the session's patches applied (e.g. RFI-143 after promotion). */
 export function getRecord(id) {
@@ -232,7 +271,16 @@ export const RECORD_KINDS = Object.freeze([
   { id: 'drawing', label: 'Drawings', one: 'Drawing' },
   { id: 'submittal', label: 'Submittals', one: 'Submittal' },
   { id: 'change-order', label: 'Change orders', one: 'Change order' },
+  { id: 'field-issue', label: 'Field issues', one: 'Field issue' },
+  { id: 'daily-log', label: 'Daily log', one: 'Daily log entry' },
 ]);
+
+/** The next code for a record promoted from a thread (D-77, D-80): FI-012, PCO-020, DL-1016-3 (the day's third entry) … */
+export function nextRecordCode(type) {
+  const made = session.created.filter((r) => r.type === type).length;
+  if (type === 'daily-log') return `DL-${relDate(0).slice(5, 10).replace('-', '')}-${3 + made}`;
+  return type === 'field-issue' ? `FI-${String(12 + made).padStart(3, '0')}` : `PCO-${String(20 + made).padStart(3, '0')}`;
+}
 
 /**
  * Every record as a SmartPicker item (D-61): title = code · title, second line = discipline / spec and revision or
@@ -246,7 +294,8 @@ export function pickerRecords({ suggestedIds = [], recentIds = [] } = {}) {
     const kind = RECORD_KINDS.find((k) => k.id === r.type) || { one: r.type };
     let description = '';
     if (r.type === 'drawing') description = `${r.discipline} · ${r.revision}${r.revisionStatus === 'superseded' ? ` · Superseded by ${r.supersededBy}` : ''}`;
-    else if (r.type === 'rfi') description = `${r.spec || ''}${r.ballInCourt ? ` · With ${r.ballInCourt}` : ''}`;
+    else if (r.type === 'rfi' || r.type === 'field-issue') description = `${r.spec || ''}${r.ballInCourt ? ` · With ${r.ballInCourt}` : ''}`;
+    else if (r.type === 'daily-log') description = `Daily log · ${(r.createdAt || '').slice(0, 10)}`;
     else description = `${r.spec || ''}${r.revision ? ` · ${r.revision}` : ''}`;
     return {
       id: r.id,

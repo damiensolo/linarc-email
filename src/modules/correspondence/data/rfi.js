@@ -3,7 +3,7 @@
 // inbound message (D-49), Route / Approve / Revise / Reject / Close with *Notify by email* (§D), and the Activity panel
 // that mixes record events with the delivery rows of the RFI's threads (§E). Writes go through the session (D-29).
 import { patchRecord, appendThreadEntry, appendThreadAudit, patchThread } from '~/modules/session';
-import { TODAY, PROJECT } from './project';
+import { TODAY, PROJECT, isWorkingDay } from './project';
 import { getPerson } from './people';
 import { getRecord } from './records';
 import { getThread, getThreads } from './threads';
@@ -39,13 +39,13 @@ const COMPANY_TYPES = {
 };
 export const companyTypeOf = (company) => COMPANY_TYPES[company] || 'Consultant';
 
-/** `days` working days after `iso` (17:00), skipping weekends. */
+/** `days` working days after `iso` (17:00), skipping weekends and the project calendar's holidays (D-76). */
 export function addWorkingDays(iso, days) {
   const d = new Date(iso);
   let added = 0;
   while (added < days) {
     d.setDate(d.getDate() + 1);
-    if (d.getDay() !== 0 && d.getDay() !== 6) added += 1;
+    if (isWorkingDay(d)) added += 1;
   }
   const pad = (n) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T17:00:00`;

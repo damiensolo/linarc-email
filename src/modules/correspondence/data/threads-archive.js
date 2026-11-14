@@ -276,6 +276,7 @@ export const ARCHIVE_THREADS = Object.freeze([
   // in the inbox or the counts (threads.js getThreads filters it), so the asserted numbers hold.
   {
     id: 'THR-1001',
+    letterType: 'notice', // D-78: a crane-lift notice to the subs (C-0021)
     subject: 'Level 2 crane pick window — Saturday 7 am to 11 am',
     triage: 'resolved',
     visibility: 'project_public',

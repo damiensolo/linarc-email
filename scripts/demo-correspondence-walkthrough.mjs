@@ -223,6 +223,11 @@ try {
   check(await page.evaluate(() => !!document.querySelector('[role="dialog"] video')), '7 the video plays full screen');
   await esc();
   check(!(await dialog()), '7 viewer closed');
+  // 8 (D-73): the quick response first
+  check((await buttons()).includes("Received, I'll answer by then"), '8 the quick response is offered');
+  await click("Received, I'll answer by then");
+  await sleep(1000);
+  check(await has('Sent: received, answering by Monday 19 Oct') && (await buttons()).includes('Send'), '8 acknowledged with the requested date; the reply box stays');
   await page.screenshot({ path: `${out}/demo-email-07-portal.png`, fullPage: true });
   // 8: reply from the phone; the thread on the desktop
   await page.evaluate(() => { const t = document.querySelector('textarea#fv2-portal-reply'); t.focus(); t.value = 'Shifting the baffle 4" north keeps STC-50; send me the revised cove detail.'; t.dispatchEvent(new Event('input', { bubbles: true })); });
@@ -282,7 +287,7 @@ try {
   await page.evaluate(() => document.querySelector('.tl-head input[type="checkbox"]').click());
   await sleep(400);
   const barLabels = await page.evaluate(() => [...document.querySelectorAll('.rv-listbar button')].map((b) => b.getAttribute('aria-label') || b.textContent.trim()));
-  check(await has('4 selected') && (await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 4 && barLabels.join(' · ') === 'Mark as unread · Mark as read · Delete · Preview · List', `9 the header checkbox ticks every row: 4 selected, the bar's actions (${barLabels.join(' · ')})`);
+  check(await has('4 selected') && (await page.evaluate(() => document.querySelectorAll('.tl-row[data-checked="true"]').length)) === 4 && barLabels.join(' · ') === 'Mark as unread · Mark as read · Mark resolved · Delete · Preview · List', `9 the header checkbox ticks every row: 4 selected, the bar's actions (${barLabels.join(' · ')})`);
   await page.screenshot({ path: `${out}/demo-email-09-list-selected.png` });
   await page.evaluate(() => document.querySelector('.tl-head input[type="checkbox"]').click());
   await sleep(400);
@@ -292,6 +297,8 @@ try {
   check((await page.evaluate(() => !document.querySelector('.tl-head') && document.querySelectorAll('.tl-row--preview').length === 4)), '9 back to Preview: three-line rows, no header');
   await page.click('button[aria-label="List"]');
   await sleep(500);
+  // 9 (D-72, D-78, D-79): the table's Owner, Letter and Files columns
+  check((await headers()).includes('OWNER') && (await headers()).includes('LETTER') && (await headers()).includes('FILES'), `9 the table has Owner, Letter and Files columns (${(await headers()).join(' · ')})`);
   const hs = await headers();
   check(await page.evaluate(() => !!document.querySelector('[aria-label="Email view"]')) && ['STATUS', 'RESPONSE DUE', 'LINKED RECORD'].every((h) => hs.includes(h)), `9 List view: the table with Status, Response due and Linked record (${hs.join(', ')})`);
   await page.click('button[aria-label="Reading pane"]');
@@ -431,6 +438,17 @@ try {
   check(/^1 of 1[45] threads$/.test(await summary()), `16 Ray's row leaves Unmatched (${await summary()})`);
   await click('All');
   check(await has('[RMC-04] SUB-088 — Door frames waiting'), '16 the subject gained the record prefix');
+  // 16 (D-74): the submittal's Email tab holds it now
+  await goto('correspondence-context-sub&theme=light#SUB-088/email');
+  await sleep(800);
+  check(await has('Email about SUB-088') && await has('Door frames waiting on reader box size') && await has('Card-reader door hardware voltage mismatch'), "16 SUB-088's Email tab lists Ray's mail beside the voltage thread");
+  await click('Compose');
+  await sleep(800);
+  check(await has('SUB-088.pdf') && await has('Kenji Takahashi'), '16 Compose on the submittal: the PDF attached, To = Kenji');
+  await page.keyboard.press('Escape');
+  await sleep(400);
+  await goto('correspondence-list&theme=light#list');
+  await sleep(800);
   await page.screenshot({ path: `${out}/demo-email-16-linked.png` });
   // 17: Overdue › THR-1031: Delivery failed → Update contact and resend
   await click('Overdue');
@@ -446,6 +464,20 @@ try {
   check(await has('Contact updated and message resent') && !(await buttons()).includes('Update contact and resend') && await has('Resent'), '17 resent, notice gone');
   await click('Delivery');
   check(await has('Contact updated') && await has('Sent'), '17 Delivery: Contact updated, Sent');
+  // 17 (D-72): the thread waits on Valerie again; chase her with one click
+  const ownerNow = await page.evaluate(() => { const i = [...document.querySelectorAll('.owner-select input')].find((i) => i.offsetParent); return i ? i.value : null; });
+  check(ownerNow === 'Sarah Jenkins' && (await buttons()).includes('Send reminder') && await has('Follow up: 17 Oct'), `17 title bar: Owner Sarah Jenkins, Follow up 17 Oct, Send reminder (${ownerNow})`);
+  await click('Send reminder');
+  await sleep(500);
+  const reminder = await page.evaluate(() => { const ta = [...document.querySelectorAll('textarea')].find((t) => t.offsetParent); return { body: ta ? ta.value : '', text: document.body.innerText.replace(/\s+/g, ' ') }; });
+  check(/^Reminder: we're still waiting on your reply/.test(reminder.body) && /To Valerie Chen/.test(reminder.text) && /Reminders sent 0/.test(reminder.text), '17 the reminder modal: To Valerie Chen, the wording prefilled, Reminders sent 0');
+  await page.screenshot({ path: `${out}/demo-email-17-reminder.png` });
+  await click('Send reminder');
+  await sleep(900);
+  check(await has('Reminder sent. It is on the Delivery tab with the count.') && await page.evaluate(() => [...document.querySelectorAll('[role="list"] article')].some((a) => a.innerText.includes('Reminder') && a.innerText.includes("we're still waiting"))), '17 the reminder is on the thread, marked Reminder');
+  await click('Delivery');
+  await sleep(300);
+  check(await has('Reminder sent') && await has('Reminder 1 sent via the Linarc relay'), '17 Delivery: Reminder sent, Reminder 1');
 
   // ===== The hybrid moment
   await simulateInbound({ from: 'Alex Morgan · Vanguard', to: 'Reply to THR-1042', text: 'Dave, RFI-143 is with Thornton; hold fabrication until Elena answers.' });
