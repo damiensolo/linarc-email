@@ -476,3 +476,14 @@ Why it mattered: the note explains a date people would otherwise overwrite.
 How it was caught: the first screenshot after the change.
 What changed: `ComposePanel.vue` (`values` and `message.body`; drafts keep `values.body` for `data/drafts.js`).
 Case study: N: a FormV2 per-field helper (InputV2 has `helperText`) is a library follow-up; log it as needs-review when the forms are next touched.
+
+## F-050 · 2026-11-14 · App-map labels grew into paragraphs and kept a neighbour's copied line
+
+Tags: figma, documentation
+What happened:
+- The Email app map's labels 08–12 and 23–30 were cloned from one another and given long descriptions (three to five lines of 30px bold, horizontal next to the badge), so they ran wider than their frames, collided with the frame above and the next column, and 08–11 still carried 07's route line ("Arriving from the switcher: no row is selected…") under a description about Drafts, Deleted or ticked rows.
+- Fix: one format for every label: badge, then the description under it (two lines at most at the frame's width), then the breadcrumb and a route line of `/?p=<slug>#<hash> · <script>.mjs`; the label is as wide as its frame and sits 24px above it; frames 24, 27 and 29 moved down to clear the taller labels. The `spec-to-prototype` skill's map-layer step now says so.
+Why it mattered: the app map is where design reviews the prototype; a label that lies about its route, or hides under the frame above, costs the reviewer the context the frame was drawn for.
+How it was caught: the user, reading the section after the D-72…D-80 frames landed.
+What changed: Figma Documentation `4090:74` (labels 03, 07–12, 23–30; frames 24, 27, 29), `.claude/skills/spec-to-prototype/SKILL.md` step 3.
+Case study: Y: a label cloned from a neighbour must have every text node rewritten, and a label audit (text inside its label, label inside its column, no overlap with frames) belongs in the Figma step of every change.
