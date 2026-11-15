@@ -487,3 +487,14 @@ Why it mattered: the app map is where design reviews the prototype; a label that
 How it was caught: the user, reading the section after the D-72…D-80 frames landed.
 What changed: Figma Documentation `4090:74` (labels 03, 07–12, 23–30; frames 24, 27, 29), `.claude/skills/spec-to-prototype/SKILL.md` step 3.
 Case study: Y: a label cloned from a neighbour must have every text node rewritten, and a label audit (text inside its label, label inside its column, no overlap with frames) belongs in the Figma step of every change.
+
+## F-051 · 2026-11-15 · The record Email tabs' reply footer let the thread show through under it
+
+Tags: email, layout
+What happened:
+- On the Submittal and Change Order Email tabs (D-74), and the RFI's, the composer footer stuck 20px above the bottom of the scroll area, so the thread's attachment tiles scrolled into view in the strip under it and the footer read as transparent. The cause is F-043: Chrome keeps a sticky element inside the scroller's content box, and `AppLayout`'s scroller has 20px padding. The thread page bleeds the footer with `footer-class="-bottom-space-20 pb-space-20"`; the record tabs never passed it.
+- Fix: the same `footer-class` on `RecordEmailTab.vue` and the RFI tab. `scripts/shot-record-footer.mjs` scrolls each tab so the composer sticks and asserts the footer reaches the scroller's edge and is opaque (6/6).
+Why it mattered: a footer with content showing through it looks broken in a review, and the Submittal tab was the first screen a client would open after the D-74 demo step.
+How it was caught: the user, on the Submittal's Email tab.
+What changed: `src/modules/correspondence/components/record/RecordEmailTab.vue`, `src/prototypes/correspondence-context-rfi/index.vue`, `scripts/shot-record-footer.mjs`.
+Case study: Y: every host of `Composer` passes the bleed for its scroller; the F-043 rule now has a check that runs on every record tab, not only the thread page.

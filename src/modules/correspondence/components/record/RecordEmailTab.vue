@@ -21,7 +21,9 @@
         <Button label="Open in Email" variant="text" color-scheme="primary" size="small" @onClick="$emit('open-thread', t.id)" />
       </header>
       <ThreadStream :entries="threadEntries(t)" @navigate="$emit('open-record', $event)" @open-attachment="(f, all, i) => $emit('open-files', f, all, i)" @download-attachment="$emit('download-file', $event)" />
-      <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :draft-key="t.id" :allow-note="role.internal" :busy="busy" @send="(m) => $emit('send', t.id, m)" @open-attachment="(f, all, i) => $emit('open-files', f, all, i)" />
+      <!-- The footer bleeds over the scroller's 20px bottom padding, as on the thread page (F-043); without it the
+           entries scroll into view in the strip under the footer. -->
+      <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :draft-key="t.id" :allow-note="role.internal" :busy="busy" footer-class="-bottom-space-20 pb-space-20" @send="(m) => $emit('send', t.id, m)" @open-attachment="(f, all, i) => $emit('open-files', f, all, i)" />
     </article>
   </section>
 </template>

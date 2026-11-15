@@ -6,6 +6,7 @@
 - **Status:** done. Rebuilt 2026-10-20 from a stand-in into the RFI detail the Documentation file's ☉ Create RFI page draws, with Email built in (`docs/correspondence/rfi-integration.md`, D-48, D-49). The 2026-10-16 notes below describe the first build.
 
 ## 2026-10-20 · The RFI with Email
+- **2026-11-15 (F-051):** the Email tab's composer footer bleeds over the scroller's bottom padding like the thread page's (`footer-class`); `scripts/shot-record-footer.mjs` checks it.
 - **2026-10-28:** Kenji's emailed answer on RFI-142 is seed data (`THR-1039` `msg-1039-3`, 09:40, with `Shop_Drawing_Markup.pdf`; the thread needs action and carries a summary), as the Documentation file's screens 09–11 draw it, so *Add to Q&A* is on the record out of the box; the script no longer simulates the mail. In Notifications the answer is a filing item for Alex (*File Kenji Takahashi, AIA's answer*, action *Add to Q&A* → the Email tab), not a reply. Same day: the composer's hidden file input escaped the scroll box and gave the page a second scrollbar (F-035, `MessageTools` is `relative`).
 - **2026-10-21 (D-51, P-052):** avatars show a profile photo when the person has one (six AI-generated fictional personas, `public/avatars/`), otherwise initials in a palette colour from their name (ThreadStream, Q&A, recipient chips and list rows). Light and dark checked.
 - **2026-10-21 (D-50):** the workflow move is now the title bar's action; Compose moved into the Email tab (top of its content, secondary, shown only on that tab). Script 50/50.

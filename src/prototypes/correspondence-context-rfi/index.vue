@@ -94,7 +94,7 @@
                     </template>
                   </template>
                 </ThreadStream>
-                <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :draft-key="t.id" :allow-note="role.internal" :busy="write.status === 'loading'" @send="(m) => send(t.id, m)" @open-attachment="openFiles" />
+                <Composer v-if="!record.closed" :ref="`composer-${t.id}`" :draft-key="t.id" :allow-note="role.internal" :busy="write.status === 'loading'" footer-class="-bottom-space-20 pb-space-20" @send="(m) => send(t.id, m)" @open-attachment="openFiles" />
               </article>
             </section>
 
