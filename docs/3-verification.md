@@ -43,7 +43,7 @@ Every check that a screen keeps is a script, run from the repo root with the dev
 | `interact-notifications-drawer.mjs` | Bell, drawer and banner per role, acknowledge, snooze, a Critical arriving, guest, 390, Reset | 32 |
 | `interact-notifications-list.mjs` | All notifications: scopes, views, Team column, bulk Acknowledge, row card, guest, Reset | 16 |
 | `interact-notifications-prefs.mjs` | Preferences: preset, matrix, locked cells, Save, cover preview and start / end, the override from the full page | 16 |
-| `demo-correspondence-walkthrough.mjs` | `docs/correspondence/demo-guide.md` §3 as written (F-041) | 99 |
+| `demo-correspondence-walkthrough.mjs` | `docs/correspondence/demo-guide.md` §3 as written (F-041) | 100 (99 lines; the inbound-mail check runs twice) |
 | `demo-notifications-walkthrough.mjs` | `docs/notifications/overview-and-demo.md` §6 as written (F-029) | 80 (63 lines; the A3 card loops 11 strings, the D21 modal 6) |
 | `make-sample-files.mjs` | Not a check: writes the sample PDFs in `public/files/` (no port or out-dir) | — |
 

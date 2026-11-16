@@ -1,6 +1,7 @@
 <template>
   <!-- Notifications › All notifications: the full page for triage at scale (docs/notifications/screens.md §2, spec §6).
-       List pattern (5-ui-patterns.md §1): the shell with no rail (the page belongs to no tool, Q-A2, D-52), Title Bar /
+       List pattern (5-ui-patterns.md §1): the shell with the Communication rail (Notifications beside Email, D-52 as
+       amended 2026-10-26; the preferences page keeps it highlighted), Title Bar /
        Page, a scope SegmentedControl (My responsibilities · My team · Watching), the views SegmentedControl cross-linked
        with the grid's Filter panel (D-30: a view other than All is one "View is …" condition; the views and Critical,
        Overdue, Not acknowledged, Snoozed and the sources are quick filters), a meta line with LoadStatus, the DataGrid

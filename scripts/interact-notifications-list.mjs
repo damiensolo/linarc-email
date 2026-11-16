@@ -53,10 +53,10 @@ try {
     await sleep(900);
   };
 
-  // 1. Sarah: Needs action by default, the summary explains the filter, no tool highlighted, no rail.
+  // 1. Sarah: Needs action by default, the summary explains the filter, the Communication rail with Notifications beside Email (D-52, amended 2026-10-26).
   check((await summary()) === '3 of 4 notifications', `PM default view (Needs action, My responsibilities): ${await summary()}`);
   check(await has('NOTIFICATION') && await has('SEVERITY') && await has('WHY YOU'), 'columns present');
-  check(!(await page.evaluate(() => !!document.querySelector('nav[aria-label="Communication"]'))), 'no rail on the page');
+  check(await page.evaluate(() => [...document.querySelectorAll('[role="navigation"]')].some((n) => /Email/.test(n.textContent) && /Notifications/.test(n.textContent))), 'the Communication rail is on the page with Notifications beside Email');
   await page.screenshot({ path: `${out}/list-pm-needs-action.png` });
   await clickSegment('View', 'Waiting');
   check((await summary()) === '1 of 4 notifications' && await has('Response from Valerie Chen'), `Waiting view: ${await summary()}`);

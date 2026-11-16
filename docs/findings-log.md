@@ -498,3 +498,15 @@ Why it mattered: a footer with content showing through it looks broken in a revi
 How it was caught: the user, on the Submittal's Email tab.
 What changed: `src/modules/correspondence/components/record/RecordEmailTab.vue`, `src/prototypes/correspondence-context-rfi/index.vue`, `scripts/shot-record-footer.mjs`.
 Case study: Y: every host of `Composer` passes the bleed for its scroller; the F-043 rule now has a check that runs on every record tab, not only the thread page.
+
+## F-052 · 2026-11-16 · A check that asserts an absence passed for the wrong reason, and a menu lowercased a day name
+
+Tags: tooling, email
+What happened:
+- The review of every doc, script and demo guide (2026-11-16) found `interact-notifications-list.mjs` asserting "no rail on the page" with `nav[aria-label="Communication"]`: the page has carried the Communication rail since the D-52 amendment of 2026-10-26, but the rail's `aria-label` is the tool's label, so the selector matched nothing and the check passed. The screen's header comment said "no rail" too.
+- The Snooze menu rendered *Snooze until next monday*: the card lowercased the whole option label to join it to the verb, and the two guides had been edited to quote the slip "as the menu spells it". The labels are now lowercase-first in `actions.js` (`until next Monday`) and the card joins them unchanged.
+- Fix: the check now asserts the rail is present with Notifications beside Email; the guides and scripts quote *Snooze until next Monday*.
+Why it mattered: a check that asserts an absence proves nothing when its selector is wrong, and a guide that copies a UI slip "as rendered" hides the slip instead of fixing it.
+How it was caught: the four-way audit (docs vs code, candidates vs proposals, root docs, guides vs UI copy); the rail check only because the audit read the assertion against the nav config.
+What changed: `scripts/interact-notifications-list.mjs`, `src/prototypes/notifications-list/index.vue` (comment), `src/modules/notifications/data/actions.js`, `ItemCard.vue`, `demo-notifications-walkthrough.mjs`, `interact-notifications-drawer.mjs`, the two guides.
+Case study: Y: an absence check names what *is* there instead (the rail with its items); when a guide and the UI disagree on copy, fix the UI unless the copy is a decision.
