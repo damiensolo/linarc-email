@@ -1,8 +1,9 @@
 <template>
   <!-- Promote to record (docs/correspondence/spec.md §8, D-37): a SlideOverPanel beside the thread with the source
        message kept highlighted. Five pre-filled fields through FormV2 flat. Since D-77 (2026-11-14) the record type is
-       the first field: RFI (the formal question), Field issue (something to fix on site) or Potential change order
-       (a cost or time claim; the amount for roles that may see cost). The drafted text is AI-drafted (D-44): it carries
+       the first field: RFI (the formal question), Field issue (something to fix on site), Potential change order
+       (a cost or time claim; the amount for roles that may see cost) or, since D-80, Daily log entry (no assignee or
+       due date; the thread keeps its triage). The drafted text is AI-drafted (D-44): it carries
        the AI chip and the §9 disclaimer until the person edits it, and Create stays disabled until it has been visited once. -->
   <SlideOverPanel :open="open" title="Promote to record" :badge="threadId" size="md" @close="$emit('close')">
     <template #header-meta>
@@ -77,7 +78,7 @@ export default {
     includeItems() {
       return this.prefill.include || [];
     },
-    /** The target (D-77): 'rfi' | 'field-issue' | 'change-order' */
+    /** The target (D-77, D-80): 'rfi' | 'field-issue' | 'change-order' | 'daily-log' */
     type() {
       return this.values.type || 'rfi';
     },

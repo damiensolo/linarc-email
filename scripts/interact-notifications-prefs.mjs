@@ -1,7 +1,8 @@
-// Interaction check for notifications-preferences and the Critical override (docs/notifications/00-plan.md §8 step 4): the
-// preset fills the matrix, a cell edit makes it Custom, locked cells, Save, the cover preview and start / end, the
-// PM's override from the full page with its audit row, the PE's blocked override, Reset. Needs the dev server.
-// Run from the repo root:  node scripts/interact-notifications-prefs.mjs <port> <out-dir>
+// Interaction check for notifications-preferences and the Critical override (docs/notifications/00-plan.md §8 step 4,
+// 2026-10-26; 16 checks): the preset fills the matrix, a cell edit makes it Custom, locked cells, Save, the cover
+// preview and start (Alex's bell reads 4 need action) / end, the PM's override from the full page with its audit row,
+// the PE then seeing Important, Reset. Needs the dev server. Run from the repo root:
+//   node scripts/interact-notifications-prefs.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));

@@ -38,6 +38,7 @@
 - [ ] Interaction patterns (modal, drawer, panel, toast) use the documented pattern components.
 - [ ] After cloning a variant that contains nested instances, reset the nested instances' overrides (not the parent's: that also resets its variant) and screenshot it.
 - [ ] Nav labels fit their rail: the module rail and side nav are 82px, and a single word longer than about 12 characters breaks mid-word.
+- [ ] App-map label (F-050, `spec-to-prototype` step 3): one format for every frame: the numbered badge, the description under it (30px bold, at most two lines at the frame's width), the breadcrumb and a 15px route line `/?p=<slug>#<hash> · <script>.mjs`; the label is as wide as its frame and sits 24px above it, inside its column, overlapping nothing; a label cloned from a neighbour has every text node rewritten.
 - [ ] Dark mode: run `PRPs/figma/scripts/23-dark-mode-audit.js` (no pale backgrounds in Dark, text ≥ 4.5:1 and icons ≥ 3:1 on the dark container) and mirror any fix in `tokens/src/mapped/Dark.json` and Tokens Studio.
 
 ## Evidence so far

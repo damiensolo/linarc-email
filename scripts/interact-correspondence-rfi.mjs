@@ -1,7 +1,10 @@
-// Interaction check for correspondence-context-rfi and the compose panel: Email tab, Compose (an unknown address is refused
-// guest), rich-text body, send → new thread on the tab; Compose from the Email screen → lands on the new thread; the RFI
-// with Email (docs/correspondence/rfi-integration.md): tabs, Compose suggestions from the workflow step, an emailed answer
-// added to Q&A (D-49), Route / Revise with Notify by email / Approve / Close, the Activity panel; guest role on the RFI. Needs the dev server. Run from the repo root: node scripts/interact-correspondence-rfi.mjs <port> <out-dir>
+// Interaction check for correspondence-context-rfi and the compose panel (2026-10-17; D-48, D-49, D-50, D-60): Email
+// tab, Compose (an unknown address is refused, D-60: no guest is added from Compose), rich-text body, send → new thread
+// on the tab; Compose from the Email screen → lands on the new thread; the RFI with Email
+// (docs/correspondence/rfi-integration.md): tabs, no Compose outside the Email tab (D-50), suggestions from the
+// workflow step, an emailed answer added to Q&A (D-49), Route / Revise with Notify by email / Approve / Close, the
+// Activity panel; guest role on the RFI. Needs the dev server. Run from the repo root:
+//   node scripts/interact-correspondence-rfi.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));

@@ -29,7 +29,7 @@ Slots: `thumbnail` (the prototype passes a cropped SVG of the sheet). Events: `o
 Current, superseded; with and without a pin; sm (a row in Linked items) and md (compose panel and portal). Both themes.
 
 ## Tokens
-`border/subtle`, `surface/container`, `text/default`, `text/subtle`, `radius-4`, `space-2`, `space-8`, `space-12`; chip tones through StatusChip. **needs-token:** the thumbnail sizes (sm 72 × 48px, md 3:2 up to 200px wide) are scoped CSS; no size token fits.
+`border/subtle`, `surface/container`, `text/default`, `text/subtle`, `radius-4`, `space-2`, `space-8`, `space-12`; chip tones through StatusChip. **needs-token:** the thumbnail sizes (sm 72 × 48px, md 3:2 up to 200px tall) are scoped CSS; no size token fits.
 
 ## Behaviour
 The pin is immutable: the component never offers to move it to the newer revision; it only says a newer one exists. The thumbnail's `alt` names the sheet and grid.

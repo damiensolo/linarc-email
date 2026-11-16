@@ -6,7 +6,7 @@ The facts the screens need. Open points are **Q-NN** in `00-plan.md` §6; UI rul
 
 1. **Compose in context**, from a drawing markup or a record, in a slide-over panel over the host screen (D-34), with the record and its revision pinned.
 2. **The record's Email tab, upgraded**: the same thread with internal notes, Promote to record, Response due, and delivery evidence.
-3. **The project Email screen, upgraded**: triage views (All, Needs action, Waiting, Overdue, Unmatched), a Linked record column, and mail that arrived from outside.
+3. **The project Email screen, upgraded**: triage views (All, Needs action, Waiting, Overdue, Unmatched; Assigned to me and Follow up since D-72), a Linked record column, and mail that arrived from outside.
 4. **A secure link page** for recipients without an account: the message, the pinned revision, files of any size, a reply.
 
 ## 2. Navigation (`src/modules/app/nav.js`)
@@ -35,7 +35,7 @@ Rules behind the table: internal team members see every project thread (the reco
 ## 4. Inbound mail and threading
 
 - Replies thread automatically today (reply token `reply+thr_1042@mail.linarc.io`); kept. The Delivery tab records `INBOUND_REPLY_INGESTED`.
-- **New: mail from outside.** The project has an address (`rmc-04@mail.linarc.io`) printed on the Email screen (a small help icon beside the title in the Title Bar whose Tooltip reads *Mail sent to rmc-04@mail.linarc.io lands here.*, review 2026-11-06; from 2026-10-28 to then a 12px line beside the title; and in full in its empty state), in the compose footer and in every outbound footer. A message to it that matches no thread becomes a thread with no linked record and appears in the **Unmatched** view with the row action *Link to record* (a `md` modal with the SmartPicker, D-61 / D-62: search by code or title, a checkbox per kind (RFIs / Drawings / Submittals / Change orders, all on), the records the subject names first as *Suggested*, the latest threads' records as *Recent*; the thread then shows the record and moves to the matching triage state; several records at once since D-77, and *Link a record* under the thread's Linked items adds more to any thread). Audit: `RECORD_LINKED`.
+- **New: mail from outside.** The project has an address (`rmc-04@mail.linarc.io`) printed on the Email screen (a small help icon beside the title in the Title Bar whose Tooltip reads *Mail sent to rmc-04@mail.linarc.io lands here.*, review 2026-11-06; from 2026-10-28 to then a 12px line beside the title; and in full in its empty state), in the compose footer and in every outbound footer. A message to it that matches no thread becomes a thread with no linked record and appears in the **Unmatched** view with the row action *Link to record* (a `md` modal with the SmartPicker, D-61 / D-62: search by code or title, a checkbox per kind (RFIs / Drawings / Submittals / Change orders / Field issues / Daily log, all on; `RECORD_KINDS`), the records the subject names first as *Suggested*, the latest threads' records as *Recent*; the thread then shows the record and moves to the matching triage state; several records at once since D-77, and *Link a record* under the thread's Linked items adds more to any thread). Audit: `RECORD_LINKED`.
 - **Hybrid model (Q-05, D-42):** PMs answer everyday mail in Outlook or Gmail; Linarc holds the record. So every outbound mail and every notification is answerable by reply (the token keeps the thread), the project address is shown wherever mail is composed or forwarded (compose footer, outbound mail footer, the Email screen's empty state and meta line). It is plain text, not a copy action: people set the address up once (a contact, a Bcc habit), so it is information, not a task. Not on a thread: forwarded mail starts a new Unmatched thread rather than joining the open one, and the Email screen is where the record is checked, not where mail is read. Nothing in the MVP requires the PM to open Linarc to reply.
 
 ## 5. Compose (slide-over panel)
@@ -76,7 +76,7 @@ Footer: the tool row (§6.3): the attach tools left; *Discard draft* (confirms),
 5. **Feedback**: a *Not accurate* link under the summary records the thread id for review (prototype: toast only).
 6. **Scope**: summaries are generated only from content the viewer is allowed to see (D-41); internal notes are excluded from anything shown to a guest.
 
-**6.3 Composer** (composition of existing components, D-58): mode select *Reply to all* / *Internal team note*; the product's rich-text editor, its formatting bar (bold, italic, underline, numbered and bulleted lists, link) shown by a *Formatting* toggle; attachments as removable chips; one compact tool row. Left, icon-only with tooltips: *Attach file*, *Attach link*, *Choose from cloud drive*, *Attach a record*, *Formatting*. Right: *Discard draft* set apart (asks *Discard this draft?* when there is something to lose), *Save draft* (the text, its formatting and the attachments come back on this thread until sent or discarded; *Draft saved.* confirms, and clears on the next change) and the one primary button whose label follows the mode (*Send* / *Post note*). Note mode tints the composer like the note it creates. A sent message or note keeps its formatting and lists its links under the body.
+**6.3 Composer** (composition of existing components, D-58): mode select *Reply to all* / *Internal team note*; the product's rich-text editor, its formatting bar (bold, italic, underline, numbered and bulleted lists, link) always on (the *Formatting* toggle went with D-69); attachments as removable chips; one compact tool row. Left, icon-only with tooltips: *Attach file*, *Take a photo* (D-80), *Attach link*, *Choose from cloud drive*, *Attach a record*. Right: *Discard draft* set apart (asks *Discard this draft?* when there is something to lose), *Save draft* (the text, its formatting and the attachments come back on this thread until sent or discarded; *Draft saved.* confirms, and clears on the next change) and the one primary button whose label follows the mode (*Send* / *Post note*). Note mode tints the composer like the note it creates. A sent message or note keeps its formatting and lists its links under the body.
 
 ## 7. Response due and notifications (Q-11 decided, D-42)
 
@@ -98,7 +98,7 @@ From *Promote to record* on an inbound message. SlideOverPanel `md` beside the t
 4. **Assigned to** (suggested reviewer) and **Due date** (short input).
 5. **Include from the email**: checkboxes for the pinned drawing and each file.
 
-Button *Create RFI*. The number is assigned on creation and shown in the confirmation (*RFI-143 created · Open RFI*). On success: record in the session, a system event in the thread, promotion state Promoted to RFI, confirmation links to `correspondence-context-rfi#RFI-143`. The thread is the RFI's Email tab from then on.
+Button *Create RFI* (the label follows the type: *Create field issue*, *Create PCO*, *Add to daily log*). The number is assigned on creation and shown in the confirmation (*RFI-143 created · Open RFI*). On success: record in the session, a system event in the thread, promotion state Promoted to RFI, confirmation links to `correspondence-context-rfi#RFI-143`. The thread is the RFI's Email tab from then on.
 
 ## 8b. The RFI with Email (D-48, D-49; full review in `rfi-integration.md`)
 
@@ -113,7 +113,7 @@ Button *Create RFI*. The number is assigned on creation and shown in the confirm
 ## 9. Email screen and the thread's right panel
 
 - **Email screen** (`correspondence-list`): segments All / Assigned to me / Needs action / Waiting / Overdue / Unmatched / Follow up cross-linked with the grid's Filter panel (D-30; Assigned to me and Follow up since D-72), then the folders Drafts and Deleted (D-67: a different row set, not a condition); quick filters for the segments, Unread, Has attachments, Confidential. Columns: `screens.md` §1 (Owner and Follow up since D-72; Letter, the correspondence number and type, since D-78, with a *Notices* quick filter; Files since D-79, so the search box finds a thread by a file name); the toolbar's Download is the correspondence log as a CSV of the rows as filtered (D-79); Subject and From bold while the thread is unread for the viewer. The table's selection toolbar and the Reading view's list bar: Delete, Mark as unread, Mark as read, Mark resolved (Restore in Deleted); no cut / copy / paste. Loads through LoadRegion.
-- **Right panel** on the thread: TabNavigation with *Linked items* (records with revision pins, files) and *Delivery* (per recipient, today's statuses plus Link opened and Files downloaded, and the event rows). Rows show event, actor, time (D-17); IP and checksum are in a row's expand only (Q-09). No export in the MVP.
+- **Right panel** on the thread: TabNavigation with *Linked items* (records with revision pins or status, and *Link a record*, D-77) and *Delivery* (per recipient, today's statuses plus Link opened and Files downloaded, and the event rows). Rows show event, actor, time (D-17); IP and checksum are in a row's expand only (Q-09). No export in the MVP.
 
 ## 10. Secure link page (`correspondence-portal`)
 
@@ -130,6 +130,8 @@ Button *Create RFI*. The number is assigned on creation and shown in the confirm
 | `correspondence-thread` | right panel *No linked items* | stream and summary skeletons | *Couldn't load the thread.* + Retry; *Summary unavailable* + Retry | bounce; promoted; linked |
 | `correspondence-context-dwg` | — | sheet placeholder | — | superseded note on the preview |
 | `correspondence-context-rfi` | Email tab: *No email on this RFI yet* | tab skeleton | Retry in the tab | closed / rejected: Compose disabled; workflow moves; Add to Q&A panel |
+| `correspondence-context-sub` / `-co` (D-74) | Email tab: *No email on this submittal yet* / *… change order yet*; Details › Linked items the same | tab skeleton | Retry in the tab | closed: Compose disabled (*Closed submittals can't send email*) |
+| `correspondence-rfi-list` | *No RFIs yet. RFIs created from a drawing, an email or the Create RFI form appear here.* | grid skeleton | *Couldn't load the RFIs.* + Retry | empty segment: the grid's own empty state |
 | `correspondence-portal` | — | file streaming | send failed + Retry | expired; revoked; *Reply sent*; acknowledged (*Sent: received, answering by …*, D-73) |
 | Compose / Promote panels | — | button disabled | InlineNotice + Retry, panel stays | unknown address refused with the directory message; *By secure link* |
 

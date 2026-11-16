@@ -46,9 +46,9 @@
 | From | Read-only: the sender's name and address |
 | To / Cc / Bcc | RecipientField (D-47). Suggestions start with the **current workflow step's parties**, then the **Distribution List**, then the rest of the directory. To is prefilled with the ball-in-court party. Amber chips mark people outside the company and red chips mark invalid addresses. An address not on the project is refused with a line naming My Team › Guests (D-60) |
 | Subject | Text, prefilled `[RMC-04] RFI-142 — <RFI name>` |
-| Response due | Short date. On an RFI it defaults to the **current step's due date** (otherwise three working days) |
+| Response due | Short date. On an RFI it defaults to the **current step's due date** (otherwise the contract's turnaround for an RFI, seven working days, D-76) |
 | Message | Rich text |
-| Attachments | From the footer's tool row: a device file, a link, a cloud-drive file or a record, as chips (D-58). Files over 20 MB go by secure link. The RFI's PDF is attached by default, removable |
+| Attachments | From the footer's tool row: a device file, a photo (D-80), a link, a cloud-drive file or a record, as chips (D-58). Files over 20 MB go by secure link. The RFI's PDF is attached by default, removable |
 
 ### C. Email → Q&A: *Add to Q&A* (D-49)
 The most useful change. On the Email tab, every inbound message has **Add to Q&A**. It opens a panel beside the thread, with the message highlighted, prefilled with:
@@ -75,7 +75,7 @@ Saving adds the step to Q&A with an **Email** source chip that links back to the
 - **Comments vs internal team notes:** both are internal. Comments are about the RFI and internal notes are inside a thread. We keep both and recommend the Comments panel also lists the thread notes, read-only (open, §5).
 
 ### F. Header
-Title, number chip, **Type**, the **Due** date (a chip only when due today or overdue, per D-17), the **Status** chip, and **Ball in court**. The header action is the **workflow move** for the step in hand (Route; Reject · Revise · Approve; Close), not Compose (D-50).
+Title, number chip, **Type**, the **Due** date (a chip only when due today or overdue, per D-17), the **Status** chip, and **Ball in court** (the prototype's title bar stops at Status; ball in court is on Details and the Workflow tab). The header action is the **workflow move** for the step in hand (Route; Reject · Revise · Approve; Close), not Compose (D-50).
 
 ### G. Status vocabulary (proposed for the Status Tag frames)
 | Dimension | Labels (tone) |
@@ -88,7 +88,7 @@ Title, number chip, **Type**, the **Due** date (a chip only when due today or ov
 ## 4. What the prototype adds so the RFI feels real
 `correspondence-context-rfi` is rebuilt from a stand-in into an RFI detail that follows the Figma:
 - **Details:** Name, Type, Sequence, Priority, Location, Due date, Spec section, Schedule impact (Yes, *2 working days*), Cost impact (Yes, *$4,200*; internal roles that can see cost), Question, **Proposed solution** (the contractor's suggested answer, standard on RFIs), Reference (drawing and detail), Custom details, and Linked items (the drawing revision and the email threads).
-- **Q&A:** the steps so far, then *Add response* (rich text, files, *Link item*).
+- **Q&A:** the steps so far, then *Add a step* (step type, a plain textarea, files through a DropArea behind *Add attachment*; *Add Step n*). No *Link item*.
 - **Workflow:** template *Design team RFI*, with Create → Respond → Review → Close. Each step shows its parties, process days, in, due and out dates, and status. The current step is open.
 - **Email:** as §A.
 - **Activity and Watchers** in the right panel.

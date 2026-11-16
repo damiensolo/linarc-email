@@ -14,7 +14,7 @@ Project (module, top nav) · project Riverside Medical Center
 │  │  ├─ Compose panel (SlideOverPanel lg, full-screen toggle): the one ComposePanel, shared
 │  │  ├─ Link to record (ModalV2 md, SmartPicker) on Unmatched rows
 │  │  └─ Open / Open thread → Email thread → correspondence-thread
-│  │     ├─ Title bar: subject, id, Status, Confidential, Cost impact (canSeeCost, D-66), Follow up; actions Owner · Send reminder · Follow up · Mark resolved / Reopen (D-72)
+│  │     ├─ Title bar: subject, id, the letter number and type (D-78), Status, Confidential, Cost impact (canSeeCost, D-66), Follow up; actions Owner · Send reminder · Follow up · Mark resolved / Reopen (D-72)
 │  │     ├─ AI summary (3+ messages) · ThreadStream · Composer (Reply to all / Internal team note)
 │  │     ├─ Promote to record (SlideOverPanel md) · Update contact and resend (ModalV2)
 │  │     └─ Right panel: Linked items · Delivery
@@ -30,7 +30,7 @@ Project (module, top nav) · project Riverside Medical Center
 │     ├─ Workflow move in the title bar: Route · Approve · Revise · Reject · Close (ModalV2)
 │     └─ Right panel: Activity · Watchers
 └─ External (no shell, reduced top nav, mobile first) › Secure link page → correspondence-portal
-   └─ States: valid · expired · revoked · replied; Open in Linarc for account holders (Q-14)
+   └─ States: valid · expired · revoked · replied · acknowledged (D-73); Open in Linarc for account holders (Q-14)
 ```
 
 ## 2. Product model / flow (section 2)
@@ -40,13 +40,13 @@ Entry points: compose from a drawing pin (sheet and revision pinned), from a rec
 ## 3. How a thread gets its labels (section 3; `status-model.md`)
 
 - **triage** from the last message: inbound and unanswered (or bounced) → Needs action (chip); ours → Waiting on them (word); closed by hand (*Mark resolved*, D-72) or through the record → Resolved (check; *Reopen* follows the last message again); composed, not sent → Draft (word). A reminder (D-72) is an outbound message that keeps the thread in Waiting.
-- **sla** from Response due (default three working days): passed → Overdue (red chip); today → Due today (chip); else On track (word); none → No due date.
+- **sla** from Response due (default the contract's turnaround for the record type, D-76; three working days for plain email): passed → Overdue (red chip); today → Due today (chip); else On track (word); none → No due date.
 - **delivery** per recipient of the last outbound message: Sending → Delivered → Link opened → Files downloaded (check); not accepted → Delivery failed (red chip + notice). The thread shows its weakest recipient.
 - **visibility**: Confidential (chip, participants and PMs only) or Project email (not shown). **promotion**: Promoted to RFI / field issue / PCO, Added to the daily log (link; D-77, D-80). **correspondenceType** (D-78): General · Transmittal · Notice as a word after the number, for threads the GC started. **owner** and **follow-up** (D-72): a person and a date, not statuses. Unmatched is a view (no linked record), not a status.
 
 ## 4. Compose flow (section 4; `spec.md` §5)
 
-Start (pin popover, RFI, Submittal or Change Order Email tab, Email screen; a closed record disables Compose) → the panel with the record and revision pinned when composed from context → Type (General · Transmittal · Notice) and a Template for notices and transmittals, numbered C-00nn on send (D-78) → To / Cc / Bcc from the project directory (amber = outside the company; a distribution list is one group chip, D-75; an address not on the project is refused with the My Team › Guests line, D-60) → Subject, Response due (the contract's turnaround in the project calendar, D-76; a reminder at the due date, D-72), Message → attachments (file, link, cloud drive, record PDF; over 20 MB or a pinned drawing goes by secure link, D-45) → Send / Save draft (kept per context, Drafts folder) / Discard (asks) → sent: the thread opens in Waiting on them with delivery per recipient; failed: InlineNotice + Retry, the panel stays.
+Start (pin popover, RFI, Submittal or Change Order Email tab, Email screen; a closed record disables Compose) → the panel with the record and revision pinned when composed from context → Type (General · Transmittal · Notice) and a Template for notices and transmittals, numbered C-00nn on send (D-78) → To / Cc / Bcc from the project directory (amber = outside the company; a distribution list is one group chip, D-75; an address not on the project is refused with the My Team › Guests line, D-60) → Subject, Response due (the contract's turnaround in the project calendar, D-76; a reminder at the due date, D-72), Message → attachments (file, photo with its capture time (D-80), link, cloud drive, record PDF; over 20 MB or a pinned drawing goes by secure link, D-45) → Send / Save draft (kept per context, Drafts folder) / Discard (asks) → sent: the thread opens in Waiting on them with delivery per recipient; failed: InlineNotice + Retry, the panel stays.
 
 ## 5. Recipient flow (section 5; `spec.md` §10)
 
@@ -58,7 +58,7 @@ Mail to the project address → Unmatched view → Link to record (Suggested fro
 
 ## 7. Escalation: Promote to RFI, and the RFI's email (section 7; `spec.md` §8, §8b)
 
-Promote to record on an inbound message → the panel beside the thread (Record type: RFI · Field issue · Potential change order, D-77; Title, the AI-drafted Question or Description, Assigned to, Due, the PCO's amount, files to include); Create RFI stays disabled until the Question has been visited (D-44) → RFI created, event row, Promoted to RFI, the thread is the RFI's Email tab and the source message is Q&A Step 1 → the RFI (Details · Q&A · Workflow · Email) → Compose on the RFI (To = ball in court, Response due = the step's due date, PDF attached) or Route with Notify by email → the party answers from their mailbox or the secure link → Add to Q&A (Response or Comment, quoted history left out, files ticked → Step n, `QA_ADDED`) → Review: Approve → Close (Compose disabled, no Add to Q&A); Revise → back to Respond (Returned), emails the party; Reject (reason required) → Rejected, no email.
+Promote to record on an inbound message → the panel beside the thread (Record type: RFI · Field issue · Potential change order, D-77; Daily log entry, D-80; Title, the AI-drafted Question or Description, Assigned to, Due, the PCO's amount, files to include); Create RFI stays disabled until the Question has been visited (D-44) → RFI created, event row, Promoted to RFI, the thread is the RFI's Email tab and the source message is Q&A Step 1 → the RFI (Details · Q&A · Workflow · Email) → Compose on the RFI (To = ball in court, Response due = the step's due date, PDF attached) or Route with Notify by email → the party answers from their mailbox or the secure link → Add to Q&A (Response or Comment, quoted history left out, files ticked → Step n, `QA_ADDED`) → Review: Approve → Close (Compose disabled, no Add to Q&A); Revise → back to Respond (Returned), emails the party; Reject (reason required) → Rejected, no email.
 
 ## 8. Who sees what (section 8; `spec.md` §3, D-41)
 

@@ -53,7 +53,7 @@
     <Popover :open="menuOpen" :anchor="$refs.more" placement="bottom-end" variant="card" :offset="4" :max-width="280" @close="menuOpen = false">
       <div class="flex min-w-full flex-col py-space-4" role="menu" :aria-label="`Actions for ${item.title}`">
         <template v-if="item.canSnooze">
-          <button v-for="o in snoozeOptions" :key="o.value" type="button" role="menuitem" :class="ROW" @click="doSnooze(o.value)">Snooze {{ o.label.toLowerCase() }}</button>
+          <button v-for="o in snoozeOptions" :key="o.value" type="button" role="menuitem" :class="ROW" @click="doSnooze(o.value)">Snooze {{ o.label }}</button>
         </template>
         <button v-if="item.presentation === 'snoozed'" type="button" role="menuitem" :class="ROW" @click="run(unsnooze)">Unsnooze</button>
         <button v-if="item.canAssign" type="button" role="menuitem" :class="ROW" @click="openModal('assign')">Assign…</button>

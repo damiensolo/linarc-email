@@ -1,7 +1,9 @@
-// Interaction check for the thread composer (docs/correspondence/spec.md §6.3, D-58): the compact tool row, the
-// formatting toggle (bold / italic / underline / lists / link only), file, link, cloud and record attachments as
-// chips, Save draft (restored after a reload), Discard (confirms), send with formatting and links, a note, 390px.
-// Needs the dev server. Run from the repo root: node scripts/interact-correspondence-composer.mjs <port> <out-dir>
+// Interaction check for the thread composer and the compose panel (docs/correspondence/spec.md §6.3; D-58 2026-10-28,
+// D-69 2026-11-06): the compact tool row (no Formatting toggle), the formatting bar always on (bold / italic /
+// underline / lists / link only), file, link, cloud and record attachments as chips, Save draft (restored after a
+// reload), Discard (confirms), send with formatting and links, a note, 390px; the compose panel's one-line editor bar
+// (P-057), the alignment menu, the lg panel with full screen, the draft kept on close; dark. Needs the dev server.
+// Run from the repo root: node scripts/interact-correspondence-composer.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 import { writeFileSync, mkdirSync } from 'node:fs';
@@ -214,7 +216,7 @@ try {
   await click('Align centre');
   await sleep(300);
   check((await labelled()).includes('Alignment: centre'), 'trigger shows the chosen alignment');
-  // the panel's own buttons: the thread composers behind it have a Formatting toggle too
+  // the panel's own buttons: the same tool row as the thread composer, whose formatting bar is always on (D-69)
   const l2 = await page.evaluate(() => [...document.querySelectorAll('[role="dialog"] button[aria-label]')].filter((b) => b.offsetParent).map((b) => b.getAttribute('aria-label')));
   check(['Attach file', 'Attach link', 'Choose from cloud drive', 'Attach a record', 'Discard draft', 'Full screen'].every((l) => l2.includes(l)) && !l2.includes('Formatting'), 'panel tool row: attach tools, Discard, Full screen; no Formatting toggle');
   check(await has('RFI-143.pdf'), 'the record PDF is attached by default as a chip');

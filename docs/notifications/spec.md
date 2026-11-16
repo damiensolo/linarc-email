@@ -20,9 +20,9 @@ Responsibility beats chronology (the drawer, the full page); Critical is explain
 ## 2. Navigation
 
 - **Bell** on every shelled screen (`TopNavBar`, `account.notificationsBadge`). Not on the secure link page. Count and critical state: §6.
-- **Drawer**: SlideOverPanel `md` over the current page; the page and any unsaved work stay (a compose panel open underneath is not closed; the drawer stacks beside the bell's edge). Header: *Notifications*, the Critical count as its badge, a scope switch All projects / Current project (one project in the MVP, Q-A3), the ··· menu (*Mark updates reviewed*, *Preferences*). Tabs: Needs action · Waiting · Updates · All, each with its count. Footer: *View all*. At 390 the drawer is a full-width sheet.
-- **Full page** `notifications-list` from the bell's *View all*: top nav, no rail (Q-A2); the project context stays.
-- **Preferences** `notifications-preferences` from the drawer's menu and from the top nav's account menu (Settings).
+- **Drawer**: SlideOverPanel `md` over the current page; the page and any unsaved work stay (a compose panel open underneath is not closed; the drawer stacks beside the bell's edge). Header: *Notifications*, the Critical count as its badge, a scope switch All projects / Current project (one project in the MVP, Q-A3) and the critical state line. Tabs: Needs action · Waiting · Updates · All, each with its count. Footer: *Mark updates reviewed* (on the Updates tab, while there are unseen Updates) at the left; *Preferences* · *View all* at the right. At 390 the drawer is a full-width sheet.
+- **Full page** `notifications-list` from the bell's *View all* and the Communication rail's *Notifications* item under Email (Q-A2, resolved 2026-10-26); the project context stays.
+- **Preferences** `notifications-preferences` from the drawer's footer; the rail keeps Notifications highlighted; its back button returns to the full page.
 - **Phone**: the bell sits in the top nav's overflow drawer (library `RightPanel`, row *Notifications*); the bottom tab is not built (`00-plan.md` §2).
 - **Deep links** (source: *Mobile entry and actions*): a card's primary action opens the record with the relevant part in view (thread: the message highlighted; RFI: the Workflow tab on the step; sheet: the revision). If the item was resolved since, the record opens with a line *This item was resolved by Name on date*; if access was removed, the drawer shows *You no longer have access to this item* in place of the record. Never a silent redirect home.
 
@@ -50,7 +50,7 @@ Rules: permissions apply to cards, counts, the banner, history, search and prefe
 
 **Fields**: id, `eventType`, severity + reason + evidence, title, impact line, project, record (code and link), responsible party, next-action party, requester, fallback, due (response due or the step's due), acknowledgment deadline (Critical), created, last event, history (audit rows), `workStatus` per viewer, `engagement` per viewer, `presentation` per viewer, `routing` per viewer.
 
-**Derivation in the prototype** (`src/modules/notifications/data/sources.js`, D-55): items are computed from the Email module's threads (`triage`, `sla`, bounces, unmatched), the RFIs' workflow steps (`currentStep`, `stepStatus`) and the drawings (revision published) for the current role, plus `seed.js` (the Critical, the simulated events). The session stores only what a person does: engagement, snooze, archive, overrides, cover, preferences, simulated events. Reset clears them.
+**Derivation in the prototype** (`src/modules/notifications/data/items.js`, D-55): items are computed from the Email module's threads (`triage`, `sla`, bounces, unmatched), the RFIs' workflow steps (`currentStep`, `stepStatus`) and the drawings (revision published) for the current role, plus `seed.js` (the Critical, the simulated events). The session stores only what a person does: engagement, snooze, archive, overrides, cover, preferences, simulated events. Reset clears them.
 
 **Per-viewer work status**: Needs action when the next action is the viewer's (or someone they cover); Waiting when the viewer asked for a response owed by another party (the party and the expected date shown); Resolved when the source says so. The PM who routed a step is Waiting; the step's party has Needs action, for the same item.
 
@@ -62,7 +62,7 @@ Three levels, `status-model.md`. Critical requires credible material impact and 
 
 | `eventType` (key) | Severity | Responsible (Needs action) | Requester (Waiting) | Primary action | Resolves when |
 |---|---|---|---|---|---|
-| `thread_response` (`thread:<id>:response:<last message>`; one per cycle: the last message starts it) | Important; Critical when confirmed | last message inbound: the thread's internal owner (sender of the last outbound, else the correspondence owner). Last message outbound: its first To recipient | the sender of the last message | *Reply* / *Open thread* | the next message in the thread, or the thread resolved. Skipped when the awaited party holds the linked RFI's step (the RFI item is the obligation; THR-1039 and RFI-142) |
+| `thread_response` (`thread:<id>:response:<last message>`; one per cycle: the last message starts it) | Important; Critical when confirmed | last message inbound: the thread's owner: a Notifications assignment, else the thread's `ownerId` (D-72, 2026-11-14: the owner the Email screen shows, the sender by default, changed by the title bar's select or an `@mention`), else the sender of the last outbound, else the correspondence owner. Last message outbound: its first To recipient | the sender of the last message | *Reply* / *Open thread* | the next message in the thread, or the thread resolved. Skipped when the awaited party holds the linked RFI's step (the RFI item is the obligation; THR-1039 and RFI-142) |
 | `thread_delivery_failed` (`thread:<id>:delivery:<message>`) | Important; Critical when the thread's obligation is Critical | the sender | — | *Update contact and resend* | resent (`resolvedBounces`); kept 30 days as Resolved |
 | `thread_unmatched` (`thread:<id>:link`) | Important (triage) | the project correspondence owner (Sarah), fallback Alex | the sender | *Link to record* | linked (the *Linked to* event); then a `thread_response` may follow |
 | `rfi_step` (`rfi:<id>:<action>:<step>`) | Important; Critical when confirmed (RFI-142, seed) | the step's party (an assignment changes it) | the RFI's creator (when the creator holds the step, responsibility wins) | *Open step* (RFI › Workflow) | the step completes; steps completed in the demo stay as Resolved |
@@ -84,7 +84,7 @@ Kenji's emailed answer on RFI-142 is in the seed data (since 2026-10-28: THR-103
 
 - **Needs action**: open obligations whose next action is the viewer's or their cover's. Critical first, then Overdue and Due today, then the rest by age.
 - **Waiting**: open commitments owed by another party that the viewer must follow up. Critical first, then Overdue, then expected response date.
-- **Updates**: informational events the viewer may see, grouped by record, newest first. *Mark updates reviewed* in the menu; it never touches an obligation.
+- **Updates**: informational events the viewer may see, grouped by record, newest first. *Mark updates reviewed* in the drawer's footer; it never touches an obligation.
 - **All**: everything the viewer may see, open and resolved (resolved kept 30 days in the demo), searchable on the full page.
 - **Critical** is a section at the top of each view and a quick filter, not a view. Overdue and Unmatched are filters.
 - **Bell count** = distinct open Needs action items for the viewer or their cover; excludes Updates and Watching. Snoozed items stay in the total and show as a subtotal line in the drawer (*3 snoozed*). Team items are never in the bell.
@@ -97,7 +97,7 @@ When a Critical item is created for the viewer, in order: the item and its proje
 
 Never: auto-open the drawer, steal focus, discard an edit, replay the banner on the next navigation, show a blocking dialog. Re-notification only for a material change or an escalation, each a history row on the same card. An Important item arrives silently (badge count); an Update never changes the badge.
 
-**Simulate event** (sandbox bar, `prototype.events`): *Critical: delivery failed on a critical thread*, *Reminder: THR-1031 still overdue* (one card gains a history row, the count is unchanged), *Reassign RFI-143's step to me*, *Sarah's cover starts*. Writes to the session; Reset clears.
+**Simulate event** (sandbox bar, `prototype.events`; the four in `seed.js` SIMULATED_EVENTS): *Critical: Alex's email to Kenji about RFI-142 bounces (a Critical arrives)*, *Reminder: THR-1031's response is still overdue (the same card, one more history row)*, *Reassign: RFI-143's Respond step moves from Elena to Alex*, *Cover: Alex covers for Sarah from Thursday for two weeks*. Writes to the session; Reset clears.
 
 Assumed: push deep links restore the destination after sign-in; offline acknowledgments queue with *Pending sync* and never stop the server's clock (*Offline and synchronization*); not demoed.
 
@@ -107,7 +107,7 @@ Assumed: push deep links restore the destination after sign-in; offline acknowle
 |---|---|---|---|
 | Seen | the viewer, by opening the record | `engagement = seen`; the dot goes | acknowledges or resolves |
 | **Acknowledge** | the responsible viewer or cover | `engagement = acknowledged` with time; the Critical state turns acknowledged; stops the acknowledgment clock only | changes severity, status or Overdue |
-| **Snooze** (until tomorrow, next Monday, the due date, a date) | the viewer | `presentation = snoozed`; leaves the view, stays in the count's subtotal; a Critical keeps its signal and its escalation; bounded to the due date for Critical | pauses a deadline or team escalation |
+| **Snooze** (until tomorrow, until next Monday, until the due date when the item has one; no date picker) | the viewer | `presentation = snoozed`; leaves the view, stays in the count's subtotal; a Critical keeps its signal and its escalation; bounded to the due date for Critical | pauses a deadline or team escalation |
 | **Assign** / delegate | internal roles, by the record's rules | the record's responsible party changes; the incoming owner gets the item Unseen; history keeps the chain | lowers severity |
 | Take ownership | internal roles | the same as Assign to self; offered on fallback-routed cards | — |
 | **Resolve** | the source only (reply sent, resent, linked, step completed, reviewed) | `workStatus = resolved`; the card leaves Needs action and Waiting | from the card directly (no *Resolve* button; "Mark updates reviewed" is for Updates only) |
@@ -169,7 +169,7 @@ The Email module is unchanged. Mapping of its events and actions to items:
 | Drawer › All | empty | *No notifications yet.* |
 | Drawer | loading | skeleton rows (three) after 200ms |
 | Drawer | error | *Couldn't load notifications.* + Retry |
-| Drawer | snoozed subtotal | *3 snoozed* line under the tabs with a *Show* text button (switches the drawer to All, where snoozed cards are listed) |
+| Drawer | snoozed subtotal | *1 snoozed · still in your count* under the Needs action list with a *Show* text button (switches the drawer to All, where snoozed cards are listed) |
 | Card (Critical) | — | chip **Critical** · *Critical because the lead-lined partition answer is due today and Carlos Reyes confirmed on site that framing at Grid D-7 has stopped* · *Respond RFI-142: Level 2 Operating Room lead-lined partition termination* · RFI-142 · *Waiting on Kenji Takahashi* · chip **Due today** · *Acknowledge by 11:45 · then Carlos Reyes is told* · evidence line (*Carlos Reyes, 16 Oct 07:40: "…"*) · *More · Acknowledge · Open step* |
 | Card (Waiting) | — | title · *Respond step with Elena Rostova, PE, due 21 Oct* · *Due 21 Oct* · *Waiting on Elena Rostova* (the requester's routing word *You asked for this* appears only when the item has no eligible owner: *You asked for this · no eligible owner, with Carlos Reyes*) |
 | Card | covering | *Covering for Sarah Jenkins* |

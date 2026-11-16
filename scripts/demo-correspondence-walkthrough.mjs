@@ -1,6 +1,7 @@
 // Walks the Email demo exactly as docs/correspondence/demo-guide.md §3 writes it (Opener, Acts 1 to 3, Act 2b, the hybrid
 // moment, Close), asserting every "Point at" the guide promises, in the guide's order and state: the counts at step 9
-// are the counts after Act 1, not the reset counts. Needs the dev server. Run from the repo root:
+// are the counts after Act 1, not the reset counts (F-041, 2026-11-04: a demo guide is a test script; 99 checks, kept in
+// step with the guide through the D-72…D-80 waves of 2026-11-14). Needs the dev server. Run from the repo root:
 //   node scripts/demo-correspondence-walkthrough.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';

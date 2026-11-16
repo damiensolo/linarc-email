@@ -38,7 +38,7 @@ The draft's `replied` collapsed into `waiting`: "we replied" is "waiting on them
 | `later` | Follow up · 19 Oct | neutral | word |
 | `none` | — | neutral | none |
 
-The owner (`ownerId`, D-72) is a person, not a status: a select on the thread, a column and the *Assigned to me* view on the Email screen.
+Not a `def` in `status.js`: `followUpFor` in `data/threads.js` computes the value and the two renderers (ThreadList row, thread and pane header) carry the label. The owner (`ownerId`, D-72) is a person, not a status: a select on the thread, a column and the *Assigned to me* view on the Email screen.
 
 ### `correspondenceType` (thread the GC started; D-78)
 | Value | Label | Tone | Signal |
@@ -52,7 +52,7 @@ The number (`letterNo`, *C-0041*) is data assigned on send, not a status; inboun
 ### `visibility` (thread)
 | Value | Label | Tone | Signal |
 |---|---|---|---|
-| `project_public` | Project correspondence | neutral | none (default, not shown) |
+| `project_public` | Project email | neutral | none (default, not shown; the hidden Visibility filter column's other value) |
 | `restricted` | Confidential | warning | chip |
 
 Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility value; they render as InlineNotice `warning`.
@@ -60,7 +60,7 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 ### `promotion` (thread)
 | Value | Label | Tone | Signal | Note |
 |---|---|---|---|---|
-| `unpromoted` | — | neutral | none | |
+| `unpromoted` | Not promoted | neutral | none | |
 | `promoted_rfi` | Promoted to RFI | info | link (record code) | |
 | `promoted_pco` | Promoted to PCO | info | link | a target since D-77 |
 | `promoted_field_issue` | Promoted to field issue | info | link | D-77 |
@@ -70,7 +70,13 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 | Value | Label | Tone | Signal |
 |---|---|---|---|
 | `current` | Current | neutral | word |
-| `superseded` | Superseded by Rev N | warning | chip, plus the note on the preview |
+| `superseded` | Superseded | warning | chip (the screens append *by Rev N* from the record), plus the note on the preview |
+
+### `submittal` and `changeOrder` (the stand-in records' status, D-74)
+| Dimension | Values (tone) | Signal |
+|---|---|---|
+| `SUBMITTAL` (the template's) | Draft (neutral) · Submitted (info) · In review (info) · Approved (success) · Approved as noted (success) · Revise and resubmit (warning) · Rejected (error) | chip in the record's title bar; a neutral value as a word |
+| `CHANGE_ORDER` | Draft (neutral) · Pending owner approval (warning) · Approved (success) · Rejected (error) | the same; a PCO promoted in the demo reads *PCO · Draft* in Linked items |
 
 ### `rfiStatus` (RFI; proposed labels for the Figma Status Tag frames, `rfi-integration.md` §G)
 | Value | Label | Tone | Signal |
@@ -94,9 +100,10 @@ Internal notes are an **entry type** (`INTERNAL_COMMENT`), not a visibility valu
 
 | Place | Dimensions |
 |---|---|
-| Email screen columns | `triage`, `sla`, `delivery` (last outbound), `promotion`, `visibility` |
-| Email screen segments | `triage` (Needs action, Waiting), `sla` (Overdue); Unmatched is "no linked record", not a status |
-| Thread title bar | `triage` as the `Status:` chip; `visibility` chip only when restricted |
+| Email screen columns | `triage` (Status), `sla` (Response due), `delivery` (last outbound), `correspondenceType` (Letter, D-78); no Promoted column (the promoted record is one of the Linked records); `visibility` is a hidden filter column behind the *Confidential* quick filter |
+| Email screen segments | `triage` (Needs action, Waiting), `sla` (Overdue), `follow_up` (Follow up), the owner (Assigned to me, D-72); Unmatched is "no linked record", not a status; Drafts and Deleted are folders (D-67) |
+| Thread title bar | `triage` as the `Status:` chip; `visibility` chip only when restricted; `correspondenceType` as a word after the id (D-78) |
+| Record title bar (Submittal, Change order) | `submittal` / `changeOrder` as the `Status:` chip; `sla` chip for Due only when due today or overdue (D-74) |
 | ThreadStream entry | `delivery` per message |
 | Linked items | `drawingRevision`, `rfiStatus` |
 | RFI title bar | `rfiStatus` as the `Status:` chip; `sla` chip for Due only when due today or overdue |

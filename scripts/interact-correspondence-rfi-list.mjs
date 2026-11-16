@@ -1,4 +1,4 @@
-// Interaction check for correspondence-rfi-list: the views and their counts, a row opens the RFI with Email, the
+// Interaction check for correspondence-rfi-list (2026-10-26): the views and their counts, a row opens the RFI with Email, the
 // detail's back button returns to the log, the rail's All RFIs lands on the log, the guest's reduced log, Reset.
 // Needs the dev server. Run from the repo root:  node scripts/interact-correspondence-rfi-list.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';

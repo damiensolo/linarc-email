@@ -1,6 +1,7 @@
-// Interaction check for notifications-list (docs/notifications/00-plan.md §8 step 3): scope and view segments, the summary,
-// the Team scope's Person column, bulk Acknowledge, the row's card panel, the guest's reduced page, Reset. Needs the
-// dev server. Run from the repo root:  node scripts/interact-notifications-list.mjs <port> <out-dir>
+// Interaction check for notifications-list (docs/notifications/00-plan.md §8 step 3, 2026-10-26; 16 checks): scope and
+// view segments, the summary, the Team scope's Person column, bulk Acknowledge (the bell count unchanged), the row's
+// card panel, the guest's reduced page, Reset. Needs the dev server. Run from the repo root:
+//   node scripts/interact-notifications-list.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));

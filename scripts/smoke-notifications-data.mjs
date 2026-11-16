@@ -1,7 +1,8 @@
 // Smoke test for src/modules/notifications/data (docs/notifications/spec.md §4–§9): every derived item maps to the
 // vocabularies; one item per obligation; the per-role projection (PM Needs action / PE Waiting on one obligation; the
 // guest sees nothing internal); acknowledge, snooze, assign, override, cover and the simulated events through the
-// session. Run from the repo root: `node scripts/smoke-notifications-data.mjs`. Loads through Vite SSR like the Email one.
+// session (00-plan.md §8 step 1, 2026-10-26). No dev server, port or out-dir. Run from the repo root:
+// `node scripts/smoke-notifications-data.mjs`. Loads through Vite SSR like the Email one.
 import { pathToFileURL } from 'node:url';
 const { createServer } = await import(pathToFileURL(process.cwd() + '/node_modules/vite/dist/node/index.js'));
 const root = process.cwd();

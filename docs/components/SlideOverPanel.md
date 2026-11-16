@@ -1,7 +1,7 @@
 # SlideOverPanel
 
 - **Stage:** figma (drawn 2026-10-16 on the library's `_ ☉ Candidates` page; built 2026-10-16, `src/candidates/SlideOverPanel/SlideOverPanel.vue`)
-- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-context-dwg` (compose), `correspondence-thread` (promote), `correspondence-context-rfi` (compose, Add to Q&A), `correspondence-list` (compose), `notifications-list` (the item's card, `sm`), and every shell screen through the Notifications drawer (`src/modules/notifications/components/NotificationsDrawer.vue`, D-52)
+- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-context-dwg` (compose), `correspondence-thread` (promote), `correspondence-context-rfi` (compose, Add to Q&A), `correspondence-context-sub` and `correspondence-context-co` (compose, D-74), `correspondence-list` (compose), `notifications-list` (the item's card, `sm`), and every shell screen through the Notifications drawer (`src/modules/notifications/components/NotificationsDrawer.vue`, D-52)
 - **Candidate code:** `src/candidates/SlideOverPanel/SlideOverPanel.vue`
 - **Figma:** [`_ ☉ Candidates` › SlideOverPanel](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024481-1436) (unpublished, variables bound) · **Library:** — · **Log:** D-34, D-36, D-69, D-70; F-017, F-029, F-030, F-051
 - **Rules:** D-34; `docs/5-ui-patterns.md` §1 (contextual create), §2 (scroll padding, F-051)
@@ -41,7 +41,7 @@ Sizes sm / md / lg; open / closing; with and without footer; body loading (the c
 Below 640px the panel takes the full width and the footer stays fixed. The panel and its backdrop start under any band the host reserves with the CSS variable `--sandbox-offset` (the prototype sandbox bar sets it to its own height, so the bar's controls stay usable while a panel is open, F-029); unset, the panel is full height. The transition has `appear`, so a panel that mounts already open still animates in and emits `opened` (F-030). Focus moves to the title on open and returns to the trigger on close; Esc closes; `role="dialog"`, `aria-modal`, `aria-labelledby` the title. The page behind does not scroll while open. One panel at a time; a second request replaces the first (no stacking, D-36). Layer `z-index: 40`: above the page, below dialogs that fields inside the panel open (the rich text editor's emoji, link and table pickers, legacy Modal z-50), below ModalV2, dropdowns, tooltips and the FileViewer (F-017).
 
 ## Content
-The title names the task (*Message stakeholder*, *Promote to record*); the primary button is label-only and names the outcome (*Send message*, *Create RFI*).
+The title names the task (*Message stakeholder*, *Promote to record*); the primary button is label-only and names the outcome (*Send message*, *Create RFI*). The Promote panel's primary follows the record type chosen in its `type` select: *Create RFI*, *Create field issue*, *Create PCO* (D-77) or *Add to daily log* (D-80, no assignee).
 
 ## Open questions for design
 - Should the panel sit over the content area only (rail and top nav stay interactive) or over the whole viewport?

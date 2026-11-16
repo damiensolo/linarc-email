@@ -2,7 +2,7 @@
 
 Proposal, anatomy, tokens and behaviour: `docs/components/SmartPicker.md` (D-61). Import as `~/candidates/SmartPicker/SmartPicker.vue`.
 
-A search-first picker for records and files: a search box that ranks matches as you type (title, code, keywords, description), a checkbox per kind with live counts (all on; untick to hide), the list grouped as Suggested, Recent and then by kind while nothing is typed in a fixed-height card, a checkbox per row and removable chips on an always-present line when `multiple`, and an empty state that says how to widen the search. Nothing moves while it is used (D-62). It fills the body of a ModalV2 `size="md"` (D-34, P-059); the host owns the primary button.
+A search-first picker for records and files: a search box that ranks matches as you type (title, code, keywords, description), a checkbox per kind with live counts (all on; untick to hide), the list grouped as Suggested, Recent and then by kind while nothing is typed in a fixed-height card, a checkbox per row and removable chips on an always-present line when `multiple`, and an empty state that says how to widen the search. Nothing moves while it is used (D-62). It fills the body of a ModalV2 `size="md"` (D-34, P-059); the host owns the primary button. *Link to record* (`LinkRecordModal`, on the list and the thread) uses `multiple` too since D-77 (2026-11-14), the button carrying the count.
 
 ```vue
 <ModalV2 :is-visible="open" size="md" title="Attach a record" :primary-label="`Attach ${ids.length || ''}`" :primary-disabled="!ids.length" @onPrimaryClick="attach">

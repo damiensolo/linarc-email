@@ -1,4 +1,5 @@
-// Interaction check for the Email screen's Reading view (D-65): the toolbar's third view, the Views pane cross-linked
+// Interaction check for the Email screen's Reading view (D-65, 2026-11-04): the toolbar's second view (List · Reading
+// pane; the Grid view went the same day), the Views pane cross-linked
 // with the grid's Filter panel, the list in the grid's display order, the reading pane, the divider, the hash, and the
 // hidden filter columns staying hidden after a trip through the view (library P-068). Needs the dev server:
 //   node scripts/interact-correspondence-reading.mjs <port> <out-dir>

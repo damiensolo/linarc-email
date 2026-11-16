@@ -1,7 +1,7 @@
 # FileViewer
 
 - **Stage:** candidate
-- **Proposed:** 2026-10-18 · **Used on:** `correspondence-thread`, `correspondence-context-rfi`, `correspondence-portal`, `correspondence-list` (the Reading pane, D-65); opened through `src/modules/correspondence/fileViewing.js`
+- **Proposed:** 2026-10-18 · **Used on:** `correspondence-thread`, `correspondence-context-rfi`, `correspondence-context-sub` and `correspondence-context-co` (the record's Email tab, D-74), `correspondence-portal`, `correspondence-list` (the Reading pane, D-65); opened through `src/modules/correspondence/fileViewing.js`
 - **Candidate code:** `src/candidates/FileViewer/FileViewer.vue`
 - **Figma:** — (to draw on `_ ☉ Candidates`) · **Library:** — · **Log:** P-048 (the tile that opens it), D-45
 

@@ -1,5 +1,6 @@
-// Interaction check for correspondence-list (spec-to-prototype §5): segments ↔ grid filter, Link to record end to end,
-// the sandbox role switcher and Reset demo data. Needs the dev server. Run from the repo root:
+// Interaction check for correspondence-list (spec-to-prototype §5, D-30; 2026-10-17): segments ↔ grid filter, Link to
+// record end to end (the picker, the subject prefix), the sandbox role switcher (the guest sees no cost column) and
+// Reset demo data. Needs the dev server. Run from the repo root:
 //   node scripts/interact-correspondence-list.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';

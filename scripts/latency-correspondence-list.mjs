@@ -1,5 +1,6 @@
-// Latency scenarios for correspondence-list (5-ui-patterns.md §6): slow (skeleton, "Still loading…"), fail (error + Retry),
-// fail-once (Retry recovers). Needs the dev server. Run from the repo root: node scripts/latency-correspondence-list.mjs <port>
+// Latency scenarios for correspondence-list (5-ui-patterns.md §6, D-24; 2026-10-17): slow (skeleton, "Still loading…"),
+// fail (error + Retry), fail-once (Retry recovers). Needs the dev server; writes no files, so there is no <out-dir>.
+// Run from the repo root: node scripts/latency-correspondence-list.mjs <port>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));

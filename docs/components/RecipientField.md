@@ -1,7 +1,7 @@
 # RecipientField
 
 - **Stage:** figma (built 2026-10-19; drawn on `_ ☉ Candidates` for review, 8 states + Recipient Chip, see Figma below; inline guest creation removed 2026-10-28, D-60)
-- **Proposed:** 2026-10-19 · **Used on:** `correspondence-context-rfi`, `correspondence-context-dwg`, `correspondence-list` (the shared Compose panel)
+- **Proposed:** 2026-10-19 · **Used on:** `correspondence-context-rfi`, `correspondence-context-dwg`, `correspondence-context-sub`, `correspondence-context-co` (D-74), `correspondence-list` (the shared Compose panel)
 - **Candidate code:** `src/candidates/RecipientField/RecipientField.vue`, helpers `recipients.js`
 - **Figma:** `_ ☉ Candidates` page: [RecipientField](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024505-562) (8 states), [Recipient Chip](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024503-293) (Kind × State × Avatar On/Off), the shared candidates [Dropdown Row](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-696) (typeahead rows), [Menu Item](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-621) (also the typeahead's action row when a page offers one) and [Menu](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024508-622) (chip menu), the library Tooltip, [specs](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024507-529) (examples, anatomy & tokens, keyboard, behaviour). Documentation file: Email page › 06 · Compose (`[candidate] RecipientField / To`, `/ Cc`) · **Library:** — · **Log:** P-050 (library parts it needs), D-47
 
@@ -35,7 +35,7 @@ An address field that behaves like a modern mail client's To / Cc / Bcc: type a 
 | `value` | Array | `[]` | v-model. `[{ email, name?, company?, role?, avatarUrl?, id?, invalid? }]`, in order |
 | `label` | String | `'To'` | the leading label |
 | `contacts` | Array | `[]` | the directory searched (same shape); order kept for the empty query (suggested first) |
-| `groups` | Array | `[]` | distribution lists offered as one chip each (D-75): `[{ id, name, members: [recipient] }]`; a picked group is `{ group: true, id, name, members, email: 'group:<id>' }` in `value`; the host expands them with `expandRecipients` when it sends |
+| `groups` | Array | `[]` | distribution lists offered as one chip each (D-75): `[{ id, name, members: [recipient], own? }]`; a group marked `own` (the record's own list) is offered before anything is typed, the others once their name is; a picked group is `{ group: true, id, name, members, email: 'group:<id>' }` in `value`; the host expands them with `expandRecipients` when it sends |
 | `internalDomains` | Array | `[]` | the organization's domains; any other is external. Empty: no external marking |
 | `organizationName` | String | `''` | named in the external chip's tooltip: *Outside {organizationName}* (fallback *your organization*) |
 | `showAvatar` | Boolean | `true` | avatars on chips and list rows (photo from `avatarUrl`, else the first initial). The Compose panel sets it `false` |
@@ -52,7 +52,7 @@ An address field that behaves like a modern mail client's To / Cc / Bcc: type a 
 
 Events: `input` (the new array), `unknown` (`{ email, name }`), `move` (`{ recipient, to }`; the source has already removed it), `focus`, `blur`. Slot: `trailing`.
 
-**Group chip (D-75, 2026-11-14):** StatusChip Type=Icon (people icon) reading *Design team · 2*, neutral when every member is in the organization, amber when one is not; tooltip = the members (four names, then *and n more*) and *some outside {organization}*; menu *Show members* (the chip becomes its members' chips, those already in the field left out) · *Copy email addresses* · *Move to …* · *Remove*; double-click shows the members. Typeahead rows for groups come before the people (three at most), the row's description names the members and the right text reads *Group · n*.
+**Group chip (D-75, 2026-11-14):** StatusChip Type=Icon (people icon) reading *Design team · 2*, neutral when every member is in the organization, amber when one is not; tooltip = the members (four names, then *and n more*) and *some outside {organization}*; menu *Show members* (the chip becomes its members' chips, those already in the field left out) · *Copy email addresses* · *Move to …* · *Remove*; double-click shows the members. Typeahead rows for groups come before the people (three at most), the row's description names the members and the right text reads *Group · n*. The chip carries `data-group-chip` and the row `data-group-option`.
 
 ## States and variants
 Empty · focused (list open) · typing (filtered list, first row active) · filled · chip selected · invalid chip (field error) · drop target · disabled · no matches · unknown address offered. Both themes: every colour is a token; chips and rows follow Status Chip and Select Menu Item.

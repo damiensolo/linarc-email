@@ -23,7 +23,7 @@ An address field with input chips: typeahead over a directory, chips for interna
 |---|---|---|
 | `value` | `[]` | `[{ email, name?, company?, role?, avatarUrl?, id?, invalid? }]` (v-model) |
 | `label` | `'To'` | leading label inside the field |
-| `groups` | `[]` | distribution lists as one chip each (D-75): `[{ id, name, members }]`; expand with `expandRecipients` on send |
+| `groups` | `[]` | distribution lists as one chip each (D-75): `[{ id, name, members, own? }]`; an `own` group is offered before anything is typed; expand with `expandRecipients` on send |
 | `contacts` | `[]` | directory for the typeahead; empty query keeps this order |
 | `internalDomains` | `[]` | other domains get the amber chip |
 | `organizationName` | `''` | external tooltip: *Outside {organizationName}* |
@@ -35,11 +35,13 @@ An address field with input chips: typeahead over a directory, chips for interna
 | `moveTargets` | `[]` | *Move to …* menu rows |
 | `suggestOnFocus` | `true` | list on focus with an empty query |
 | `maxSuggestions` | `8` | |
-| `placeholder`, `error`, `disabled` | String, String, Boolean | `''`, `''`, `false` | as InputV2 |
+| `placeholder` | `''` | shown only while the field is empty |
+| `error` | `false` | Boolean: the error outline; the page says what is wrong next to it |
+| `disabled` | `false` | |
 
 Events: `input`, `unknown { email, name }`, `move { recipient, to }`, `focus`, `blur`. Slot: `trailing`.
 
-Pure helpers in `recipients.js` (`isEmail`, `parseToken`, `splitTokens`, `kindOf`, `matchContacts`, `toClipboardText`) are exported for pages and tests.
+Pure helpers in `recipients.js` (`isEmail`, `domainOf`, `parseToken`, `splitTokens`, `kindOf`, `matchContacts`, `toClipboardText`; for groups `isGroup`, `asGroupRecipient`, `matchGroups`, `expandRecipients`, D-75) are exported for pages and tests. A group chip carries `data-group-chip`, its typeahead row `data-group-option`.
 
 Each chip sits in the library Tooltip (external: why it's amber; internal: the address; invalid: how to fix it).
 

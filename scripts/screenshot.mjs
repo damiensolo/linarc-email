@@ -1,7 +1,9 @@
-// Full-page screenshots of a prototype at exact viewport widths, light + dark, with console errors.
-// Usage: yarn shot <slug> [out-dir] [port] [widths] [height]
-//   widths: comma-separated, default "1440,1024,390" (desktop, tablet, mobile)
-// Requires the dev server (yarn dev). Uses the installed Microsoft Edge (override with EDGE_PATH).
+// Full-page screenshots of a prototype at exact viewport widths, light + dark, with console errors and a horizontal-
+// overflow warning; scrollbars kept (template, 2026-10-17; browser pick F-011, scrollbars template F-051).
+// Usage: yarn shot <slug>[#hash] [out-dir] [port] [widths] [height]
+//   widths: comma-separated, default "1440,1024,390" (desktop, tablet, mobile); exits 1 on a console error
+// Requires the dev server (yarn dev). Uses the first installed browser (Edge on Windows; Edge, then Chrome, on macOS),
+// or the one EDGE_PATH names.
 import fs from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer-core';

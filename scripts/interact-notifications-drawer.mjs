@@ -1,7 +1,9 @@
 // Interaction check for the Notifications drawer, bell and banner on the Email screen (docs/notifications/00-plan.md §8
-// step 2): explainable counts per role, the Critical section, acknowledge keeps severity and timing, snooze keeps the
-// count, a Critical arriving shows the banner without a remount, the guest sees nothing internal, Reset. Needs the dev
-// server. Run from the repo root:  node scripts/interact-notifications-drawer.mjs <port> <out-dir>
+// step 2, 2026-10-26; 32 checks since Kenji's emailed answer, 2026-10-28): explainable counts per role, the Critical
+// section and Project oversight, Esc closes the drawer, acknowledge keeps severity and timing, snooze keeps the count,
+// a Critical arriving shows the banner and the bell state without a remount, the guest sees nothing internal, the
+// phone's hamburger row opens the drawer with no overflow at 390, Reset. Needs the dev server. Run from the repo root:
+//   node scripts/interact-notifications-drawer.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));
@@ -94,7 +96,7 @@ try {
   // 3. Snooze keeps the count: the snoozed card leaves Needs action, the subtotal appears, the bell stays at 2.
   await clickText('Needs action');
   await clickIn('Reply to Dave Miller', 'More');
-  await clickText('Snooze until next monday', '[role="menuitem"]');
+  await clickText('Snooze until next Monday', '[role="menuitem"]');
   await sleep(400);
   check(!(await has('Reply to Dave Miller')) && await has("File Kenji Takahashi, AIA's answer") && await has('1 snoozed'), 'snoozed: the card left Needs action, the subtotal shows');
   check((await bell()).startsWith('Notifications: 2 need action'), `bell keeps the snoozed item in its total: ${await bell()}`);

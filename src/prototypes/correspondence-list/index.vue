@@ -47,7 +47,7 @@
              row would only hold the thread count, so it goes and the panes start under the toolbar. First-load errors
              still show in the LoadRegion; a refresh error has no "Couldn't update." line there. -->
         <div v-if="mode !== 'reading'" class="flex flex-wrap items-center gap-x-space-16 gap-y-space-8" aria-label="Views">
-          <!-- Seven segments overflow a 390px screen: the strip scrolls in its own box (as the stepper, F-070). -->
+          <!-- Nine segments (VIEWS, with the Drafts and Deleted folders) overflow a 390px screen: the strip scrolls in its own box (as the stepper, F-070). -->
           <div class="max-w-full overflow-x-auto">
             <SegmentedControl :value="view" :options="viewOptions" aria-label="Email view" size="md" @input="pickView" />
           </div>

@@ -23,8 +23,8 @@ Overlays: **Critical override** (compact ModalV2 from a Critical card: outcome R
 ### Views, scopes and filters (D-30)
 - Views = `workStatus` (Needs action, Waiting), `severity = update` (Updates), All. Each non-All view is one condition and a quick filter; Critical and Overdue are quick filters, not views (the Critical section sits inside each view).
 - Scopes: My responsibilities (`routing` assigned / fallback / covering / requester), My team (internal roles only; per-person counts), Watching (`routing = watching`). A guest has no scope switch (Q-A9).
-- Other quick filters: Source (Email, RFIs, Drawings), Severity, Overdue, Snoozed, Unacknowledged Critical.
-- Columns: Severity (chip + reason on hover) · Title · Record · Responsible · Due · Routing · Status (`workStatus`) · Age · Actions (frozen right).
+- Other quick filters (`listColumns.js`): Critical, Overdue, Not acknowledged, Snoozed, and the sources Email · RFIs · Drawings; Timing, Source, Snoozed or archived, Critical acknowledgment and Event family are hidden filter-only columns.
+- Columns: Notification (the title, frozen left) · Severity (chip for Critical, else a word) · Person (Team scope only) · Status (`workStatus`) · Record · Responsible · Due · Why you (`routing`) · Age · the row's action (frozen right).
 
 ## 3. Component map (skill §2)
 
@@ -42,7 +42,7 @@ Overlays: **Critical override** (compact ModalV2 from a Critical card: outcome R
 | Loading and write states | existing (template candidates) | `LoadRegion`, `LoadStatus`, `Skeleton`, `createLoad` | |
 | Forms | existing | `FormV2` flat, `Radio`, `Checkbox`, `SelectV2`, `DatePicker`, `Textarea`, `Toggle` | left-aligned, short widths (D-26) |
 | Dialogs | existing | `ModalV2` compact | override, assign |
-| Shell without a rail | existing (extension) | `AppShell` `rail="none"` | small additive prop in this repo |
-| Snooze menu | existing | `Popover` + rows (the Menu candidate's rows live in RecipientField today; extract if a second menu is needed) | until tomorrow · next Monday · the due date · pick a date |
+| Shell without a rail | existing (extension) | `AppShell` `rail-mode="none"` | small additive prop in this repo; the two screens use the Communication rail since Q-A2 was resolved |
+| Snooze menu | existing | `Popover` + rows (the Menu candidate's rows live in RecipientField today; extract if a third menu is needed) | until tomorrow · next Monday · the due date (when the item has one); no date picker |
 
 **Zero new candidates** (the target set in `00-plan.md` §5): two library components drawn in Figma already but never coded, one additive prop on the shell. Fewer than the last module's four.

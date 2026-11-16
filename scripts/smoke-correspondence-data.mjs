@@ -1,5 +1,6 @@
 // Smoke test for src/modules/correspondence/data (spec-to-prototype §5: every status in the data renders; roles; session
-// flows). Run from the repo root: `node scripts/smoke-correspondence-data.mjs`. Loads the module through Vite SSR so the
+// flows; F-006, 2026-10-17). No dev server, port or out-dir. Run from the repo root:
+// `node scripts/smoke-correspondence-data.mjs`. Loads the module through Vite SSR so the
 // ~ and @ aliases resolve without a browser; session.js falls back to an empty in-memory session.
 import { pathToFileURL } from 'node:url';
 const { createServer } = await import(pathToFileURL(process.cwd() + '/node_modules/vite/dist/node/index.js'));

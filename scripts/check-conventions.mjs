@@ -1,5 +1,7 @@
-// Conventions check: the CLAUDE.md rules that a grep can enforce. Runs on this repo's own source (never the library).
-// Usage: yarn check            (also the first half of `yarn verify`)
+// Conventions check (template, 2026-10-17): the CLAUDE.md rules that a grep can enforce (hex colours, primitive palette
+// and raw / arbitrary values, bad `border-*` classes, `<script setup>` / TypeScript, reload navigation). Runs on this
+// repo's own source (never the library). No port or out-dir.
+// Usage: yarn run check        (also the first half of `yarn verify`; plain `yarn check` is Yarn 1's integrity check, F-012)
 //        node scripts/check-conventions.mjs [paths…]
 // Exit 1 with one line per violation: file:line  rule  the offending text.
 // Skip one line with a trailing `conventions-ignore` comment when a rule is wrong for that line (say why).

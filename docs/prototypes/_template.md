@@ -8,7 +8,7 @@
 ## Metrics
 | Measure | Value |
 |---|---|
-| Time from Figma link to first render | |
+| Time from Figma link (or spec) to first render | |
 | Time to verified done | |
 | Components used (library / forked / new) | |
 | Gaps found | |
@@ -23,10 +23,10 @@ Which library components were used, and with which props.
 |---|---|---|
 
 ## Verification
-Results of each check in docs/3-verification.md, and the computed values compared.
+Results of each check in docs/3-verification.md, the computed values compared, and the screen's script (`node scripts/interact-<slug>.mjs <port> <out-dir>`: passed / total).
 
 ## Findings
 F-NNN links for anything logged during this prototype.
 
 ## Screenshots
-Paths in `docs/case-study/assets/`, if any were kept.
+Scratchpad only, unless kept in `docs/case-study/assets/` (not created yet).

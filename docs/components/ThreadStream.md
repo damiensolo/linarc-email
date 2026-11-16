@@ -1,7 +1,7 @@
 # ThreadStream
 
 - **Stage:** figma (drawn 2026-10-16 on the library's `_ ☉ Candidates` page; built 2026-10-16, `src/candidates/ThreadStream/ThreadStream.vue`)
-- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-thread`, `correspondence-context-rfi` (Email tab), `correspondence-list` (the Reading pane, D-65)
+- **Proposed:** 2026-10-16 (Correspondence) · **Used on:** `correspondence-thread`, `correspondence-context-rfi`, `correspondence-context-sub` and `correspondence-context-co` (Email tab; the last two through `RecordEmailTab`, D-74), `correspondence-list` (the Reading pane, D-65)
 - **Candidate code:** `src/candidates/ThreadStream/ThreadStream.vue`
 - **Figma:** [`_ ☉ Candidates` › ThreadStream](https://www.figma.com/design/1HxMANBEaYWFqEFtazB20l/Linarc-Design-System-V3.2?node-id=40024481-1478) (unpublished, variables bound) · **Library:** — · **Log:** —
 - **Rules:** D-17, D-38; `docs/5-ui-patterns.md` §3
@@ -16,7 +16,7 @@ The list of entries in a correspondence thread (external messages, internal note
 
 ## Anatomy
 Entries top to bottom (oldest first), each separated by a `border/subtle` hairline, no outline on the list:
-- **Message**: avatar or initials → name, company, time → delivery signal → body (`bodyHtml` when written in the composer, else the plain `body`) → attached links (`links`: name and URL, opening in a new tab) → attachment tiles (library `AttachmentThumbnail`, P-048: preview or file type; caption with name, size, *By secure link* and, for a photo, *Taken 16 Oct, 08:12*, D-80; open in `FileViewer`, D-45) → row action slot (*Promote to record*).
+- **Message**: avatar or initials → name, company, time → delivery signal (plus the muted words *Resent* for a `resendOf` and *Reminder* for a chaser sent on the thread, D-72) → body (`bodyHtml` when written in the composer, else the plain `body`) → attached links (`links`: name and URL, opening in a new tab) → attachment tiles (library `AttachmentThumbnail`, P-048: preview or file type; caption with name, size, *By secure link* and, for a photo, *Taken 16 Oct, 08:12*, D-80; open in `FileViewer`, D-45) → row action slot (*Promote to record*).
 - **Internal note**: an InlineNotice `warning` with the fixed heading; hidden for external roles.
 - **System event**: a muted single line with an in-document link.
 - **Bounce**: an InlineNotice `error` under the message, with an action slot.

@@ -1,7 +1,7 @@
 # Loading states: Skeleton · LoadRegion · LoadStatus (+ `createLoad`)
 
 - **Stage:** figma (drawn 2026-10-11; needs building in the library)
-- **Proposed:** 2026-10-10 (first module) · **Used on:** `example-list` and `example-detail` (reference implementations); every screen that loads data: the six `correspondence-*` screens (including the Reading pane), `notifications-list`, the Notifications drawer, `notifications-preferences` (LoadStatus for saves)
+- **Proposed:** 2026-10-10 (first module) · **Used on:** `example-list` and `example-detail` (reference implementations); every screen that loads data: the eight `correspondence-*` screens (including the Reading pane and, since D-74, the Submittal and Change Order screens through `RecordEmailScreen`), `notifications-list`, the Notifications drawer, `notifications-preferences` (LoadStatus for saves)
 - **Candidate code:** `src/candidates/Skeleton/Skeleton.vue`, `src/candidates/LoadRegion/LoadRegion.vue` + `createLoad.js`, `src/candidates/LoadStatus/LoadStatus.vue`
 - **Figma:** design system `_Candidates` page: Skeleton `40024347:89` (Shape = Line sm / md / lg · Block · Circle), Load Status `40024347:169` (State = Default · Loading · Updating · Still loading · Couldn't update; Summary text), Load Region `40024347:224` (State = Skeleton · Error · Cancelled); tables: Data Table / Sheet Cell `Type=Skeleton Loader` (40016391:36860) · **Library:** DataGrid `loading` (P-034), tokens (P-035) · **Log:** P-034, P-035, P-036, D-24, F-057, F-058
 - **Rules:** `docs/5-ui-patterns.md` §6

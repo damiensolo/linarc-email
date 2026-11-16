@@ -8,7 +8,7 @@
 ## Scope
 - **Persona and decision:** GC PM / PE: choose a preset, adjust delivery per event family and channel, set quiet hours, hand over while away (`docs/notifications/screens.md` §2, spec §9, §11). Flow 3, Task 4.
 - **Nav:** the Communication rail with Notifications highlighted (`screens` alias on the rail item); from the drawer's footer and the full page; the back button returns to the full page.
-- **Data:** `preferencesFor`, `savePreferences`, `presetMatrix`, `coverPreview`, `startCover`, `endCover` (`src/modules/notifications/data/actions.js`); `EVENT_FAMILIES`, `CHANNELS`, `CADENCES`, `LOCKED`, `PRESETS`, `PRODUCT_CATALOG` (`policy.js`).
+- **Data:** `preferencesFor`, `savePreferences`, `presetMatrix`, `startCover`, `endCover` (`src/modules/notifications/data/actions.js`), `activeCover` and `coverPreview` (`items.js`); `EVENT_FAMILIES`, `CHANNELS`, `CADENCES`, `LOCKED`, `PRESETS`, `PRODUCT_CATALOG` (`policy.js`).
 - **Patterns:** settings form (`5-ui-patterns.md` §1, §7, D-19, D-20, D-25): comfortable title bar with `HeaderToolIcon type="back"`, a centred `max-w-4xl` column, sections separated by white space and hairlines, the fixed bottom panel with Cancel · Save aligned to the column and a LoadStatus write line (*Saving…* / *Saved*). Preset as `Radio`; the matrix as a table of small `SelectV2` cells (Immediate · Digest · Off) with locked cells rendered as text plus *Set by Vanguard Construction Group policy*; quiet hours as `Checkbox` days, two time inputs and a timezone select; cover with a delegate select, two dates, a live preview of covered and excluded items with the reason, *Start cover* / *End cover*; the product's wider catalog behind a disclosure, read-only.
 
 ## Metrics
@@ -31,7 +31,7 @@
 ## Verification
 - `yarn verify` passes.
 - `yarn shot notifications-preferences` at 1440 / 1024 / 390, light and dark: no console errors, no overflow (the matrix scrolls in its own box at 390).
-- `node scripts/interact-notifications-prefs.mjs 5177 <out>`: 16/16. Sarah starts on the Project manager preset with Documents / Email = Digest and the two locked cells; the Superintendent preset refills the matrix; editing a cell makes it Custom; Save shows *Saved*; choosing Alex as delegate previews "will cover 2 items" and "Not covered: 2 (not a participant of this Confidential thread)"; Start cover makes Alex's bell read 3 need action; End cover returns; the override from the full page needs a reason, downgrades RFI-142 with a *Severity changed* history row, and the PE then sees Important; Reset restores the defaults.
+- `node scripts/interact-notifications-prefs.mjs 5177 <out>`: 16/16. Sarah starts on the Project manager preset with Documents / Email = Digest and the two locked cells; the Superintendent preset refills the matrix; editing a cell makes it Custom; Save shows *Saved*; choosing Alex as delegate previews "will cover 2 items" and "Not covered: 2 (not a participant of this Confidential thread)"; Start cover makes Alex's bell read 4 need action (his two since Kenji's emailed answer landed on 2026-10-28, plus Sarah's two covered); End cover returns; the override from the full page needs a reason, downgrades RFI-142 with a *Severity changed* history row, and the PE then sees Important; Reset restores the defaults.
 
 ## Design flags (for the Figma review, not fixed in code)
 - Figma has no preferences page for this model; the matrix is drawn from the proposal's controls table. Today's `UserPreferredNotification` grid (mail / text checkboxes per module) is the baseline to compare against.

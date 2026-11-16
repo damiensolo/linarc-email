@@ -1,5 +1,7 @@
-// Interaction check for correspondence-portal: valid link (markup, files, reply → replied state and the thread gains the
-// reply), expired link (Send me a new link), account holder (Open in Linarc). Needs the dev server. Run from the repo root:
+// Interaction check for correspondence-portal (2026-10-17; the quick response D-73, 2026-11-14): valid link on a phone
+// (markup, files, the large file by secure link in the viewer, the quick response *Received, I'll answer by <date>*
+// posting as a reply with the promise on the Delivery tab, then the real reply → replied state and the thread gains
+// it), expired link (Send me a new link), account holder (Open in Linarc). Needs the dev server. Run from the repo root:
 //   node scripts/interact-correspondence-portal.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';

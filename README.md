@@ -10,12 +10,12 @@ The starting point for a Linarc platform prototypes app: Vue 2.7 + the Linarc de
 | Area | What it is |
 |---|---|
 | **Wiring** | `vite.config.mjs`, `tailwind.config.js`, `src/style.css`, `src/main.js`: the library from `../linarc-design-components` (or `LINARC_DS_PATH`), one Vue instance, the plugins and store mocks the library expects, the token stylesheet with dark mode working |
-| **Sandbox** | `src/App.vue`: prototype picker, record picker, simulated latency, reset demo data, light / dark; hidden with the settings gear in each screen's top nav or `?chrome=0` |
+| **Sandbox** | `src/App.vue` with its state in `src/modules/sandbox.js`: prototype picker, record picker, roles, Simulate inbound email / Simulate event, reset demo data; theme, loading speed and the Figma link in the ··· menu; hidden with the settings gear in each screen's top nav or `?chrome=0` |
 | **App shell** | `src/modules/app/AppShell.vue`: top nav (module tile, tools, Quick Create, account rail), side-nav rail, AppLayout; configured in `nav.js`; `router.js` for in-document links; `status.js` for the status vocabulary; `src/modules/session.js` for the demo session |
 | **Loading pattern** | `src/candidates/`: LoadRegion + `createLoad`, LoadStatus, Skeleton, InlineNotice (the never-blank rule, D-24) |
 | **Examples** | `src/prototypes/example-list` (list pattern: Title Bar / Page, DataGrid in a LoadRegion, Filter panel) and `example-detail` (detail pattern: Title Bar / Workflow with back button, hairline facts, right-panel activity, record from the hash); `_blank` as a starter |
 | **Agent instructions** | `CLAUDE.md` (always-on rules), `.claude/skills/figma-to-prototype` and `spec-to-prototype` (workflows), `.cursor/rules/prototype.mdc` (pointer) |
-| **Checks** | `yarn check` (conventions linter), `yarn verify` (check + build), `yarn shot` (screenshots at 1440 / 1024 / 390 in both themes with console errors) |
+| **Checks** | `yarn run check` (conventions linter; plain `yarn check` is Yarn 1's integrity check, F-012), `yarn verify` (check + build), `yarn shot` (screenshots at 1440 / 1024 / 390 in both themes with console errors); the per-screen interaction, smoke and walkthrough scripts in `scripts/` (`docs/3-verification.md`) |
 | **Docs** | `docs/`: setup playbook, Figma readiness, verification, decisions, UI patterns, findings log, record templates, candidate backlog |
 | **Hosting** | `vercel.json`, `.vercelignore`, `yarn deploy` (prebuilt `dist/` upload) |
 

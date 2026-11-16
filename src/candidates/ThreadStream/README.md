@@ -10,7 +10,7 @@ Proposal and rules: `docs/components/ThreadStream.md` (D-17, D-38). Import as `~
 | `emptyText` | String | `'No messages yet.'` | or the `empty` slot |
 
 Entry shapes:
-- message `{ id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?, attachments: [{ id, name, sizeMb, byLink, thumbnailUrl?, takenAt? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf?, reminder? }` (`reminder` marks a chaser sent on the thread, D-72; `bodyHtml` is rendered when the message was written in the composer, else `body`; `links` are listed under the body)
+- message `{ id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?, attachments: [{ id, name, sizeMb, byLink, thumbnailUrl?, takenAt? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf?, reminder? }` (`reminder` marks a chaser sent on the thread, D-72; `takenAt` captions a photo with *Taken 16 Oct, 08:12*, D-80; `bodyHtml` is rendered when the message was written in the composer, else `body`; `links` are listed under the body)
 - note `{ id, type: 'note', sender, sentAt, body, bodyHtml? }`
 - event `{ id, type: 'event', sentAt, text, recordId? }`
 

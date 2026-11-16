@@ -1,5 +1,6 @@
-// Interaction check for correspondence-context-dwg: pin → popover → Email about this markup → compose with the pinned
-// revision and the markup preview → send; S-201 superseded case; guest role. Needs the dev server. Run from the repo root:
+// Interaction check for correspondence-context-dwg (D-34 compose in context, 2026-10-17): pin → popover → Email about
+// this markup → compose with the pinned revision and the markup preview → send; S-201 superseded case; guest role.
+// Needs the dev server. Run from the repo root:
 //   node scripts/interact-correspondence-dwg.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';

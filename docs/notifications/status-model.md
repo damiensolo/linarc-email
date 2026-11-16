@@ -58,6 +58,7 @@ Overdue is a **filter**, not a view (the Email screen's Overdue segment is this 
 | `assigned` | Assigned to you | neutral | word |
 | `fallback` | Project fallback | warning | word (no eligible owner; the fallback is accountable until assigned) |
 | `covering` | Covering for Name | neutral | word |
+| `oversight` | Project oversight | neutral | word (the PM sees every Critical on the project, with its responsible party; never counted in the bell) |
 | `watching` | Watching this record | neutral | word (never counted in the bell) |
 | `requester` | You asked for this | neutral | word (Waiting view); rendered as *Waiting on Name* while the item has a responsible party, the label itself only when it has none (*You asked for this · no eligible owner, with Carlos Reyes*) |
 
@@ -92,7 +93,7 @@ Provider acceptance is never shown as acknowledgment.
 | Full page | all of the above as columns and filters; `presentation` snoozed subtotal; `channel` in *View history* |
 | Preferences | event family (from `eventType`), channel, cadence; locked rows (`spec.md` §11) |
 | Override modal | `overrideOutcome`; audit |
-| Email screen, RFI | unchanged (`../correspondence/status-model.md`); the same obligations appear through `sources.js` |
+| Email screen, RFI | unchanged (`../correspondence/status-model.md`); the same obligations appear through `items.js` (a thread's responsible party is its `ownerId`, D-72) |
 
 ## Audit event vocabulary (added to `AUDIT_EVENT`)
 

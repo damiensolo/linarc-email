@@ -1,7 +1,7 @@
 # InlineNotice
 
 - **Stage:** candidate (built 2026-10-09 in the first module; shipped with the template, used by LoadRegion / LoadStatus for failures)
-- **Proposed:** 2026-10-09 · **Used on:** every screen that shows a load failure (inside LoadRegion and LoadStatus `variant="notice"`); in this module: the internal team note (`warning`) and the bounce notice (`error`) in ThreadStream, the AiSummary failure, the thread's deleted notice (`correspondence-thread`), the secure link page's expired / revoked / send-failed notices (`correspondence-portal`), the compose and promote panels' send failure. The first module used it for field mismatches, disclosures, readiness and sample-data notices
+- **Proposed:** 2026-10-09 · **Used on:** every screen that shows a load failure (inside LoadRegion and LoadStatus `variant="notice"`); in this module: the internal team note (`warning`) and the bounce notice (`error`) in ThreadStream, the AiSummary failure, the thread's deleted notice (`correspondence-thread`), the secure link page's expired / revoked notices (`correspondence-portal`; its failed reply is a LoadStatus line, and the compose and promote panels show no notice of their own). The first module used it for field mismatches, disclosures, readiness and sample-data notices
 - **Candidate code:** `src/candidates/InlineNotice/InlineNotice.vue`
 - **Figma:** — · **Library:** — · **Log:** —
 

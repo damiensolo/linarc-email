@@ -1,7 +1,8 @@
 // Walks the Notifications demo exactly as docs/notifications/overview-and-demo.md §6 writes it (Parts A to E, Reset),
 // asserting every "See" the guide promises, and checks the sandbox bar stays usable while a panel is open (the
-// compose panel and the drawer start under the bar: --sandbox-offset, F-029). Needs the dev server. Run from the repo
-// root:  node scripts/demo-notifications-walkthrough.mjs <port> <out-dir>
+// compose panel and the drawer start under the bar: --sandbox-offset, F-029, 2026-10-28). 80 checks: 63 lines plus the
+// A3 card's 11 strings and the D21 modal's 6 in loops. Needs the dev server. Run from the repo root:
+//   node scripts/demo-notifications-walkthrough.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));
@@ -172,7 +173,7 @@ try {
   // 7: Snooze.
   await clickText('Needs action');
   await clickIn('Reply to Dave Miller', 'More');
-  await clickText('Snooze until next monday', '[role="menuitem"]');
+  await clickText('Snooze until next Monday', '[role="menuitem"]');
   await sleep(400);
   check(await has('1 snoozed · still in your count') && (await bell()).startsWith('Notifications: 2 need action'), `A7 snoozed subtotal, bell still 2: ${await bell()}`);
   await closeDrawer();

@@ -1,5 +1,6 @@
-// Writes the sample PDFs the correspondence mock attachments point at (public/files/). PLACEHOLDER DATA: drawn to be
-// plausible, not real engineering. Run once after changing a drawing below: `node scripts/make-sample-files.mjs`.
+// Writes the sample PDFs the correspondence mock attachments point at (public/files/; 2026-10-19). Not a check.
+// PLACEHOLDER DATA: drawn to be plausible, not real engineering. Run once after changing a drawing below, no dev
+// server, port or out-dir: `node scripts/make-sample-files.mjs`.
 // The images and the site-walk clip in public/files/ are not generated here (see docs/prototypes/correspondence-thread.md
 // › Sample files).
 import fs from 'fs';

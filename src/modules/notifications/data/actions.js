@@ -61,10 +61,10 @@ export function snoozeOptions(item) {
     return relDate(d, '08:00:00');
   };
   const opts = [
-    { value: relDate(1, '08:00:00'), label: 'Until tomorrow' },
-    { value: next(1), label: 'Until next Monday' },
+    { value: relDate(1, '08:00:00'), label: 'until tomorrow' },
+    { value: next(1), label: 'until next Monday' },
   ];
-  if (item.dueAt) opts.push({ value: item.dueAt, label: 'Until the due date' });
+  if (item.dueAt) opts.push({ value: item.dueAt, label: 'until the due date' });
   return opts;
 }
 

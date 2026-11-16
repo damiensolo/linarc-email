@@ -34,9 +34,10 @@
 | The rail label "Change orders" wraps to two lines at 82px | As the rail rules allow (two short lines) | — |
 
 ## Verification
+- **2026-11-15 (F-051):** the Email tab's composer footer bleeds over the scroller's bottom padding (`footer-class="-bottom-space-20 pb-space-20"` on the shared `RecordEmailTab`, as the thread page), so the thread no longer shows under it; `node scripts/shot-record-footer.mjs 5177 <out>` checks the Submittal, Change Order and RFI tabs (6/6: two checks per tab).
 - `yarn verify` passes; `yarn shot correspondence-context-co#PCO-019` at 1440 / 1024 / 390, light and dark: no console errors, no overflow.
 - `node scripts/interact-correspondence-records.mjs 5177 <out>`: 18 checks shared with the submittal (D-76 added the turnaround date and note): the title bar, Details facts, the tabs, Linked items, the rail and tool strip, the Email tab's threads and chips, Compose prefilled (subject, To, PDF), a reply from the tab, PCO-019's two threads and amount, the thread's Linked items opening the submittal, the guest role (no Confidential thread, no amount).
-- Demo guide step 16 shows the submittal's Email tab after *Link to record* (walkthrough 99 checks).
+- Demo guide step 16 shows the submittal's Email tab after *Link to record* (walkthrough 99 checks at D-74, 100 since D-79); the change order has no step of its own.
 
 ## Findings
 None.

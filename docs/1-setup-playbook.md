@@ -9,7 +9,7 @@ Repeat this to stand up accurate, design-system-based prototyping from Figma wit
 - A Figma seat with access to the design system file (`1HxMANBEaYWFqEFtazB20l`) and the Documentation file (`9ANM41f3QwNjt27Sl08i8O`).
 - The design system library checked out as a sibling folder: `../linarc-design-components`.
 
-**Check:** `node -v`, `yarn -v` and `git --version` all work, and Edge exists at `C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe` (or set `EDGE_PATH`; if Edge won't launch headless after an update, restart it or point `EDGE_PATH` at Chrome, F-041).
+**Check:** `node -v`, `yarn -v` and `git --version` all work, and Edge exists at `C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe` (or set `EDGE_PATH`; if Edge won't launch headless after an update, restart it or point `EDGE_PATH` at Chrome, template F-041, this app's F-039). On macOS `yarn shot` finds Edge, then Chrome, by itself (this app's F-011); the interaction scripts need `EDGE_PATH`. No global Yarn on a Mac: `sudo corepack enable` once, or `corepack yarn@1.22.22 <script>` (F-011).
 
 ## 1. Prepare Figma first
 

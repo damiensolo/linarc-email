@@ -118,7 +118,7 @@ export default {
     /**
      * Resolved entries, oldest first (README):
      *  message { id, type: 'message', direction, sender: { name, company, initials, avatarUrl? }, sentAt, body, bodyHtml?, links?: [{ url, name? }], toText?,
-     *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf?, reminder? }
+     *            attachments: [{ id, name, sizeMb, byLink, thumbnailUrl?, takenAt? }], delivery?: { label, tone }, bounce?: { email, reason, resolved }, resendOf?, reminder? }
      *  note    { id, type: 'note', sender, sentAt, body, bodyHtml? }
      *  event   { id, type: 'event', sentAt, text, recordId? }
      * The screen applies the role before passing entries (an external role never receives notes).

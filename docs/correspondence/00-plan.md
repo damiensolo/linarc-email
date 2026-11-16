@@ -10,7 +10,7 @@ From the help centre (read 2026-10-16): [Email an RFI](https://help.linarc.io/su
 
 | Exists today | Where | In this plan |
 |---|---|---|
-| **Email tab** on each RFI, Submittal and CO: left pane of sent mail with status; Compose with From, To (guest users), CC (typed addresses), Subject prefilled with number and subject, rich text, attachments from device or project files, generate a PDF of the record | record detail › Email | **Kept and upgraded** (`correspondence-context-rfi`): the same tab gains internal notes, Promote to record, Response due, Link opened / Files downloaded. CC and *Attach record PDF* stay so nothing regresses |
+| **Email tab** on each RFI, Submittal and CO: left pane of sent mail with status; Compose with From, To (guest users), CC (typed addresses), Subject prefilled with number and subject, rich text, attachments from device or project files, generate a PDF of the record | record detail › Email | **Kept and upgraded** (`correspondence-context-rfi`; `-sub` and `-co` since D-74): the same tab gains internal notes, Promote to record, Response due, Link opened / Files downloaded. CC and *Attach record PDF* stay so nothing regresses |
 | **Project Email screen**: same compose; list of sent and received mail with status | Project › Communication › Email | **Kept and upgraded** (`correspondence-list`): triage views, Linked record column, Unmatched, Response due |
 | Recipients must already be **guest users** (Project › My Team › Guests) | compose To | **Kept as today** (D-60, 2026-10-28): an unknown address is refused with a line naming My Team › Guests. Inline guest creation (Q-02, D-36) was built on 2026-10-16 and removed for the MVP, pending customer discovery |
 | Attachments **≤ 20 MB**; "save larger files to cloud storage and link them" | compose | Large files delivered by secure link (bet 3) |
@@ -62,7 +62,7 @@ Out, with the reason:
 
 ## 4. Demo flows and client test tasks
 
-Each flow is the demo script and one or two usability tasks. Mock data: `reference/correspondenceData.js` (`THR-1042`, `THR-1039`, `THR-1031`).
+Each flow is the demo script and one or two usability tasks. Mock data: `src/modules/correspondence/data/threads.js` (`THR-1042`, `THR-1039`, `THR-1031`, `THR-1050` unmatched) plus the eight resolved threads of `threads-archive.js` (D-65); `reference/correspondenceData.js` is the first draft, kept as history.
 
 **Flow 1: clash on a drawing → message a new consultant → they answer from a phone.** `correspondence-context-dwg#A-302-Rev3` → pin at Grid B-4 → *Email about this markup* → panel pre-pins `A-302 · Rev 3` → pick Marcus Vance (a guest user already on the project) → Response due → attach the 45 MB video (by link) → Send. Then `correspondence-portal#tk-marcus-a302` on a phone.
 - **Task 1.** "You've found this clash. Get Marcus Vance at Acoustix to look at it by Friday." Success: sent with the revision pinned, Marcus found in To, due date set; under three minutes, no help. Watch for anyone typing an address that isn't on the project: that is the signal for D-60.
@@ -99,7 +99,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 | Q-07 | Visibility: who sees a thread, who may promote, do CCs see each other, what does Confidential restrict? | list columns, role switcher, portal | Product + Security | **Resolved 2026-10-16:** the `spec.md` §3 table is the decision (D-41) |
 | Q-08 | Secure link: lifetime, revocation, re-request; does a portal reply also reach the recipient's mailbox? | portal states | Product + Security | **Resolved 2026-10-16:** the `spec.md` §10 proposal stands (30 days, revocable by the sender, re-request to the same address, portal replies copied to the recipient's mailbox) → D-43 |
 | Q-09 | Delivery evidence: do IP and checksum belong on screen? Who needs an export, and when? | Delivery tab | Product + legal reviewer | Narrowed: no export in the MVP; rows show event, actor, time |
-| Q-10 | Promote targets beyond RFI? | thread | Product | **Resolved 2026-11-14 (D-77):** RFI, Field issue, Potential change order |
+| Q-10 | Promote targets beyond RFI? | thread | Product | **Resolved 2026-11-14 (D-77):** RFI, Field issue, Potential change order; Daily log entry added the same day (D-80) |
 | Q-11 | Do Needs action and Overdue need notifications beyond today's reply notification? | `sla` | Product | **Resolved 2026-10-16: yes.** Three events on today's Notification preferences, each mail answerable by reply (`spec.md` §7, D-42) |
 | Q-12 | AI: failure state, wording beyond §9, is AI-drafted RFI text ever sent unedited? | thread, promote | Product + legal reviewer | **Resolved 2026-10-16: industry practice** (labelled, editable, human-confirmed, sourced, fails gracefully, no autonomous sending) → D-44; rules in `spec.md` §6.2 |
 | Q-13 | Is there a drawing or markup thumbnail in Figma or the Drawings tool? | `correspondence-context-dwg` | Design | **Resolved 2026-10-16: no.** DrawingPinPreview is a confirmed candidate; design draws it in the candidate flow |
@@ -108,7 +108,7 @@ After launch: share of a project's external email captured in Linarc; median tim
 
 ## 7. Decisions (in `../4-decisions.md`)
 
-D-34 overlay for contextual create · D-35 cross-tool capability plus central log · D-36 recipient entry (add-by-email row; removed by D-60) · D-37 promote in place, panel; modal deferred · D-38 candidate boundaries · D-39 the external page shows nothing internal and shows link state · D-40 Correspondence upgrades the existing Email tab and Email screen; parity first, Email naming · D-41 visibility model (`spec.md` §3) · D-42 hybrid inbox-plus-record model and the three notifications.
+D-34 overlay for contextual create · D-35 cross-tool capability plus central log · D-36 recipient entry (add-by-email row; removed by D-60) · D-37 promote in place, panel; modal deferred · D-38 candidate boundaries · D-39 the external page shows nothing internal and shows link state · D-40 Correspondence upgrades the existing Email tab and Email screen; parity first, Email naming · D-41 visibility model (`spec.md` §3) · D-42 hybrid inbox-plus-record model and the three notifications. The later decisions (D-43 to D-80: secure links, AI, attachments, recipients, the RFI, the Reading view and mail behaviours, the 2026-11-14 waves D-72 to D-80) are in the same table and cited inline where they apply.
 
 ## 8. Build order
 

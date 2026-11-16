@@ -1,8 +1,10 @@
-// Interaction check for the Email screen's mail behaviours (D-67, 2026-11-06): the Reading view's Preview / List
-// layout switch, unread rows (bold until opened; Mark as unread), the Drafts and Deleted folders (views pane and
-// segments), Delete / Restore from the reading pane and from the table's selection toolbar (only Delete, Mark as
-// unread, Mark as read; no cut / copy / paste / Deselect / Select all), a draft reopening the compose panel with its
-// record, and the sticky reply footer in the pane and on the thread screen. Needs the dev server. Run from the repo root:
+// Interaction check for the Email screen's mail behaviours (D-67, D-68, D-71; 2026-11-06): the Reading view's Preview /
+// List layout switch, the List layout's column header with its select-all checkbox, unread rows (bold until opened;
+// Mark as unread), the list bar's icon actions with the design system's tooltips, the Drafts and Deleted folders
+// (views pane and segments), Delete / Restore from the reading pane and from the table's selection toolbar (only
+// Delete, Mark as unread, Mark as read; no cut / copy / paste / Deselect / Select all), a draft reopening the compose
+// panel with its record, an Unread quick filter, and the sticky reply footer flush to the pane and to the thread
+// screen (F-043). Needs the dev server. Run from the repo root:
 //   node scripts/interact-correspondence-mail.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';

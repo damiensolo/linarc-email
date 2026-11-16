@@ -1,5 +1,7 @@
-// Interaction check for correspondence-thread: promote (D-44 gating), resend after a bounce, reply, note, Source trace,
-// guest role, reset. Needs the dev server. Run from the repo root: node scripts/interact-correspondence-thread.mjs <port> <out-dir>
+// Interaction check for correspondence-thread (2026-10-17): the bounce → Update contact and resend (THR-1031), Source
+// trace and promote with D-44 gating (THR-1042: Create RFI enabled only once the question was visited), reply, an
+// internal note, guest role (no notes, no Delivery tab, no promote), reset. Needs the dev server. Run from the repo root:
+//   node scripts/interact-correspondence-thread.mjs <port> <out-dir>
 import { pathToFileURL } from 'node:url';
 import { createRequire } from 'node:module';
 const require = createRequire(pathToFileURL(process.cwd() + '/package.json'));
