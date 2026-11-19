@@ -1,6 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
+  "git": { "deploymentEnabled": { "main": false } },
   "installCommand": "echo \"prebuilt: dist/ is built locally (yarn build), see CLAUDE.md Hosting\"",
   "buildCommand": "echo \"prebuilt\"",
   "outputDirectory": "dist",

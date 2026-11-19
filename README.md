@@ -17,7 +17,7 @@ The starting point for a Linarc platform prototypes app: Vue 2.7 + the Linarc de
 | **Agent instructions** | `CLAUDE.md` (always-on rules), `.claude/skills/figma-to-prototype` and `spec-to-prototype` (workflows), `.cursor/rules/prototype.mdc` (pointer) |
 | **Checks** | `yarn run check` (conventions linter; plain `yarn check` is Yarn 1's integrity check, F-012), `yarn verify` (check + build), `yarn shot` (screenshots at 1440 / 1024 / 390 in both themes with console errors); the per-screen interaction, smoke and walkthrough scripts in `scripts/` (`docs/3-verification.md`) |
 | **Docs** | `docs/`: setup playbook, Figma readiness, verification, decisions, UI patterns, findings log, record templates, candidate backlog |
-| **Hosting** | `vercel.json`, `.vercelignore`, `yarn deploy` (prebuilt `dist/` upload) |
+| **Hosting** | `vercel.json` (Git deployments off for `main`, F-053), `.vercelignore`, `yarn deploy` (prebuilt `dist/` upload; a push never deploys) |
 
 ## Prerequisites
 

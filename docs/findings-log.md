@@ -510,3 +510,14 @@ Why it mattered: a check that asserts an absence proves nothing when its selecto
 How it was caught: the four-way audit (docs vs code, candidates vs proposals, root docs, guides vs UI copy); the rail check only because the audit read the assertion against the nav config.
 What changed: `scripts/interact-notifications-list.mjs`, `src/prototypes/notifications-list/index.vue` (comment), `src/modules/notifications/data/actions.js`, `ItemCard.vue`, `demo-notifications-walkthrough.mjs`, `interact-notifications-drawer.mjs`, the two guides.
 Case study: Y: an absence check names what *is* there instead (the rail with its items); when a guide and the UI disagree on copy, fix the UI unless the copy is a decision.
+
+## F-053 · 2026-11-19 · The production URL served 404: Vercel was building from GitHub pushes, not from the uploaded `dist/`
+
+Tags: tooling, hosting
+What happened:
+- https://linarc-email.vercel.app returned `NOT_FOUND` for every path while `vercel ls` showed eight *Ready* production deployments. Their logs start with *Cloning github.com/damiensolo/linarc-email* and end with *Build output contains no "static" directory*: the project had been connected to the GitHub repo (the first `vercel link --yes`, F-040, connects a repo it finds), so every push to `main` made a Git deployment, which has no `dist/` (gitignored) and no build (the `buildCommand` is an echo), and that empty deployment took the production alias. The deployments uploaded by `yarn deploy` were simply the older ones.
+- Fix: `vercel.json` gains `"git": { "deploymentEnabled": { "main": false } }`, so a push no longer deploys; `yarn deploy` (local `vite build`, then `vercel deploy --prod`) restores the site. The setting is read from the pushed commit, so it takes effect once this change is on `main`.
+Why it mattered: the link in every demo and review invitation was dead for as long as the last push was newer than the last `yarn deploy`.
+How it was caught: the user, opening the link on 2026-11-19; `vercel inspect <deployment> --logs` showed the clone.
+What changed: `vercel.json`.
+Case study: Y: a prebuilt-upload project must have Git deployments off, or every push replaces the site with nothing; check `vercel ls` for *Cloning* in the newest production deployment's logs when the alias 404s.
