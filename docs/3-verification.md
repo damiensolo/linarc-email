@@ -21,6 +21,7 @@ Every check that a screen keeps is a script, run from the repo root with the dev
 | `check-conventions.mjs` | The CLAUDE.md rules a grep can enforce (hex, palette, raw / arbitrary values, bad `border-*`, `<script setup>`, reload navigation). `yarn run check`; the first half of `yarn verify` | — |
 | `screenshot.mjs` | `yarn shot <slug>[#hash] [out-dir] [port] [widths] [height]`: full-page light + dark captures at exact widths, console errors, overflow warning, scrollbars kept | — |
 | `shot-record-footer.mjs` | The Submittal, Change Order and RFI Email tabs' sticky composer footer reaches the scroller's edge and is opaque (F-051) | 6 |
+| `shot-views-pane.mjs` | The Views pane's collapsible sections (D-81): caret hidden at rest, shown on hover and keyboard focus without moving labels, a click closes (summary in the heading), the closed state survives a reload, Enter reopens; light and dark crops | 12 |
 | `smoke-correspondence-data.mjs` | `src/modules/correspondence/data` through Vite SSR: every status renders, roles, session flows (no port or out-dir) | — |
 | `smoke-notifications-data.mjs` | `src/modules/notifications/data` through Vite SSR: items map to the vocabularies, one per obligation, the per-role projection, every action, the simulated events (no port or out-dir) | — |
 | `latency-correspondence-list.mjs` | `?latency=` slow, fail and fail-once on the Email screen (skeleton, "Still loading…", error + Retry); `<port>` only | 6 |

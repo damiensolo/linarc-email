@@ -45,7 +45,7 @@ Subject · Letter (the correspondence number and type, D-78) · Linked record (c
 | **ThreadStream** | **candidate #2** | `src/candidates/ThreadStream/` | [proposal](../components/ThreadStream.md); list only (D-38) |
 | **AiSummary** | **candidate #3** | `src/candidates/AiSummary/` | [proposal](../components/AiSummary.md) |
 | **DrawingPinPreview** | **candidate #4** | `src/candidates/DrawingPinPreview/` | [proposal](../components/DrawingPinPreview.md); Q-13 confirmed no thumbnail exists in Figma or the Drawings tool |
-| **ViewsPane** | **candidate #5** (D-65) | `src/candidates/ViewsPane/` | [proposal](../components/ViewsPane.md); views with counts, object type, record, company, date |
+| **ViewsPane** | **candidate #5** (D-65) | `src/candidates/ViewsPane/` | [proposal](../components/ViewsPane.md); views with counts, object type, record, company, date; sections collapse (D-81) |
 | **ThreadList** | **candidate #6** (D-65) | `src/candidates/ThreadList/` | [proposal](../components/ThreadList.md); the grid's display order, one signal per row; `layout` preview / list and `unread` rows since D-67; the List layout's column header with a select-all Checkbox since D-71 |
 | **SplitPane** | **candidate #7** (D-65) | `src/candidates/SplitPane/` | [proposal](../components/SplitPane.md); the reading pane's divider |
 | Reading view, reading pane | existing (composition) | `ReadingView` (DataGrid `customViews`), `ReadingPane` (Chip, StatusChip, Button, AiSummary, ThreadStream, Composer, FileViewer) | screen-level; library fix P-068 (custom views kept the hidden columns hidden) |

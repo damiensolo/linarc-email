@@ -151,7 +151,7 @@ To add a screen: a row in `screens.md`; a pattern from `5-ui-patterns.md`; data 
 
 Useful URL switches: `?theme=dark`, `?latency=slow|fail|fail-once`, `?chrome=0`.
 
-Scripts: `yarn verify`, `yarn shot <slug>`, `node scripts/smoke-correspondence-data.mjs`, `node scripts/interact-correspondence-<list|reading|mail|thread|rfi|rfi-list|dwg|portal|composer|triage|records|groups|link|letters|export|field>.mjs <port> <out-dir>`, `node scripts/shot-record-footer.mjs <port> <out-dir>` (the record Email tabs' sticky composer footer, F-051), `node scripts/latency-correspondence-list.mjs <port>`, and the guide itself: `node scripts/demo-correspondence-walkthrough.mjs <port> <out-dir>` (100 checks).
+Scripts: `yarn verify`, `yarn shot <slug>`, `node scripts/smoke-correspondence-data.mjs`, `node scripts/interact-correspondence-<list|reading|mail|thread|rfi|rfi-list|dwg|portal|composer|triage|records|groups|link|letters|export|field>.mjs <port> <out-dir>`, `node scripts/shot-record-footer.mjs <port> <out-dir>` (the record Email tabs' sticky composer footer, F-051), `node scripts/shot-views-pane.mjs <port> <out-dir>` (the Views pane's collapsible sections, D-81), `node scripts/latency-correspondence-list.mjs <port>`, and the guide itself: `node scripts/demo-correspondence-walkthrough.mjs <port> <out-dir>` (100 checks).
 
 Figma: Documentation file, page Email (`4084:9896`): Levels 1–3 plus **Level 4 · Compose** (`4237:4926`: the compose panel from the Email screen and from an RFI, full screen, the thread composer's states, the Attach link, cloud drive, record and Discard modals); library `_ ☉ Candidates` page for the candidates (FileViewer not drawn yet).
 

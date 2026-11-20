@@ -12,7 +12,7 @@
        `readingContext` (provide / inject), since the grid forwards no other props to a view. Below 1024px the list is
        the whole view: the pane and the divider hide and a row opens the thread screen. -->
   <div ref="root" class="rv-root flex min-h-0 w-full flex-1 overflow-hidden rounded-radius-6 border border-border-subtle bg-surface-container">
-    <ViewsPane v-if="wide" class="rv-views shrink-0 border-r border-border-subtle" :sections="sections" @change="onPaneChange" />
+    <ViewsPane v-if="wide" class="rv-views shrink-0 border-r border-border-subtle" :sections="sections" :collapsed="collapsedSections" @change="onPaneChange" @toggle="onPaneToggle" />
     <SplitPane :value="ctx.paneWidth" :default-value="640" :min="360" :min-start="280" :stacked="!wide" label="Resize the reading pane" class="min-w-0 flex-1" @input="ctx.setPaneWidth($event)">
       <template #start>
         <div class="flex h-full min-h-0 w-full flex-col">
@@ -84,6 +84,25 @@ import { VIEWS, VIEW_FIELD, KIND_FIELD, RECORD_FIELD, COMPANY_FIELD, ACTIVITY_FI
 import ReadingPane from './ReadingPane.vue';
 
 const WIDE = 1024;
+
+/** The Views pane's closed sections (D-81): a per-browser layout preference, as the sandbox chrome (`sandbox.js`), never part of the demo session. */
+const COLLAPSED_KEY = 'linarc-prototypes:views-pane:collapsed';
+function readCollapsed() {
+  try {
+    const raw = window.localStorage.getItem(COLLAPSED_KEY);
+    const ids = raw ? JSON.parse(raw) : [];
+    return Array.isArray(ids) ? ids : [];
+  } catch (e) {
+    return [];
+  }
+}
+function writeCollapsed(ids) {
+  try {
+    window.localStorage.setItem(COLLAPSED_KEY, JSON.stringify(ids));
+  } catch (e) {
+    // storage unavailable; the layout just won't survive a reload
+  }
+}
 /** A select's neutral option (SelectV2 shows a placeholder for an empty value, so the neutral choice needs a value). */
 const ANY = 'any';
 
@@ -112,6 +131,8 @@ export default {
       filterConfig: { conditions: [], groups: [] },
       wide: window.innerWidth >= WIDE,
       checked: [],
+      // The pane's closed sections (D-81): a layout preference, kept per browser like the sandbox chrome, outside the demo session.
+      collapsedSections: readCollapsed(),
       layouts: [
         { label: 'Preview', value: 'preview' },
         { label: 'List', value: 'list' },
@@ -259,6 +280,11 @@ export default {
      * A pane change becomes one condition on its field (none when cleared), the other conditions kept (D-30). A folder
      * (Drafts, Deleted) is not a condition: the screen swaps the rows and drops the view condition (D-67).
      */
+    /** A section opened or closed in the pane (D-81): remembered per browser. */
+    onPaneToggle({ id, collapsed }) {
+      this.collapsedSections = collapsed ? [...this.collapsedSections.filter((x) => x !== id), id] : this.collapsedSections.filter((x) => x !== id);
+      writeCollapsed(this.collapsedSections);
+    },
     onPaneChange({ id, value }) {
       if (id === VIEW_FIELD && isFolderView(value)) {
         this.ctx.setFolder(value);
